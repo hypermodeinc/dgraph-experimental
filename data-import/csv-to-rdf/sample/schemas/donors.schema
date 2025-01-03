@@ -1,3 +1,4 @@
+xid: string @index(exact) @upsert .
 Category.name: string .
 City.name: string @index(hash) @upsert .
 Project.status: default .

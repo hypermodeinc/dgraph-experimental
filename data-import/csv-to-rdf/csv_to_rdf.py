@@ -11,7 +11,7 @@ import random
 import pydgraph
 
 if (len(sys.argv) < 2):
-    print("Usage: csv_to_rdf.py <csvdir>")
+    print("Usage: csv_to_rdf.py <directory> <output_file>")
     sys.exit(1)
 
 csvdir = sys.argv[1]
@@ -26,7 +26,6 @@ _template = ""
 
 re_blank_bracket = re.compile(r"(<_:\S+>)")
 re_blank_subject = re.compile(r"^\s*<(_:\S+)>") # used for match subject
-re_blank_node = re.compile(r"<(_:\S+)>") # used for findall
 re_tripple = re.compile(r"(<\S+>)\s+(<\S+>)\s+(.*)\s+([.*])$")
 
 
@@ -68,27 +67,7 @@ def mutate_rdf(nquads):
 
 
     return ret
-def split_mutate(client,body,xidmap):
-    b2 = re_blank_bracket.sub(lambda match_obj: substituteXid(match_obj,xidmap), body)
-    allocate_uid(client,b2,xidmap)
-    body = re_blank_bracket.sub(lambda match_obj: substituteXid(match_obj,xidmap), b2)
-    # no more blank node at this point
-    #cpu_count = mp.cpu_count()
-    nquads = body.split("\n")
-    all_res = mutate_rdf(nquads)
-    print(all_res)
-    
-    # multiprocess approach
-    #cpu_count = 1
-    # split = np.array_split(nquads, cpu_count)
-    # we may split in the middle of a predicate list
-    # this may cause AbortedTransaction
-    # We handle this by retrying the transaction
-    # we may do better by not splitting in list-> to do
 
-    #with mp.Pool(cpu_count) as pool:
-    #  all_res = pool.map(mutate_rdf, split)
-    #  print(all_res)
 
 
 
