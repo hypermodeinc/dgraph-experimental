@@ -1,65 +1,59 @@
-xid: string @index(exact) @upsert .
 Category.name: string .
 City.name: string @index(hash) @upsert .
-Project.status: default .
-Project.id: default .
-School.projects: [uid] .
-School.geoloc: geo .
-Donation.donor: uid .
-Project.donations: [uid] .
-Donor.id: default .
-Project.category: uid .
-School.id: default .
-Donor.geostate: uid .
-Donor.amount: float .
-Project.title: string @index(term) .
 City.state: uid .
-Project.grade: string @index(hash) .
-School.city: uid .
-School.type: string @index(hash) .
-Donation.project: uid .
-State.name: string @index(hash) @upsert .
-School.name: string @index(term) .
-Donor.name: string @index(term) .
-Project.school: uid .
-Donor.donations: [uid] .
 Donation.amount: float .
-type School {
- School.city
- School.geoloc
- School.id
- School.name
- School.type
- School.projects
-}
-type State {
- State.name
-}
+Donation.donor: uid .
+Donation.project: uid .
+Donor.amount: float .
+Donor.donations: [uid] .
+Donor.name: string @index(term) .
+Project.category: uid @reverse .
+Project.donations: [uid] .
+Project.grade: string @index(hash) .
+Project.school: uid .
+Project.title: string @index(term) .
+School.city: uid .
+School.geoloc: geo .
+School.name: string @index(term) .
+School.projects: [uid] .
+School.type: string @index(hash) .
+State.name: string @index(hash) @upsert .
+
 type Category {
- Category.name
+	Category.name
 }
 type City {
- City.name
- City.state
+	City.name
+	City.state
 }
+
 type Donation {
- Donation.amount
- Donation.date
- Donation.donor
- Donation.project
+	Donation.amount
+	Donation.donor
+	Donation.project
 }
 type Donor {
- Donor.id
- Donor.name
- Donor.donations
- Donor.geostate
+	Donor.amount
+	Donor.name
+	Donor.donations
 }
+
+
 type Project {
- Project.grade
- Project.id
- Project.status
- Project.category
- Project.school
- Project.donations
- Project.title
+	Project.title
+	Project.grade
+	Project.category
+	Project.school
+	Project.donations
+}
+type School {
+	School.name
+	School.type
+	School.projects
+	School.city
+	School.geoloc
+}
+
+type State {
+	State.name
 }

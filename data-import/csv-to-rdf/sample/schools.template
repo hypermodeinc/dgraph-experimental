@@ -1,6 +1,7 @@
 # template file
 <_:School_[School.ID]> <dgraph.type> "School" .
 <_:School_[School.ID]> <School.id> "[School.ID]" .
+<_:School_[School.ID]> <xid> "_:School_[School.ID]" .
 <_:School_[School.ID]> <School.name> "[School.Name]" .
 <_:School_[School.ID]> <School.type> "[School.Metro.Type]" .
 <_:School_[School.ID]> <School.geoloc> =geoloc([LNG],[LAT]) .

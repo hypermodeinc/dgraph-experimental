@@ -5,12 +5,14 @@ The conversion is using a processing template for each CSV.
 
 CSV file must have headers.
 
+
+
+## template file
 A template file is a text file defining RDF triples.
 [column name] are substituted by the corresponding value of the lines of the CSV files. 
 
 Template files are named from the CSV files:
 `my_data.csv` will be converted using `my_data.template`
-
 ### data substitution
 > [column name]
 ```
@@ -46,3 +48,32 @@ You can use functions to generate data
 ```
 Available functions :
 - geoloc(lat,long) : generate a RDF value with geoloc json string
+
+
+# python scripts
+
+Generate RDF file
+```python
+python csv_to_rdf.py 
+
+Usage: csv_to_rdf.py <directory> <output_file>
+<directory> is the directory containing the CSV files and their associated templates
+<output_file> is the file to write the RDF output to. If not provided, the output will be written to stdout
+
+```
+
+Generate rdf file from the sample
+```python
+python upload_csv.py sample donors.rdf
+```
+
+
+Upload to Dgraph.
+Option1: use `dgraph live` to load the generated RDF file with corresponding Dgraph schema
+
+Option2: use `upload_csv.py`: creates RDF from the CSV files and mutate to Dgraph.
+
+```python
+python upload_csv.py sample 
+
+```

@@ -1,4 +1,5 @@
 <_:Donor[Donor.ID]> <dgraph.type> "Donor" .
+<_:Donor[Donor.ID]> <xid> "_:Donor[Donor.ID]" .
 <_:State_[Donor.State]> <dgraph.type> "State" .
 <_:State_[Donor.State]> <State.name> "[Donor.State]" .
 <_:Donor[Donor.ID]> <Donor.geostate> <_:State_[Donor.State]> .

@@ -7,10 +7,13 @@ import sys
 
 import pandas as pd
 import pydgraph
-from csv_to_rdf import df_to_rdfmap, rdfmap_to_rdf
+from rdf_lib import df_to_rdfmap, rdfmap_to_rdf
 
 if len(sys.argv) < 2:
-    print("Usage: csv_to_rdf.py <csvdir>")
+    print("Usage: upload_csv.py <directory>")
+    print("<directory> is the directory containing the CSV files and their associated templates")
+    print("The script uses Dgraph grpc endpoint defined in DGRAPH_GRPC environment variable or localhost:9080")
+    print("If the grpc endpoint is a cloud instance, the scrip uses the key set in DGRAPH_ADMIN_KEY" )
     sys.exit(1)
 
 csvdir = sys.argv[1]
@@ -36,10 +39,6 @@ def getClient():
 
 
 sliceSize = 5000  # mutate every sliceSize RDF lines
-
-
-_predicate = ""
-_template = ""
 
 
 def readXidMapFromDgraph(client, predicate="xid"):
@@ -198,19 +197,31 @@ def df_to_dgraph(df, template, client, xidpredicate="xid", xidmap=None):
     return rdfmap_to_dgraph(rdfMap, xidmap, client)
 
 
+def upload_schema(client, schema):
+    op = pydgraph.Operation(schema=schema)
+    client.alter(op)
+
 def upload_xid_schema(client, xid_predicate):
     schema = f"""
     {xid_predicate}: string @index(exact) @upsert .
     """
-    op = pydgraph.Operation(schema=schema)
-    res = client.alter(op)
-    print("xid definition uploaded")
-    print(res)
+    upload_schema(client, schema)
+    print("xid definition uploaded.")
 
 
 xidpredicate = "xid"
 
 gclient = getClient()
+
+
+if len(sys.argv) == 3:
+    output_file = sys.argv[2]
+    schema_file = open(output_file, "r")
+    schema = schema_file.read()
+    schema_file.close()
+    print(f"schema ${output_file} loaded.")
+    upload_schema(gclient, schema)
+    print(f"schema ${output_file} uploaded.")
 
 upload_xid_schema(gclient, xidpredicate)
 
