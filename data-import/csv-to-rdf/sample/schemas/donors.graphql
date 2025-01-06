@@ -1,7 +1,7 @@
 type School {
   id: ID!
-  name: String!  @search(by: [term])
-  type: String!  @search(by: [hash])
+  name: String! @search(by: [term])
+  type: String! @search(by: [hash])
   projects: [Project] @hasInverse(field: "school")
   city: City
   geoloc: Point
@@ -9,11 +9,11 @@ type School {
 
 type Project {
   id: ID!
-  title: String!  @search(by: [term])
+  title: String! @search(by: [term])
   grade: String @search(by: [hash])
   category: Category
-  school : School @hasInverse(field: "projects")
-  donations : [Donation] @hasInverse(field: "project")
+  school: School @hasInverse(field: "projects")
+  donations: [Donation] @hasInverse(field: "project")
 }
 type Category {
   id: ID!
@@ -21,14 +21,14 @@ type Category {
 }
 type Donation {
   id: ID!
-  amount:Float
+  amount: Float
   donor: Donor @hasInverse(field: "donations")
   project: Project @hasInverse(field: "donations")
   date: DateTime
 }
 type Donor {
   id: ID!
-  name: String!  @search(by: [term])
+  name: String! @search(by: [term])
   donations: [Donation] @hasInverse(field: "donor")
 }
 type City {
