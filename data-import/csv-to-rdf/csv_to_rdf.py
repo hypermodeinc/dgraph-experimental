@@ -1,16 +1,17 @@
 import os
-import random
-import re
 import sys
-from datetime import datetime, timedelta
-from rdf_lib import df_to_rdffile
 
 import pandas as pd
+from rdf_lib import df_to_rdffile
 
 if len(sys.argv) < 2:
     print("Usage: csv_to_rdf.py <directory> <output_file>")
-    print("<directory> is the directory containing the CSV files and their associated templates")
-    print("<output_file> is the file to write the RDF output to. If not provided, the output will be written to stdout")
+    print(
+        "<directory> is the directory containing the CSV files and their associated templates"
+    )
+    print(
+        "<output_file> is the file to write the RDF output to. If not provided, the output will be written to stdout"
+    )
     sys.exit(1)
 
 csvdir = sys.argv[1]
@@ -20,7 +21,7 @@ output_file = None
 if len(sys.argv) == 3:
     output_file = sys.argv[2]
     rdf_file_handle = open(output_file, "w")
-    
+
 
 # iterate over files in
 # that directory
@@ -41,8 +42,6 @@ for filename in os.listdir(csvdir):
             # transform the dataframe and load to dgraph
             #
             # xidmap = df_to_dgraph(df,template,gclient,xidpredicate,xidmap)
-            df_to_rdffile(df, template,rdf_file_handle)
+            df_to_rdffile(df, template, rdf_file_handle)
 if rdf_file_handle is not sys.stdout:
     rdf_file_handle.close()
-              
-                  

@@ -1,11 +1,7 @@
-import os
 import random
 import re
 import sys
 from datetime import datetime, timedelta
-
-import pandas as pd
-
 
 sliceSize = 5000  # mutate every sliceSize RDF lines
 
@@ -38,20 +34,20 @@ def flush_rdfBuffer(rdfBuffer, func):
         rdfBuffer.clear()
 
 
-def rdfmap_to_rdf(rdfMap, func):
+def rdf_map_to_rdf(rdf_map, func):
     rdfBuffer = []
-    for k in rdfMap:
-        if type(rdfMap[k]) is list:
-            for e in rdfMap[k]:
+    for k in rdf_map:
+        if type(rdf_map[k]) is list:
+            for e in rdf_map[k]:
                 line = k + " " + e + " ."
                 add_to_rdfBuffer(line, rdfBuffer, func, True)
         else:
-            line = k + " " + rdfMap[k] + " ."
+            line = k + " " + rdf_map[k] + " ."
             add_to_rdfBuffer(line, rdfBuffer, func)
     flush_rdfBuffer(rdfBuffer, func)
 
 
-def rdfmap_to_file(rdfMap, xidmap, filehandle=sys.stdout):
+def rdf_map_to_file(rdf_map, xidmap, filehandle=sys.stdout):
     def f(body):
         return filehandle.write(
             re_blank_bracket.sub(
@@ -59,11 +55,11 @@ def rdfmap_to_file(rdfMap, xidmap, filehandle=sys.stdout):
             )
         )
 
-    rdfmap_to_rdf(rdfMap, f)
+    rdf_map_to_rdf(rdf_map, f)
     return xidmap
 
 
-def addRdfToMap(rdfMap, rdf):
+def addRdfToMap(rdf_map, rdf):
     # applying the template to many tabular data lines may lead to the creatio of the same predicate many time
     # e.g: if many line refer to a country object with a country code.
     # we maintain the map of <node id> <predicate> for non list predicates so we can remove duplicates
@@ -75,12 +71,12 @@ def addRdfToMap(rdfMap, rdf):
             parts = m.groups()
             key = parts[0] + " " + parts[1]
             if parts[-1] == "*":
-                if key in rdfMap:
-                    rdfMap[key].append(parts[2])
+                if key in rdf_map:
+                    rdf_map[key].append(parts[2])
                 else:
-                    rdfMap[key] = [parts[2]]
+                    rdf_map[key] = [parts[2]]
             else:
-                rdfMap[key] = parts[2]
+                rdf_map[key] = parts[2]
 
 
 def substitute(match_obj, row, nospace=False):
@@ -169,7 +165,7 @@ def substituteInTemplate(template, row):
 
 
 def transformDataFrame(df, template):
-    rdfMap = {}
+    rdf_map = {}
     for index, row in df.iterrows():
         row["LINENUMBER"] = index
         # for each tabular row we evaluate all line of the RDF template
@@ -177,30 +173,23 @@ def transformDataFrame(df, template):
             if not rdftemplate.startswith("#"):
                 rdf = substituteInTemplate(rdftemplate, row)
                 if rdf is not None:
-                    addRdfToMap(rdfMap, rdf)
-    return rdfMap
+                    addRdfToMap(rdf_map, rdf)
+    return rdf_map
 
 
-def df_to_rdfmap(df, template):
+def df_to_rdf_map(df, template):
 
-    # rdfMap will contains key = subject predicate ; value = object
+    # rdf_map will contains key = subject predicate ; value = object
     # example:
     #   key '<_:3150-JP> <dgraph.type>'
-    #   of rdfmap['<_:3150-JP> <dgraph.type>'] : '"Company"'
+    #   of rdf_map['<_:3150-JP> <dgraph.type>'] : '"Company"'
 
-    rdfMap = transformDataFrame(df, template)
-    return rdfMap
+    rdf_map = transformDataFrame(df, template)
+    return rdf_map
 
 
-def df_to_rdffile(
-    df, template, filehandle=sys.stdout, xidmap=None
-):
+def df_to_rdffile(df, template, filehandle=sys.stdout, xidmap=None):
     if xidmap is None:
         xidmap = {}
-    rdfMap = df_to_rdfmap(df, template)
-    return rdfmap_to_file(rdfMap, xidmap, filehandle)
-
-
-    
-
-                
+    rdf_map = df_to_rdf_map(df, template)
+    return rdf_map_to_file(rdf_map, xidmap, filehandle)

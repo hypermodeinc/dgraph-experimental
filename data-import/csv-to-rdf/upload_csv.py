@@ -11,9 +11,15 @@ from rdf_lib import df_to_rdfmap, rdfmap_to_rdf
 
 if len(sys.argv) < 2:
     print("Usage: upload_csv.py <directory>")
-    print("<directory> is the directory containing the CSV files and their associated templates")
-    print("The script uses Dgraph grpc endpoint defined in DGRAPH_GRPC environment variable or localhost:9080")
-    print("If the grpc endpoint is a cloud instance, the scrip uses the key set in DGRAPH_ADMIN_KEY" )
+    print(
+        "<directory> is the directory containing the CSV files and their associated templates"
+    )
+    print(
+        "The script uses Dgraph grpc endpoint defined in DGRAPH_GRPC environment variable or localhost:9080"
+    )
+    print(
+        "If the grpc endpoint is a cloud instance, the scrip uses the key set in DGRAPH_ADMIN_KEY"
+    )
     sys.exit(1)
 
 csvdir = sys.argv[1]
@@ -200,6 +206,7 @@ def df_to_dgraph(df, template, client, xidpredicate="xid", xidmap=None):
 def upload_schema(client, schema):
     op = pydgraph.Operation(schema=schema)
     client.alter(op)
+
 
 def upload_xid_schema(client, xid_predicate):
     schema = f"""
