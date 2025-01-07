@@ -7,7 +7,7 @@ import sys
 
 import pandas as pd
 import pydgraph
-from rdf_lib import df_to_rdfmap, rdfmap_to_rdf
+from rdf_lib import df_to_rdf_map, rdf_map_to_rdf
 
 if len(sys.argv) < 2:
     print("Usage: upload_csv.py <directory>")
@@ -188,19 +188,19 @@ def split_mutate(client, body, xidmap):
     #  print(all_res)
 
 
-def rdfmap_to_dgraph(rdfMap, xidmap, client):
+def rdf_map_to_dgraph(rdfMap, xidmap, client):
     def f(body):
         return split_mutate(client, body, xidmap)
 
-    rdfmap_to_rdf(rdfMap, f)
+    rdf_map_to_rdf(rdfMap, f)
     return xidmap
 
 
 def df_to_dgraph(df, template, client, xidpredicate="xid", xidmap=None):
     if xidmap is None:
         xidmap = readXidMapFromDgraph(client, xidpredicate)
-    rdfMap = df_to_rdfmap(df, template)
-    return rdfmap_to_dgraph(rdfMap, xidmap, client)
+    rdfMap = df_to_rdf_map(df, template)
+    return rdf_map_to_dgraph(rdfMap, xidmap, client)
 
 
 def upload_schema(client, schema):
