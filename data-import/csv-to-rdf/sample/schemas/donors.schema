@@ -1,59 +1,62 @@
-Category.name: string .
-City.name: string @index(hash) @upsert .
-City.state: uid .
-Donation.amount: float .
-Donation.donor: uid .
-Donation.project: uid .
-Donor.amount: float .
-Donor.donations: [uid] .
-Donor.name: string @index(term) .
-Project.category: uid @reverse .
-Project.donations: [uid] .
-Project.grade: string @index(hash) .
-Project.school: uid .
-Project.title: string @index(term) .
-School.city: uid .
-School.geoloc: geo .
-School.name: string @index(term) .
-School.projects: [uid] .
-School.type: string @index(hash) .
-State.name: string @index(hash) @upsert .
-
-type Category {
+<Category.name>: string @index(hash) .
+<City.name>: string @index(hash) @upsert .
+<City.state>: uid @reverse .
+<Donation.amount>: float .
+<Donation.date.tt>: uid .
+<Donation.date>: default .
+<Donation.donor>: uid .
+<Donation.project>: uid .
+<Donor.amount>: float .
+<Donor.donations>: [uid] @count .
+<Donor.geostate>: [uid] .
+<Donor.id>: default .
+<Donor.name>: string @index(term) .
+<Project.category>: uid @reverse .
+<Project.donations>: [uid] .
+<Project.grade>: string @index(hash) .
+<Project.id>: default .
+<Project.school>: uid @reverse .
+<Project.status>: default .
+<Project.title>: string @index(term) .
+<School.city>: uid @reverse .
+<School.geoloc>: geo .
+<School.id>: default .
+<School.name>: string @index(term) .
+<School.projects>: [uid] @count @reverse .
+<School.type>: string @index(hash) .
+<State.name>: string @index(hash) @upsert .
+<xid>: string @index(exact) @upsert .
+type <Category> {
 	Category.name
 }
-type City {
+type <City> {
 	City.name
 	City.state
 }
-
-type Donation {
+type <Donation> {
 	Donation.amount
 	Donation.donor
 	Donation.project
 }
-type Donor {
+type <Donor> {
 	Donor.amount
 	Donor.name
 	Donor.donations
 }
-
-
-type Project {
+type <Project> {
 	Project.title
 	Project.grade
 	Project.category
 	Project.school
 	Project.donations
 }
-type School {
+type <School> {
 	School.name
 	School.type
 	School.projects
 	School.city
 	School.geoloc
 }
-
-type State {
+type <State> {
 	State.name
 }

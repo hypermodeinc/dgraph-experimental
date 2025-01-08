@@ -1,5 +1,3 @@
-# !pip install pandas pydgraph python_graphql_client multiprocess
-# import multiprocess as mp
 import json
 import os
 import re
