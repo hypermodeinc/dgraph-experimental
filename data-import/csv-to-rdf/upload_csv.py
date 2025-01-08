@@ -2,7 +2,7 @@ import json
 import os
 import re
 import sys
-
+import grpc
 import pandas as pd
 import pydgraph
 from rdf_lib import df_to_rdf_map, rdf_map_to_rdf
@@ -35,6 +35,14 @@ def getClient():
         APIAdminKey = os.environ["DGRAPH_ADMIN_KEY"]
         client_stub = pydgraph.DgraphClientStub.from_cloud(dgraph_grpc, APIAdminKey)
         print("cloud client " + dgraph_grpc)
+    elif "hypermode.host" in dgraph_grpc:
+        assert "HYPERMODE_DGRAPH_TOKEN" in os.environ, "HYPERMODE_DGRAPH_TOKEN must be set"
+        TOKEN = os.environ["HYPERMODE_DGRAPH_TOKEN"]
+        creds = grpc.ssl_channel_credentials()
+        call_credentials = grpc.access_token_call_credentials(TOKEN)
+        composite_credentials = grpc.composite_channel_credentials(creds, call_credentials)
+        client_stub = pydgraph.DgraphClientStub(dgraph_grpc, credentials=composite_credentials, )
+        print("hypermode client " + dgraph_grpc)
     else:
         client_stub = pydgraph.DgraphClientStub(dgraph_grpc)
         print("local client " + dgraph_grpc)
