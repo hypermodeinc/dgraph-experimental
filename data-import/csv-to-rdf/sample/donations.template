@@ -1,6 +1,5 @@
 <_:Donation_[Donation.ID]> <dgraph.type> "Donation" .
 <_:Donation_[Donation.ID]> <xid> "_:Donation_[Donation.ID]" .
-<_:Donation_[Donation.ID]> <typedonation> "true" .
 <_:Donation_[Donation.ID]> <Donation.amount> "[Donation.Amount]" .
 <_:Donation_[Donation.ID]> <Donation.donor> <_:Donor[Donor.ID]>  .
 <_:Donor[Donor.ID]> <dgraph.type> "Donor" .

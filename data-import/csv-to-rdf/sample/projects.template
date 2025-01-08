@@ -5,7 +5,6 @@
 <_:Project_[Project.ID]> <Project.grade> "[Project.Grade.Level.Category]" .
 <_:Category_[Project.Subject.Category.Tree]>  <Category.name> "[Project.Subject.Category.Tree]" .
 <_:Category_[Project.Subject.Category.Tree]>  <dgraph.type> "Category" .
-<_:Category_[Project.Subject.Category.Tree]>  <typecategory> "true" .
 <_:Project_[Project.ID]> <Project.category> <_:Category_[Project.Subject.Category.Tree]> .
 <_:Project_[Project.ID]> <Project.status> "[Project.Current.Status]" .
 <_:Project_[Project.ID]> <Project.school> <_:School_[School.ID]> .
