@@ -126,7 +126,7 @@ def substituteFunctions(match_obj, row):
         elif func == "datetime":
             date_string = match_obj.group(2)
             format = match_obj.group(3)
-            date = datetime.datetime.strptime(date_string, format)
+            date = datetime.strptime(date_string, format)
             return date.strftime("%Y-%m-%dT%H:%M:%S")
         elif func == "randomDate":
             start = datetime.strptime(match_obj.group(2), "%Y-%m-%d")
