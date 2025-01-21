@@ -15,14 +15,32 @@ make
 
 Start an instance
 ```sh
-docker run --name learning-donors -d -p "8080:8080" -p "9080:9080" -v .:/dgraph dgraph/learning:latest
+docker run --name image-name -d -p "8080:8080" -p "9080:9080" -v .:/dgraph dgraph/learning:latest
 ```
 
 If a `p` directory exists, the instance will start the zero and alpha.
 If the directory has no data  i.e no `p` directory, the images checks the `import` folder.
 If the `import` folder contains a rdf or rdf.gz file, it will be loaded using `dgraph bulk`
-Optionally place a `<basename>.schema` and/or `<basename>.graphql` file in the `import` folder with basename of the rdf file to load a DQL and GraphQL schema.
+Optionally place a `<basename>.schema` and/or `<basename>.graphql` file in the `import` folder with the basename of the rdf file to load a DQL and GraphQL schema.
 
-To re-start the image with you initial data, simply stop the instance, delete the p, w, zw directories and restart the instance.
+For example to start an image with the donors data set from dgrap-io/benchmarks repository
+
+```sh
+mkdir import
+
+curl -L -o donors.rdf.gz https://github.com/dgraph-io/benchmarks/blob/master/donors/donorsCA/donors-CA.rdf.gz
+
+curl -LJO https://github.com/dgraph-io/benchmarks/blob/master/donors/donorsCA/donors.graphql
+
+curl -LJO https://github.com/dgraph-io/benchmarks/blob/master/donors/donorsCA/donors.schema
+
+
+docker run --name learning-donors -d -p "8080:8080" -p "9080:9080" -v .:/dgraph dgraph/learning:latest
+
+```
+
+To re-start the image with you initial data, simply stop the instance, delete the p, z, w, zw directories and restart the instance.
+
+You can see the dgraph bulk logs in the docker image logs.
 
 
