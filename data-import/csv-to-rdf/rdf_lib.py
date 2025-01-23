@@ -85,23 +85,26 @@ def substitute(match_obj, row, nospace=False):
     # the matching object is in the form <column name>,<function>
     # substitute by the value in row map and apply function if present
     if match_obj.group() is not None:
-        match_col = match_obj.group(1)
-        fieldAndFunc = match_col[1:-1].split(",")
-        field = fieldAndFunc[0]
-        val = str(row[field]).replace('"', r"\"").replace("\n", r"\n")
-        if nospace:
-            val = re.sub(r"\W", "_", val)
-        if len(fieldAndFunc) > 1:
-            func = fieldAndFunc[1]
-            if func == "nospace":
-                val = val.replace(" ", "_")
-            elif func == "toUpper":
-                val = val.upper()
-            elif func == "toLower":
-                val = val.lower()
-            else:
-                raise ValueError("unsupported function " + func)
-        replaced = match_obj.group(0).replace(match_col, val)
+        replaced = match_obj.group(0)
+        ## loop on each group of match (1 to n)
+        for i in range(1, match_obj.lastindex+1):
+            match_col = match_obj.group(i)
+            fieldAndFunc = match_col[1:-1].split(",")
+            field = fieldAndFunc[0]
+            val = str(row[field]).replace('"', r"\"").replace("\n", r"\n")
+            if nospace:
+                val = re.sub(r"\W", "_", val)
+            if len(fieldAndFunc) > 1:
+                func = fieldAndFunc[1]
+                if func == "nospace":
+                    val = val.replace(" ", "_")
+                elif func == "toUpper":
+                    val = val.upper()
+                elif func == "toLower":
+                    val = val.lower()
+                else:
+                    raise ValueError("unsupported function " + func)
+            replaced = replaced.replace(match_col, val)
         return replaced
 
 
@@ -142,8 +145,8 @@ def substituteFunctions(match_obj, row):
 
 
 re_column = re.compile(r"(\[[\w .,|]+\])")
-re_uid = re.compile(r"<[^[]*(\[[\w .,|]+\])[^>]*>")
-
+# re_uid = re.compile(r"<[^[]*(\[[\w .,|]+\])[^>]*>")
+re_uid = re.compile(r"<_:[^>]*?(\[[^\]]+\])(?:[^>]*?(\[[^\]]+\]))?[^>]*?>")
 re_functions = re.compile(r"=(\w+)\(([^,)]+),?([^,)]+)?\)")
 
 

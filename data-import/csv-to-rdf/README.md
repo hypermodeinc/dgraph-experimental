@@ -32,19 +32,30 @@ If a predicate can be repeated for the same entity id (list) then mark it with a
 <_:Donor[Donor.ID]> <donor_donation> <_:Donation_[Donation.ID]> *
 ```
 
+
 ### post processing
 
 > [column name,processing function]
 
 ```txt
-<_:City_[School.City,nospace]> <dgraph.type> "City" .
+<_:City_[School.City]> <dgraph.type> "City" .
 ```
 
 Available processing :
 
-- nospace : replace spaces by \_
+- nospace : replace no word characters (\W in regexp) by \_
 - toUpper
 - toLower
+### blank nodes
+data substitution used in black nodes is always done with `nospace` operator to obtain valid identifiers.
+
+Data substitution in blank nodes is limited to 2 values.
+
+Example using 2 substitutions to uniquely identify a sub-category node:
+```txt
+<_:CategoryTerm_[Project.Category]_[Project.Subcategory]>  <CategoryTerm.label@en>  "[Project.Subcategory]" .
+```
+
 
 ### functions
 
