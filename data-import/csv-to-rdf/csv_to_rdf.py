@@ -27,7 +27,7 @@ if len(sys.argv) == 3:
 # that directory
 # get CSV file and associated template file
 # load to dgraph and update the xidmap
-
+CHUNK_SIZE = 100000
 for filename in os.listdir(csvdir):
     f = os.path.join(csvdir, filename)
     if os.path.isfile(f) and filename.endswith(".csv"):
@@ -37,11 +37,10 @@ for filename in os.listdir(csvdir):
             template_file = open(templatefilename, "r")
             template = template_file.read()
             template_file.close()
-            df = pd.read_csv(f, keep_default_na=True)
-            #
-            # transform the dataframe and load to dgraph
-            #
             # xidmap = df_to_dgraph(df,template,gclient,xidpredicate,xidmap)
-            df_to_rdffile(df, template, rdf_file_handle)
+            for chunk in pd.read_csv(f, keep_default_na=True, chunksize=CHUNK_SIZE):
+                # transform the dataframe and write to file
+                print('.', end='', flush=True) # progress indicator
+                df_to_rdffile(chunk, template, rdf_file_handle)
 if rdf_file_handle is not sys.stdout:
     rdf_file_handle.close()
