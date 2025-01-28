@@ -30,7 +30,7 @@ def add_to_rdfBuffer(rdf, rdfBuffer, func, isList=False):
 
 def flush_rdfBuffer(rdfBuffer, func):
     if len(rdfBuffer) > 0:
-        func("\n".join(rdfBuffer))
+        func("\n".join(rdfBuffer)+ "\n")
         rdfBuffer.clear()
 
 
@@ -60,23 +60,29 @@ def rdf_map_to_file(rdf_map, xidmap, filehandle=sys.stdout):
 
 
 def addRdfToMap(rdf_map, rdf):
-    # applying the template to many tabular data lines may lead to the creatio of the same predicate many time
-    # e.g: if many line refer to a country object with a country code.
-    # we maintain the map of <node id> <predicate> for non list predicates so we can remove duplicates
-    # sending several times the the same RDF would not affect the data but this is done to improve performance
-    # m = re.match(r"(<\S+>)\s+(<\S+>)\s+(.*)\s+([.*])$",rdf)
-    if '"nan"' not in rdf:
-        m = re_tripple.match(rdf)
-        if m:
-            parts = m.groups()
-            key = parts[0] + " " + parts[1]
-            if parts[-1] == "*":
-                if key in rdf_map:
-                    rdf_map[key].append(parts[2])
-                else:
-                    rdf_map[key] = [parts[2]]
-            else:
-                rdf_map[key] = parts[2]
+    # Skip processing if the RDF contains `"nan"`
+    if '"nan"' in rdf:
+        return
+
+    # Split the RDF string manually instead of using regex
+    parts = rdf.split(maxsplit=3)
+
+    # Ensure we have exactly four parts after splitting
+    if len(parts) != 4:
+        return
+
+    node, predicate, value, is_list = parts
+    key = f"{node} {predicate}"
+
+    if is_list == "*":
+        # Append to the list if the key already exists; otherwise, create a new list
+        if key in rdf_map:
+            rdf_map[key].append(value)
+        else:
+            rdf_map[key] = [value]
+    else:
+        # For non-list predicates, directly assign the value
+        rdf_map[key] = value
 
 
 def substitute(match_obj, row, nospace=False):
@@ -168,15 +174,24 @@ def substituteInTemplate(template, row):
 
 
 def transformDataFrame(df, template):
+    # Split the template lines once and filter out comments
+    valid_templates = [line for line in template.splitlines() if not line.startswith("#")]
+
     rdf_map = {}
-    for index, row in df.iterrows():
-        row["LINENUMBER"] = index
-        # for each tabular row we evaluate all line of the RDF template
-        for rdftemplate in iter(template.splitlines()):
-            if not rdftemplate.startswith("#"):
-                rdf = substituteInTemplate(rdftemplate, row)
-                if rdf is not None:
-                    addRdfToMap(rdf_map, rdf)
+
+    # Iterate over rows more efficiently using apply
+    def process_row(row):
+        # Add the LINE_NUMBER to the row
+        row["LINENUMBER"] = row.name  # .name is the index of the row in apply
+        # Process each valid template line
+        for rdftemplate in valid_templates:
+            rdf = substituteInTemplate(rdftemplate, row)
+            if rdf is not None:
+                addRdfToMap(rdf_map, rdf)
+
+    # Apply processing row-wise
+    df.apply(process_row, axis=1)
+
     return rdf_map
 
 
