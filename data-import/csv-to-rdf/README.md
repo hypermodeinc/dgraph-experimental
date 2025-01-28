@@ -71,6 +71,12 @@ You can use functions to generate data
 Available functions :
 
 - geoloc(lat,long) : generate a RDF value with geoloc json string
+- datetime(column, format): convert the string value from the format to the expected format "%Y-%m-%dT%H:%M:%S"
+
+```txt
+# Example of datetime conversion
+<_:P_[twitch_id]_[twitch_game_id]> <PlayGame.last_streamed> "=datetime([last_streamed],%Y-%m-%d %H:%M:%S.%f %z)" .
+```
 
 ## Usage
 
