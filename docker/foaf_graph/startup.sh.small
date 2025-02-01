@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# Start Jupyter lab with README.md in markdown preview mode
+#exec jupyter lab --ContentsManager.allow_hidden=true --IdentityProvider.token='' --ServerApp.password='' --LabApp.default_url="/doc/tree/README.md" "$@"
+exec jupyter lab --ContentsManager.allow_hidden=true --IdentityProvider.token='' --ServerApp.password='' "$@"
