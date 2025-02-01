@@ -93,6 +93,9 @@ else
 	@gql file --query-file query.gql --variables-file variables.json --endpoint http://localhost:8080/graphql
 endif
 
+build-image-local: ## Build the self-contained Dgraph and Jupyter Lab image
+	docker build -t dgraph-foaf-graph .
+
 build-image: ## Build the self-contained Dgraph and Jupyter Lab image
 	# need to be logged in to dockerhub for this to work, `docker login -u matthewmcneely`
 	docker buildx build --builder=suspicious_liskov --platform linux/amd64 --platform linux/arm64 -t matthewmcneely/dgraph-foaf-graph --output=type=registry .
