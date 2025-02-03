@@ -1,6 +1,9 @@
 FROM dgraph/standalone:v24.0.5 AS dgraph
 FROM jupyter/minimal-notebook:latest
 
+RUN pip install python-graphql-client
+RUN pip install pydgraph
+
 USER root
 
 # Copy Dgraph binary and related files from Dgraph image
@@ -31,6 +34,8 @@ COPY plugin.json /home/jovyan/.jupyter/lab/user-settings/@jupyterlab/docmanager-
 
 COPY README.md /home/jovyan/work/README.md
 COPY schema.graphql /home/jovyan/work/schema.graphql
+COPY graphql_queries.ipynb /home/jovyan/work/graphql_queries.ipynb
+COPY graphql_custom.ipynb /home/jovyan/work/graphql_custom.ipynb
 
 USER root
 RUN chown -R ${NB_USER}:${NB_GID} /home/jovyan
