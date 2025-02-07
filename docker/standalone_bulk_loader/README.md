@@ -15,7 +15,7 @@ make
 
 Start an instance
 ```sh
-docker run --name learning-donors -d -p "8080:8080" -p "9080:9080" -v .:/dgraph dgraph/learning:latest
+docker run --name learning-donors -d -p "5080:5080" -p "8080:8080" -p "9080:9080" -v .:/dgraph dgraph/learning:latest
 ```
 
 If a `p` directory exists, the instance will start the zero and alpha.
