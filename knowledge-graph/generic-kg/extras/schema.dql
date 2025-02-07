@@ -1,0 +1,2 @@
+xid: string @upsert @index(hash) .
+is_a: uid .

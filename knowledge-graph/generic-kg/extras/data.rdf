@@ -1,0 +1,12 @@
+<0xd1f9f> <rdfs:label> "rag/example"^^<xs:string> <0x0> .
+<0xd1fa0> <rdfs:label> "Person"^^<xs:string> <0x0> .
+<0xd1fa1> <rdfs:label> "Celestial Body"^^<xs:string> <0x0> .
+<0xd1f9f> <dgraph.type> "KGSchema"^^<xs:string> <0x0> .
+<0xd1fa0> <dgraph.type> "KGClass"^^<xs:string> <0x0> .
+<0xd1fa1> <dgraph.type> "KGClass"^^<xs:string> <0x0> .
+<0xd1fa0> <rdfs:comment> "a human being"^^<xs:string> <0x0> .
+<0xd1fa1> <rdfs:comment> "A natural physical entity, that exists within the observable universe."^^<xs:string> <0x0> .
+<0xd1f9f> <KGSchema.classes> <0xd1fa0> <0x0> .
+<0xd1f9f> <KGSchema.classes> <0xd1fa1> <0x0> .
+<0xd1fa0> <rdfs:isDefinedBy> <0xd1f9f> <0x0> .
+<0xd1fa1> <rdfs:isDefinedBy> <0xd1f9f> <0x0> .
