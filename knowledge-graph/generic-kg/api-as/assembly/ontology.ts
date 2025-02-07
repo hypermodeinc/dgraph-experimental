@@ -164,7 +164,7 @@ export function addRelatedEntity(
   var nquads = `
       <_:e> <entity.type> "${entity.is_a}" .
       <_:e> <subject> uid(source) .
-      <_:e> <rdfs:comment> "${entity.description!}" .
+      <_:e> <rdfs:comment> "${entity.description}" .
       `;
   const mutation = new dgraph.Mutation(
     "",
@@ -218,7 +218,7 @@ export function addRelationalEntity(
         uid(xid) <subject> uid(source) .
         uid(xid) <object> uid(target) .
         uid(xid) <rdfs:label> "${entity.label}" .
-        uid(xid) <rdfs:comment> "${entity.description!}" .
+        uid(xid) <rdfs:comment> "${entity.description}" .
         `;
   const mutation = new dgraph.Mutation(
     "",

@@ -27,6 +27,7 @@ export function getKGSchema(): KGSchema {
 }
 const MODEL_DEBUG = false;
 
+
 export function simulateEntities(text: string): Entity[] {
   const entities = JSON.parse<Entity[]>(`
     [
@@ -82,6 +83,7 @@ export function readEntities(entities: Entity[]): string {
   }
   return status;
 }
+
 export function extractEntities(
   text: string,
   ontology: KGSchema | null = null,
