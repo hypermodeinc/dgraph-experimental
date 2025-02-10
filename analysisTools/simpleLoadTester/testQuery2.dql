@@ -1,0 +1,561 @@
+{
+      var (func: uid(0x2549e69)) {
+        party_2 as ~project @filter(NOT has(industry) AND type(Party) AND (NOT eq(is_deleted, true)) )
+      }
+      var(func: uid(0x2549e69)) {Item as ~project @filter(type(Item) and (not eq(is_deleted,true)))}
+      var (func: uid(0x2549e69)) {
+        Industry as ~project @filter(type(Industry) AND(NOT eq(is_deleted, true)) AND(NOT eq(screen_out, true)))
+      }
+      var (func: uid(Industry)) {
+        name
+        screen_out
+        Party as ~industry@filter(NOT eq(is_deleted, true)) {
+          name
+        }
+      }
+      var(func: uid(0x2549e69)) {Taxonomy as ~project @filter(type(Taxonomy) and (not eq(is_deleted,true)))}
+      var(func:uid(Item))@filter(has(~item)) @cascade {
+        item:name ~item@filter(has(~sells)){a11 as count(~sells)}
+        b11 as sum(val(a11))
+      }
+      var(func:uid(b11))@filter(eq(val(b11), 1)) {
+        item_name as name ~item@normalize{~sells{supplier:name   is_sole as math(1)}}
+      }
+      var(func: type(Project))@filter(uid(0x2549e69)) {
+        Org as ~project@filter(type(Org))
+      }
+      org(func:uid(Org)) {
+        uid
+        name
+        level {
+          name
+        }
+        parent {
+          uid
+          name
+          level {
+              name
+          }
+      }
+      }
+      var(func:uid(Party,party_2))@filter(eq(id,Client)){
+      name t1 as upstream @filter( uid(Party, party_2)) { tier1 as math(1)
+    
+      name t2 as upstream @filter(not uid(t1) and uid(Party, party_2)) { tier2 as math(2)
+    
+      name t3 as upstream @filter(not uid(t1,t2) and uid(Party, party_2)) { tier3 as math(3)
+    
+      name t4 as upstream @filter(not uid(t1,t2,t3) and uid(Party, party_2)) { tier4 as math(4)
+    }}}}}
+      var(func:uid(Taxonomy))@filter(not has(parent)){
+        i_uid as uid
+      }
+      client_info(func:uid(Party, party_2))@filter(eq(id,Client)){uid name upstream@filter(uid(Party, party_2)){uid name taxonomy_l0{uid name}}}
+      
+        
+        tier_1(func:uid(i_uid)){
+          ~parent{name}
+          uid
+          name
+          count:count(~taxonomy_l0 @filter(uid(t1)))
+          ~taxonomy_l0 @filter(uid(t1)){
+            uid
+            name
+            id
+            is_single :val(is_sole)
+            item_name: supplies{item@filter(uid(item_name) AND NOT eq(is_deleted,true) ){name}}
+            is_concentration_point
+            is_single_source
+            is_sole_source
+            is_strategic_alliance
+            is_high_spend
+            is_high_cost_change
+            is_regulation_critical
+            tier: math(tier1+tier2+tier3+tier4)
+            overall_risk_score: overall_risk
+            industry {
+              uid
+              name
+              parent {
+                uid
+                name
+                parent {
+                  uid
+                  name
+                }
+              }
+            }
+            location {
+              country1 {
+                uid
+                name
+              }
+              state {
+                uid
+                name
+              }
+            }
+            supplies{uid item @filter(NOT eq(is_deleted,true)) {name uid taxonomy{uid name parent {uid name parent {uid name parent {uid name parent {uid name} }}}}} id org{uid name level { name } parent{ uid name level { name } parent{ uid name level { name } } } }}
+            ~upstream {
+              uid
+              supplies{uid item @filter(NOT eq(is_deleted,true)){taxonomy{uid parent {uid parent {uid parent {uid parent {uid} }}}}} }
+              tier: math(tier1+tier2+tier3+tier4)
+            }
+             upstream @filter(uid(Party, party_2)){
+              uid
+              name
+              id
+              is_concentration_point
+              is_single_source
+              is_sole_source
+              is_strategic_alliance
+              is_high_spend
+              is_high_cost_change
+              is_regulation_critical
+              supplies{uid item @filter(NOT eq(is_deleted,true)){taxonomy{uid parent {uid parent {uid parent {uid parent {uid} }}}}} }
+              overall_risk_score: overall_risk tier: math(tier1+tier2+tier3+tier4) taxonomy_l0{uid name}}}
+        }
+      
+        tier_2(func:uid(i_uid)){
+          ~parent{name}
+          uid
+          name
+          count:count(~taxonomy_l0 @filter(uid(t2)))
+          ~taxonomy_l0 @filter(uid(t2)){
+            uid
+            name
+            id
+            is_single :val(is_sole)
+            item_name: supplies{item@filter(uid(item_name) AND NOT eq(is_deleted,true) ){name}}
+            is_concentration_point
+            is_single_source
+            is_sole_source
+            is_strategic_alliance
+            is_high_spend
+            is_high_cost_change
+            is_regulation_critical
+            tier: math(tier1+tier2+tier3+tier4)
+            overall_risk_score: overall_risk
+            industry {
+              uid
+              name
+              parent {
+                uid
+                name
+                parent {
+                  uid
+                  name
+                }
+              }
+            }
+            location {
+              country1 {
+                uid
+                name
+              }
+              state {
+                uid
+                name
+              }
+            }
+            supplies{uid item @filter(NOT eq(is_deleted,true)) {name uid taxonomy{uid name parent {uid name parent {uid name parent {uid name parent {uid name} }}}}} id org{uid name level { name } parent{ uid name level { name } parent{ uid name level { name } } } }}
+            ~upstream {
+              uid
+              supplies{uid item @filter(NOT eq(is_deleted,true)){taxonomy{uid parent {uid parent {uid parent {uid parent {uid} }}}}} }
+              tier: math(tier1+tier2+tier3+tier4)
+            }
+             upstream @filter(uid(Party, party_2)){
+              uid
+              name
+              id
+              is_concentration_point
+              is_single_source
+              is_sole_source
+              is_strategic_alliance
+              is_high_spend
+              is_high_cost_change
+              is_regulation_critical
+              supplies{uid item @filter(NOT eq(is_deleted,true)){taxonomy{uid parent {uid parent {uid parent {uid parent {uid} }}}}} }
+              overall_risk_score: overall_risk tier: math(tier1+tier2+tier3+tier4) taxonomy_l0{uid name}}}
+        }
+      
+        tier_3(func:uid(i_uid)){
+          ~parent{name}
+          uid
+          name
+          count:count(~taxonomy_l0 @filter(uid(t3)))
+          ~taxonomy_l0 @filter(uid(t3)){
+            uid
+            name
+            id
+            is_single :val(is_sole)
+            item_name: supplies{item@filter(uid(item_name) AND NOT eq(is_deleted,true) ){name}}
+            is_concentration_point
+            is_single_source
+            is_sole_source
+            is_strategic_alliance
+            is_high_spend
+            is_high_cost_change
+            is_regulation_critical
+            tier: math(tier1+tier2+tier3+tier4)
+            overall_risk_score: overall_risk
+            industry {
+              uid
+              name
+              parent {
+                uid
+                name
+                parent {
+                  uid
+                  name
+                }
+              }
+            }
+            location {
+              country1 {
+                uid
+                name
+              }
+              state {
+                uid
+                name
+              }
+            }
+            supplies{uid item @filter(NOT eq(is_deleted,true)) {name uid taxonomy{uid name parent {uid name parent {uid name parent {uid name parent {uid name} }}}}} id org{uid name level { name } parent{ uid name level { name } parent{ uid name level { name } } } }}
+            ~upstream {
+              uid
+              supplies{uid item @filter(NOT eq(is_deleted,true)){taxonomy{uid parent {uid parent {uid parent {uid parent {uid} }}}}} }
+              tier: math(tier1+tier2+tier3+tier4)
+            }
+             upstream @filter(uid(Party, party_2)){
+              uid
+              name
+              id
+              is_concentration_point
+              is_single_source
+              is_sole_source
+              is_strategic_alliance
+              is_high_spend
+              is_high_cost_change
+              is_regulation_critical
+              supplies{uid item @filter(NOT eq(is_deleted,true)){taxonomy{uid parent {uid parent {uid parent {uid parent {uid} }}}}} }
+              overall_risk_score: overall_risk tier: math(tier1+tier2+tier3+tier4) taxonomy_l0{uid name}}}
+        }
+      
+        tier_4(func:uid(i_uid)){
+          ~parent{name}
+          uid
+          name
+          count:count(~taxonomy_l0 @filter(uid(t4)))
+          ~taxonomy_l0 @filter(uid(t4)){
+            uid
+            name
+            id
+            is_single :val(is_sole)
+            item_name: supplies{item@filter(uid(item_name) AND NOT eq(is_deleted,true) ){name}}
+            is_concentration_point
+            is_single_source
+            is_sole_source
+            is_strategic_alliance
+            is_high_spend
+            is_high_cost_change
+            is_regulation_critical
+            tier: math(tier1+tier2+tier3+tier4)
+            overall_risk_score: overall_risk
+            industry {
+              uid
+              name
+              parent {
+                uid
+                name
+                parent {
+                  uid
+                  name
+                }
+              }
+            }
+            location {
+              country1 {
+                uid
+                name
+              }
+              state {
+                uid
+                name
+              }
+            }
+            supplies{uid item @filter(NOT eq(is_deleted,true)) {name uid taxonomy{uid name parent {uid name parent {uid name parent {uid name parent {uid name} }}}}} id org{uid name level { name } parent{ uid name level { name } parent{ uid name level { name } } } }}
+            ~upstream {
+              uid
+              supplies{uid item @filter(NOT eq(is_deleted,true)){taxonomy{uid parent {uid parent {uid parent {uid parent {uid} }}}}} }
+              tier: math(tier1+tier2+tier3+tier4)
+            }
+             upstream @filter(uid(Party, party_2)){
+              uid
+              name
+              id
+              is_concentration_point
+              is_single_source
+              is_sole_source
+              is_strategic_alliance
+              is_high_spend
+              is_high_cost_change
+              is_regulation_critical
+              supplies{uid item @filter(NOT eq(is_deleted,true)){taxonomy{uid parent {uid parent {uid parent {uid parent {uid} }}}}} }
+              overall_risk_score: overall_risk tier: math(tier1+tier2+tier3+tier4) taxonomy_l0{uid name}}}
+        }
+      
+        
+        tiernone_1(func:uid(t1))@filter(not has(taxonomy_l0)){
+          count(uid)
+          uid
+          name
+          id
+          tier: math(tier1+tier2+tier3+tier4)
+          is_concentration_point
+          is_single_source
+          is_single :val(is_sole)
+          item_name: supplies{item@filter(uid(item_name) AND NOT eq(is_deleted,true) ){name}}
+          is_sole_source
+          is_strategic_alliance
+          is_high_spend
+          is_high_cost_change
+          is_regulation_critical
+          overall_risk_score: overall_risk
+          supplies{uid item @filter(NOT eq(is_deleted,true)) {name uid taxonomy{uid name parent {uid name parent {uid name parent {uid name parent {uid name} }}}}} id org{uid name level { name } parent{ uid name level { name } parent{ uid name level { name } } } }}
+          industry {
+            uid
+            name
+            parent {
+              uid
+              name
+              parent {
+                uid
+                name
+              }
+            }
+          }
+          location {
+            country1 {
+              uid
+              name
+            }
+            state {
+              uid
+              name
+            }
+          }
+          ~upstream {
+            uid
+            supplies{uid item @filter(NOT eq(is_deleted,true)){taxonomy{uid parent {uid parent {uid parent {uid parent {uid} }}}}} }
+            tier: math(tier1+tier2+tier3+tier4)
+          }
+           upstream @filter(uid(Party, party_2)){
+            uid
+            name
+            id
+            tier: math(tier1+tier2+tier3+tier4)
+            is_concentration_point
+            is_single_source
+            is_sole_source
+            is_strategic_alliance
+            is_high_spend
+            is_high_cost_change
+            is_regulation_critical
+            overall_risk_score: overall_risk
+            taxonomy_l0{uid name}
+            supplies{uid item @filter(NOT eq(is_deleted,true)){taxonomy{uid parent {uid parent {uid parent {uid parent {uid} }}}}} }
+          }
+  
+        }
+      
+        tiernone_2(func:uid(t2))@filter(not has(taxonomy_l0)){
+          count(uid)
+          uid
+          name
+          id
+          tier: math(tier1+tier2+tier3+tier4)
+          is_concentration_point
+          is_single_source
+          is_single :val(is_sole)
+          item_name: supplies{item@filter(uid(item_name) AND NOT eq(is_deleted,true) ){name}}
+          is_sole_source
+          is_strategic_alliance
+          is_high_spend
+          is_high_cost_change
+          is_regulation_critical
+          overall_risk_score: overall_risk
+          supplies{uid item @filter(NOT eq(is_deleted,true)) {name uid taxonomy{uid name parent {uid name parent {uid name parent {uid name parent {uid name} }}}}} id org{uid name level { name } parent{ uid name level { name } parent{ uid name level { name } } } }}
+          industry {
+            uid
+            name
+            parent {
+              uid
+              name
+              parent {
+                uid
+                name
+              }
+            }
+          }
+          location {
+            country1 {
+              uid
+              name
+            }
+            state {
+              uid
+              name
+            }
+          }
+          ~upstream {
+            uid
+            supplies{uid item @filter(NOT eq(is_deleted,true)){taxonomy{uid parent {uid parent {uid parent {uid parent {uid} }}}}} }
+            tier: math(tier1+tier2+tier3+tier4)
+          }
+           upstream @filter(uid(Party, party_2)){
+            uid
+            name
+            id
+            tier: math(tier1+tier2+tier3+tier4)
+            is_concentration_point
+            is_single_source
+            is_sole_source
+            is_strategic_alliance
+            is_high_spend
+            is_high_cost_change
+            is_regulation_critical
+            overall_risk_score: overall_risk
+            taxonomy_l0{uid name}
+            supplies{uid item @filter(NOT eq(is_deleted,true)){taxonomy{uid parent {uid parent {uid parent {uid parent {uid} }}}}} }
+          }
+  
+        }
+      
+        tiernone_3(func:uid(t3))@filter(not has(taxonomy_l0)){
+          count(uid)
+          uid
+          name
+          id
+          tier: math(tier1+tier2+tier3+tier4)
+          is_concentration_point
+          is_single_source
+          is_single :val(is_sole)
+          item_name: supplies{item@filter(uid(item_name) AND NOT eq(is_deleted,true) ){name}}
+          is_sole_source
+          is_strategic_alliance
+          is_high_spend
+          is_high_cost_change
+          is_regulation_critical
+          overall_risk_score: overall_risk
+          supplies{uid item @filter(NOT eq(is_deleted,true)) {name uid taxonomy{uid name parent {uid name parent {uid name parent {uid name parent {uid name} }}}}} id org{uid name level { name } parent{ uid name level { name } parent{ uid name level { name } } } }}
+          industry {
+            uid
+            name
+            parent {
+              uid
+              name
+              parent {
+                uid
+                name
+              }
+            }
+          }
+          location {
+            country1 {
+              uid
+              name
+            }
+            state {
+              uid
+              name
+            }
+          }
+          ~upstream {
+            uid
+            supplies{uid item @filter(NOT eq(is_deleted,true)){taxonomy{uid parent {uid parent {uid parent {uid parent {uid} }}}}} }
+            tier: math(tier1+tier2+tier3+tier4)
+          }
+           upstream @filter(uid(Party, party_2)){
+            uid
+            name
+            id
+            tier: math(tier1+tier2+tier3+tier4)
+            is_concentration_point
+            is_single_source
+            is_sole_source
+            is_strategic_alliance
+            is_high_spend
+            is_high_cost_change
+            is_regulation_critical
+            overall_risk_score: overall_risk
+            taxonomy_l0{uid name}
+            supplies{uid item @filter(NOT eq(is_deleted,true)){taxonomy{uid parent {uid parent {uid parent {uid parent {uid} }}}}} }
+          }
+  
+        }
+      
+        tiernone_4(func:uid(t4))@filter(not has(taxonomy_l0)){
+          count(uid)
+          uid
+          name
+          id
+          tier: math(tier1+tier2+tier3+tier4)
+          is_concentration_point
+          is_single_source
+          is_single :val(is_sole)
+          item_name: supplies{item@filter(uid(item_name) AND NOT eq(is_deleted,true) ){name}}
+          is_sole_source
+          is_strategic_alliance
+          is_high_spend
+          is_high_cost_change
+          is_regulation_critical
+          overall_risk_score: overall_risk
+          supplies{uid item @filter(NOT eq(is_deleted,true)) {name uid taxonomy{uid name parent {uid name parent {uid name parent {uid name parent {uid name} }}}}} id org{uid name level { name } parent{ uid name level { name } parent{ uid name level { name } } } }}
+          industry {
+            uid
+            name
+            parent {
+              uid
+              name
+              parent {
+                uid
+                name
+              }
+            }
+          }
+          location {
+            country1 {
+              uid
+              name
+            }
+            state {
+              uid
+              name
+            }
+          }
+          ~upstream {
+            uid
+            supplies{uid item @filter(NOT eq(is_deleted,true)){taxonomy{uid parent {uid parent {uid parent {uid parent {uid} }}}}} }
+            tier: math(tier1+tier2+tier3+tier4)
+          }
+           upstream @filter(uid(Party, party_2)){
+            uid
+            name
+            id
+            tier: math(tier1+tier2+tier3+tier4)
+            is_concentration_point
+            is_single_source
+            is_sole_source
+            is_strategic_alliance
+            is_high_spend
+            is_high_cost_change
+            is_regulation_critical
+            overall_risk_score: overall_risk
+            taxonomy_l0{uid name}
+            supplies{uid item @filter(NOT eq(is_deleted,true)){taxonomy{uid parent {uid parent {uid parent {uid parent {uid} }}}}} }
+          }
+  
+        }
+      
+        }

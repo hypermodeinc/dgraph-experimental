@@ -1,0 +1,13 @@
+query getDC {
+  queryComponent(filter: {isTopLevel: true}) {
+    name
+    subComponents {
+      componentType
+      name
+      subComponents {
+        componentType
+        name
+      }
+    }
+  }
+}
