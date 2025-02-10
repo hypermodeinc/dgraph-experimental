@@ -56,4 +56,4 @@ python /data/export/create_friendships.py
 cd /home/jovyan/work
 
 # Start Jupyter notebook
-exec jupyter lab --ContentsManager.allow_hidden=true --IdentityProvider.token='' --ServerApp.password='' "$@"
+exec jupyter lab --ContentsManager.allow_hidden=true --IdentityProvider.token='' --ServerApp.password='' /home/jovyan/work/readme.ipynb

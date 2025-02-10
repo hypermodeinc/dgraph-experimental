@@ -1,0 +1,4 @@
+mimesis>=18.0.0
+Requests>=2.32.3
+sentence_transformers>=3.4.1
+Shapely>=2.0.7

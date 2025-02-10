@@ -5,7 +5,7 @@ import random
 from datetime import datetime, timezone
 from sentence_transformers import SentenceTransformer
 from shapely.geometry import Point, Polygon
-import numpy as np
+import math
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
@@ -57,18 +57,19 @@ def generate_random_polygon(center, size_miles=4):
     # Convert miles to degrees (rough approximation)
     size_deg = size_miles / 69  # 1 degree ≈ 69 miles
     
-    # Generate a random number of vertices (3-8)
+    # Generate a random number of vertices (6-8)
     num_vertices = random.randint(6, 8)
     
     # Generate vertices in a roughly circular pattern
-    angles = np.linspace(0, 2*np.pi, num_vertices)
     polygon_points = []
     
-    for angle in angles:
+    for i in range(num_vertices):
+        # Calculate angle for this vertex (evenly spaced)
+        angle = (2 * 3.14159 * i) / num_vertices
         # Add some randomness to the radius
         radius = size_deg * (0.8 + 0.4 * random.random())
-        x = center[0] + radius * np.cos(angle)
-        y = center[1] + radius * np.sin(angle)
+        x = center[0] + radius * math.cos(angle)
+        y = center[1] + radius * math.sin(angle)
         polygon_points.append([x, y])
     
     # Close the polygon

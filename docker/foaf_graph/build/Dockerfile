@@ -16,7 +16,7 @@ RUN mkdir -p /data/alpha2
 RUN mkdir -p /data/alpha3
 RUN mkdir -p /data/zero1
 RUN mkdir -p /data/export
-#COPY export/dgraph.r578.u0201.1728 /data/export
+
 COPY schema.graphql /data/export
 COPY dgraph_data.json /data/export
 COPY create_friendships.py /data/export
@@ -32,10 +32,9 @@ USER ${NB_USER}
 
 COPY plugin.json /home/jovyan/.jupyter/lab/user-settings/@jupyterlab/docmanager-extension/plugin.json
 
-COPY README.md /home/jovyan/work/README.md
+COPY readme.ipynb /home/jovyan/work/readme.ipynb
 COPY schema.graphql /home/jovyan/work/schema.graphql
 COPY graphql_queries.ipynb /home/jovyan/work/graphql_queries.ipynb
-COPY graphql_custom.ipynb /home/jovyan/work/graphql_custom.ipynb
 
 USER root
 RUN chown -R ${NB_USER}:${NB_GID} /home/jovyan

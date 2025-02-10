@@ -88,7 +88,7 @@ family_roles = [
 bios = []
 seen = set()
 
-while len(bios) < 10000:
+while len(bios) < 1000:
     # Randomly select elements
     prof = random.choice(professions)
     
@@ -102,8 +102,6 @@ while len(bios) < 10000:
     if bio not in seen:
         bios.append({"bio": bio})
         seen.add(bio)
-        if len(bios) % 100 == 0:
-            print(f"Generated {len(bios)} bios")
 
 # Save to JSON file
 with open('bios.json', 'w') as f:
