@@ -1,0 +1,96 @@
+mutation($dishName: String!, $price: Float!, $isVeg: Boolean!, $restId: ID!) {
+  addDish(
+    input: [
+      {
+        name: $dishName
+        price: $price
+        isVeg: $isVeg
+        servedBy: {
+          id: $restId
+        }
+      }
+    ]
+  ) {
+    dish {
+      id
+    }
+  }
+}
+
+mutation($cuisineName: String!) {
+  addCuisine(
+    input: [
+      {
+        name: $cuisineName
+      }
+    ]
+  ) {
+    cuisine {
+      id
+    }
+  }
+}
+
+mutation(
+  $lat: Float!
+  $long: Float!
+  $address: String!
+  $locality: String!
+  $cityId: String!
+  $countryId: String!
+  $countryname: String!
+  $restName: String!
+  $rating: Float!
+  $costFor2: Float!
+  $currency: String!
+  $cuisineName: String!  
+  $dishName: String!
+  $dishPic: String!
+  $dishPrice: Float!
+  $description: String!
+  $isVeg: Boolean!
+  $zipcode: Int!  
+) {
+  addRestaurant(
+    input: [
+      {
+        dishes: [{
+          name: $dishName
+          pic: $dishPic
+          price: $dishPrice
+          description: $description
+          isVeg: $isVeg          
+        }]
+        addr: {
+          lat: $lat
+          long: $long
+          address: $address
+          locality: $locality
+          city: {
+          	id: $cityId
+            name: $cityId
+            country: {
+              id: $countryId
+              name: $countryname
+            }
+          }
+          zipcode: $zipcode          
+        }
+        name: $restName
+        xid: $restName
+        createdAt: 1234567890
+        rating: $rating
+        costFor2: $costFor2
+        currency: $currency
+        cuisines: [{
+          name: $cuisineName
+        }]
+      }
+    ]
+  ) {
+    restaurant {
+      id
+    }
+  }
+}
+

@@ -1,0 +1,9 @@
+{
+    "numThread": 20,
+    "delaySec": 0.1,
+    "isCloud": true,
+    "graphQLEndpoint": "",
+    "apiKey": "obsolete/redacted",
+    "grpcUrl": "test-sts.grpc.us-east-1.aws.cloud.dgraph.io:443",
+    "graphQLUrl": "https://test-sts.us-east-1.aws.cloud.dgraph.io/graphql"
+}

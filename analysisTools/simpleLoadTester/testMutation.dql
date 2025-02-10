@@ -1,0 +1,7 @@
+    {
+        v as var(func: eq(Component.id, 0x2b))
+    }
+----------
+      uid(v) <Component.issues> _:newIssue .
+      _:newIssue <Issue.description> "TestIssue" .
+      _:newIssue <dgraph.type> "Issue" .
