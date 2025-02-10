@@ -28,11 +28,11 @@ For example to start an image with the donors data set from dgrap-io/benchmarks 
 ```sh
 mkdir import
 
-curl -L -o donors.rdf.gz https://github.com/dgraph-io/benchmarks/blob/master/donors/donorsCA/donors-CA.rdf.gz
+curl -L -o donors.rdf.gz https://github.com/hypermodeinc/dgraph-benchmarks/blob/main/donors/donorsCA/donors-CA.rdf.gz
 
-curl -LJO https://github.com/dgraph-io/benchmarks/blob/master/donors/donorsCA/donors.graphql
+curl -LJO https://github.com/hypermodeinc/dgraph-benchmarks/blob/main/donors/donorsCA/donors.graphql
 
-curl -LJO https://github.com/dgraph-io/benchmarks/blob/master/donors/donorsCA/donors.schema
+curl -LJO https://github.com/hypermodeinc/dgraph-benchmarks/blob/main/donors/donorsCA/donors.schema
 
 
 docker run --name learning-donors -d -p "8080:8080" -p "9080:9080" -v .:/dgraph dgraph/learning:latest
