@@ -18,7 +18,7 @@ class DgraphClient:
 def get_all_persons(client: DgraphClient) -> List[Dict]:
     query = """
     {
-        persons(func: type(Person)) {
+        persons(func: type(Person), orderasc: Person.name) {
             uid
             Person.name
             Person.age
@@ -70,6 +70,9 @@ def assign_friends(persons: List[Dict]) -> List[Dict]:
     return friend_assignments
 
 def main():
+    # Set random seed for reproducibility
+    random.seed(42)
+    
     client = DgraphClient()
     
     # Get all persons from Dgraph
