@@ -1,0 +1,11 @@
+{
+    "autosave": true,
+    "autosaveInterval": 120,
+    "confirmClosingDocument": false,
+    "lastModifiedCheckMargin": 500,
+    "renameUntitledFileOnSave": true,
+    "defaultViewers": {
+        "defaultViewers": "{ markdown: \"Markdown Preview\" }"
+    }
+}
+    

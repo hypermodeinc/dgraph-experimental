@@ -1,0 +1,106 @@
+"""
+An Entity is the base type for all entities in the graph.
+"""
+interface Entity {
+  "The unique identifier for the entity"
+  id: ID!
+  "The age of the entity"
+  age: Int @search
+}
+
+"""
+A Person is an entity that represents a human being.
+"""
+type Person implements Entity {
+
+  "The name of the person"
+  name: String! @id @search(by: [term])
+
+  "The age of the person"
+  age: Int @search
+
+  "The rating of the person"
+  rating: Float @search
+
+  "If true, the person is active"
+  isActive: Boolean @search
+
+  "The date this Person was created or registered"
+  createdAt: DateTime! @search @default(add: {value: "$now"})
+
+  "The exact location of the person"
+  location: Point @search
+  "The usual locality of the person"
+  locality: Polygon @search
+
+  "The bio of the person"
+  bio: String @search(by: [term, fulltext])
+  "The embedding vector of the bio"
+  bio_v: [Float!] @embedding @search(by: ["hnsw(metric: cosine)"])
+
+  "The friends of the person"
+  friends: [Person] @hasInverse(field: "friends")
+
+  "The person's pets"
+  pets: [Pet]
+}
+
+"""
+Types of Pets
+"""
+enum PetType {
+    DOG
+    CAT
+    BIRD
+    FISH
+    OTHER
+}
+
+"""
+A Pet is an entity that represents a pet.
+"""
+type Pet implements Entity {
+    "The name of the pet"
+    name: String! @search(by: [term])
+    "The owner of the pet"
+    owner: Person! @hasInverse(field: "pets")
+    "The type of the pet"
+    type: PetType!
+}
+
+"""
+A custom query type that returns the shortest path (closest path)
+between two people identified by name.
+"""
+type Query {
+  shortestPath(
+    from: String!
+    to: String!
+  ): [Person] @custom(dql: """
+    query ShortestPath($from: string, $to: string) {
+      FROM as var(func: eq(Person.name, $from))
+      TO as var(func: eq(Person.name, $to))
+      PATH as shortest(
+        from: uid(FROM), 
+        to: uid(TO)
+      ) {
+        Person.friends
+      }
+
+      # Return full Person data for each node in the path.
+      shortestPath(func: uid(PATH)) {
+        id: Person.id
+        name: Person.name
+        age: Person.age
+        rating: Person.rating
+        isActive: Person.isActive
+        createdAt: Person.createdAt
+        location: Person.location
+        friends: Person.friends {
+          id: Person.id
+          name: Person.name
+        }
+      }
+    }
+  """)
+}
