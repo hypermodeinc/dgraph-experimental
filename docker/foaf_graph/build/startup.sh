@@ -2,10 +2,19 @@
 
 # Start Dgraph Zero
 dgraph zero --telemetry "reports=false; sentry=false;" --raft "idx=1;" \
-    --my=localhost:5080 --replicas=1 --logtostderr --wal=/data/zero1/w --v=2 &
+    --my=localhost:5080 --replicas=1 --logtostderr \
+    --wal=/data/zero1/w  --v=2 &
 
 # Wait for Zero to be ready
-sleep 10
+while true; do
+    response=$(curl -s http://localhost:6080/health)
+    if [ "$response" = "OK" ]; then
+        echo "✅ Dgraph Zero is healthy"
+        break
+    fi
+    echo "⏳ Waiting for Dgraph Zero to be healthy..."
+    sleep 1
+done
 
 # Start Dgraph Alpha 1
 dgraph alpha --my=localhost:7080 --zero=localhost:5080 -v=2 \
@@ -28,32 +37,62 @@ dgraph alpha -o 2 --my=localhost:7082 --zero=localhost:5080 -v=2 \
     --telemetry "reports=false; sentry=false;" \
     --raft "idx=3;" &
 
-sleep 10
-
-# Wait for Alpha to be healthy
+# Wait for Alpha1 to be ready
 while true; do
     response=$(curl -s http://localhost:8080/health)
-    if echo "$response" | grep -q "healthy"; then
-        echo "⚠️ Dgraph Alpha is healthy"
+    if echo "$response" | grep -q '"status":"healthy"'; then
+        echo "✅ Dgraph Alpha is healthy"
         break
     fi
-    echo "⚠️ Waiting for Dgraph Alpha to be healthy..."
-    sleep 2
+    echo "⏳ Waiting for Dgraph Alpha to be healthy..."
+    sleep 1
 done
 
+# Wait for GraphQL schema system to be ready
+while true; do
+    response=$(curl -s http://localhost:8080/probe/graphql)
+    if echo "$response" | grep -q '"status":"up"'; then
+        echo "✅ GraphQL schema system is ready"
+        break
+    fi
+    echo "⏳ Waiting for GraphQL schema system to be ready..."
+    echo "$response"
+    sleep 1
+done
+
+# Set GraphQL schema
 if ! curl -s --data-binary @/data/export/schema.graphql &>/dev/null \
     --header 'content-type: application/octet-stream' \
     http://localhost:8080/admin/schema; then
-    echo "Error: Failed to set GraphQL schema"
+    echo "❌ Failed to set GraphQL schema"
     exit 1
+else
+    echo "✅ GraphQL schema set"
 fi
 
-sleep 2
+# Wait for GraphQL Schema to be ready
+while true; do
+    response=$(curl -s http://localhost:8080/probe/graphql)
+    if echo "$response" | grep -q '"status":"up"' && \
+       echo "$response" | grep -q '"schemaUpdateCounter":[1-9]'; then
+        echo "✅ GraphQL schema is ready"
+        break
+    fi
+    echo "⏳ Waiting for GraphQL schema to be ready..."
+    echo "$response"
+    sleep 1
+done
 
-dgraph live -f /data/export/dgraph_data.json
+# Load data into Dgraph cluster
+dgraph live -f /data/export/dgraph_data.json --tmp /tmp
+echo "✅ Data loaded into Dgraph cluster"
+
 cd /data/export
+# Create friend relationships
 python /data/export/create_friendships.py
-cd /home/jovyan/work
 
-# Start Jupyter notebook
-exec jupyter lab --ContentsManager.allow_hidden=true --IdentityProvider.token='' --ServerApp.password='' /home/jovyan/work/readme.ipynb
+(sleep 2 && echo -e "\n🚀 Dgraph and Jupyter Lab are ready! Navigate to http://localhost:8888/lab/tree/readme.ipynb\n") &
+
+cd /home/jovyan/work
+# Start the Jupyter Lab instance
+exec jupyter lab --ContentsManager.allow_hidden=true --IdentityProvider.token='' --ServerApp.password=''
