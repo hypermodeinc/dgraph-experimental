@@ -35,6 +35,7 @@ COPY plugin.json /home/jovyan/.jupyter/lab/user-settings/@jupyterlab/docmanager-
 COPY readme.ipynb /home/jovyan/work/readme.ipynb
 COPY schema.graphql /home/jovyan/work/schema.graphql
 COPY graphql_queries.ipynb /home/jovyan/work/graphql_queries.ipynb
+COPY dql_queries.ipynb /home/jovyan/work/dql_queries.ipynb
 
 USER root
 RUN chown -R ${NB_USER}:${NB_GID} /home/jovyan
