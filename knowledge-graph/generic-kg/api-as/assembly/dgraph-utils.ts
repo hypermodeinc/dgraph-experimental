@@ -36,6 +36,7 @@ export namespace LAB_DGRAPH {
 
   @json
   export class NumUidsResult {
+    msg: string = "Success";
     numUids: i32 = 0;
   }
   export function getEntityById<T>(

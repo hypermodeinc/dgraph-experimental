@@ -16,11 +16,25 @@ export class KGSchema {
 
 @json
 export class Entity {
+  id: string = "";
   label: string = "";
   is_a: string = ""; // reference to a class label
   description: string | null = null;
 }
 
+
+export function queryEntities(): Entity[] {
+  const query = `
+  { list(func:has(is_a)) @normalize{
+        id:xid
+        label:<rdfs:label>
+        description:<rdfs:comment>
+        is_a { <rdfs:label> is_a:KGClass.id}
+
+      }
+  }`;
+  return LAB_DGRAPH.getEntityList<Entity>(connection, query);
+}
 
 @json
 export class RelatedEntity {
@@ -43,9 +57,11 @@ export class RelationalEntity {
 
 @json
 export class KGClass {
+  id: string = "";
   role: string = "";
   label: string = "";
   description: string = "";
+ // isDefinedBy: KGSchema | null = null;
 }
 
 
@@ -63,6 +79,7 @@ export function getKGSchemaByName(name: string): KGSchema {
         label
         description
         classes {
+            id
             role
             description
             label
@@ -76,17 +93,57 @@ export function getKGSchemaByName(name: string): KGSchema {
   );
   return response.data!.a!;
 }
+export function deleteKGClass(id: string): string {
+  const statement = `
+    mutation DeleteKGClass($id: String!) {
+    a:deleteKGClass(filter: { id: { eq: $id } }) {
+        msg
+        numUids
+    }
+}`
+const vars = new graphql.Variables();
+vars.set("id", id);
+  const response = graphql.execute<LAB_DGRAPH.a<LAB_DGRAPH.NumUidsResult>>(
+    dgraph_host,
+    statement,
+    vars,
+  );
+  return response.data!.a!.msg;
+}
 
-export function addClass(namespace: string, type: KGClass): string {
+
+export function getKGClasses(): KGClass[] {
+  const statement = `
+    query QueryKGClass {
+    list:queryKGClass {
+        id
+        role
+        label
+        description
+    }
+}
+`;
+
+  const response = graphql.execute<LAB_DGRAPH.ListOf<KGClass>>(
+    dgraph_host,
+    statement,
+  );
+  return response.data!.list!;
+}
+
+export function addKGClass(namespace: string, role:string, label:string, description:string): string {
   // const ontology = getOntologyByName(namespace);
+  const id = `${namespace}/${label}`;
   const statement = `
   mutation AddKGClass {
-    addKGClass(
+   a:addKGClass(
         input: [
             {
+                id: "${id}",
+                role: ${role},
                 isDefinedBy: { label: "${namespace}" },
-                label: "${type.label}",
-                description: "${type.description}"
+                label: "${label}",
+                description: "${description}"
         }], upsert:true
     ) {
         numUids
@@ -95,12 +152,12 @@ export function addClass(namespace: string, type: KGClass): string {
 `;
   // Execute the GraphQL query using the host name and query statement
   // The API returns a response of type `CountriesResponse` containing an array of `Country` objects
-  const response = graphql.execute<LAB_DGRAPH.NumUidsResult>(
+  const response = graphql.execute<LAB_DGRAPH.a<LAB_DGRAPH.NumUidsResult>>(
     dgraph_host,
     statement,
   );
-  console.log(`Response numUids: ${response.data!.numUids}`);
-  return "success";
+  console.log(`Response numUids: ${response.data!.a!.numUids}`);
+  return response.data!.a!.msg;
 }
 export function addEntities(namespace: string, entities: Entity[]): string {
   for (let i = 0; i < entities.length; i++) {
@@ -110,7 +167,7 @@ export function addEntities(namespace: string, entities: Entity[]): string {
 }
 export function addEntity(namespace: string, entity: Entity): string {
   // add entity using DQL
-  const xid = `${entity.is_a}:${entity.label}`;
+  const xid = `${entity.is_a}#${entity.label}`;
   const query = new dgraph.Query(`
     {
         v as var(func: eq(xid, "${xid}"))

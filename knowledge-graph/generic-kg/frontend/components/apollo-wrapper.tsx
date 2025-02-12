@@ -1,6 +1,8 @@
 "use client"
 
 import { ApolloClient, ApolloProvider, InMemoryCache, HttpLink, from } from "@apollo/client"
+import { removeTypenameFromVariables } from '@apollo/client/link/remove-typename';
+
 import { setContext } from "@apollo/client/link/context"
 
 const httpLink = new HttpLink({
@@ -16,9 +18,11 @@ const authLink = setContext((_, { headers }) => {
   }
 })
 
+const removeTypenameLink = removeTypenameFromVariables();
+
 const client = new ApolloClient({
-  cache: new InMemoryCache(),
-  link: from([authLink, httpLink]),
+  cache: new InMemoryCache({addTypename: false}), // don't add __typename to objects
+  link: from([authLink, removeTypenameLink, httpLink]),
 })
 
 export function ApolloWrapper({ children }: React.PropsWithChildren<{}>) {

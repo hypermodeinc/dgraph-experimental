@@ -21,11 +21,15 @@ import {
   getKGSchemaByName,
 } from "./ontology";
 import { LAB_DGRAPH } from "./dgraph-utils";
-export { addClass } from "./ontology";
+export { addKGClass, getKGClasses , deleteKGClass, queryEntities} from "./ontology";
+const MODEL_DEBUG = false;
+
+
 export function getKGSchema(): KGSchema {
   return getKGSchemaByName("rag/example");
 }
-const MODEL_DEBUG = false;
+
+
 
 
 export function simulateEntities(text: string): Entity[] {
@@ -98,8 +102,7 @@ export function extractEntities(
   const model = models.getModel<OpenAIChatModel>("llm");
   model.debug = MODEL_DEBUG;
   var instruction = `User submits a text. List the main entities from the text.
-  Look only for the entities that are in the following types:
-  LIST OF KNOWN ENTITY TYPES::
+  Look for all entities types from this list:
   `;
   for (let i = 0; i < ontology.classes.length; i++) {
     if (ontology.classes[i].role == "MAIN") {
