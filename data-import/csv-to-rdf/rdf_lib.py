@@ -59,31 +59,24 @@ def rdf_map_to_file(rdf_map, xidmap, filehandle=sys.stdout):
     return xidmap
 
 
-def addRdfToMap(rdf_map, rdf):
-    # Skip processing if the RDF contains `"nan"`
-    if '"nan"' in rdf:
-        return
-
-    # Split the RDF string manually instead of using regex
-    parts = rdf.split(maxsplit=3)
-
-    # Ensure we have exactly four parts after splitting
-    if len(parts) != 4:
-        return
-
-    node, predicate, value, is_list = parts
-    key = f"{node} {predicate}"
-
-    if is_list == "*":
-        # Append to the list if the key already exists; otherwise, create a new list
-        if key in rdf_map:
-            rdf_map[key].append(value)
+def addRdfToMap(rdfMap,rdf):
+  # applying the template to many tabular data lines may lead to the creation of the same predicate many time
+  # e.g: if many line refer to a country object with a country code.
+  # we maintain the map of <node id> <predicate> for non list predicates so we can remove duplicates
+  # sending several times the the same RDF would not affect the data but this is done to improve performance
+  #m = re.match(r"(<\S+>)\s+(<\S+>)\s+(.*)\s+([.*])$",rdf)
+  if "\"nan\"" not in rdf:
+    m = re_tripple.match(rdf)
+    if m:
+      parts=m.groups()
+      key = parts[0]+" "+parts[1]
+      if parts[-1] == "*":
+        if key in rdfMap:
+          rdfMap[key].append(parts[2])
         else:
-            rdf_map[key] = [value]
-    else:
-        # For non-list predicates, directly assign the value
-        rdf_map[key] = value
-
+          rdfMap[key] = [parts[2]]
+      else:
+        rdfMap[key] = parts[2]
 
 def substitute(match_obj, row, nospace=False):
     # substitute is used by substituteInTemplate
