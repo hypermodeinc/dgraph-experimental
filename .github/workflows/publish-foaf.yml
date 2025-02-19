@@ -3,7 +3,12 @@ name: Push FOAF Graph
 
 env:
   IMAGE_NAME: dgraph-foaf-graph
-#
+
+on:
+  push:
+    branches:
+      - matthewmcneely/foaf-image-update
+
 jobs:
   # This pushes the image to GitHub Packages.
   push:
