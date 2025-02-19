@@ -1,6 +1,8 @@
 FROM dgraph/standalone:v24.0.5 AS dgraph
 FROM jupyter/minimal-notebook:latest
 
+LABEL org.opencontainers.image.source=https://github.com/hypermodeinc/dgraph-experimental
+
 RUN pip install python-graphql-client
 RUN pip install pydgraph
 
