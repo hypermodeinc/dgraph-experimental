@@ -26,9 +26,5 @@ endif
 local-image: bios data ## Build the self-contained Dgraph and Jupyter Lab local image
 	docker build -t dgraph-foaf-graph .
 
-publish-image: bios data ## Build the self-contained Dgraph and Jupyter Lab image and publish
-	# need to be logged in to dockerhub for this to work, `docker login -u matthewmcneely`
-	docker buildx build --platform linux/amd64 --platform linux/arm64 -t matthewmcneely/dgraph-foaf-graph --output=type=registry .
-
 help: ## Print target help
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
