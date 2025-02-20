@@ -1,15 +1,11 @@
 name: FOAF Graph
 
-#on:
-#  push:
-#    paths:
-#      - '.actions/**'
-#      - 'docker/foaf_graph/build/**'
-
 on:
   push:
     branches:
-      - matthewmcneely/foaf-image-update
+      - main
+    paths:
+      - 'docker/foaf_graph/build/**'
 
 permissions:
   contents: read
