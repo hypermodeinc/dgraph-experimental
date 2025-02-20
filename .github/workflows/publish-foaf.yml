@@ -1,9 +1,9 @@
-#
 name: FOAF Graph
 
 on:
   push:
     paths:
+      - '.actions/**'
       - 'docker/foaf_graph/build/**'
 
 jobs:
