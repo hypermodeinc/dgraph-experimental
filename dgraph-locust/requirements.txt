@@ -1,5 +1,5 @@
 locust~=1.3.2
 timeloop~= 1.0.2
 beautifulsoup4~=4.12.3
-requests~=2.24.0
+requests>=2.24.0,<2.33
 PyJWT~=1.7.1
