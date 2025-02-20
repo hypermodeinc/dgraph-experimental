@@ -44,3 +44,8 @@ jobs:
           tags: ghcr.io/hypermodeinc/dgraph-foaf-graph:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.description=FOAF Graph Docker Image
+            org.opencontainers.image.licenses=MIT
+          provenance: false
