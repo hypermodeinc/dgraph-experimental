@@ -25,3 +25,8 @@ go.work.sum
 .env
 **/.DS_Store
 **/__pycache__
+**/.modusdb
+**/.env**
+**/build
+**/node_modules
+**/.next
