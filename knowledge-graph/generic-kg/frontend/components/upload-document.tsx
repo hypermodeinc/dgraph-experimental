@@ -4,10 +4,10 @@ import { useState } from "react";
 import { gql, useLazyQuery, useMutation } from "@apollo/client";
 import { Button } from "@/components/ui/button";
 import { Entity } from "./types";
-
+// function=extractEntities or simulateEntities
 const UPLOAD_TEXT_QUERY = gql`
   query ExtractEntities($content: String!) {
-    entities: simulateEntities(text: $content) {
+    entities: extractEntities(text: $content) {
       label
       is_a
       description
