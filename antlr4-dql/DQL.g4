@@ -155,6 +155,7 @@ expand
 field
     : variableDeclaration? alias? predicate arguments? fieldDirectives? subSelectionSet?
     | variableDeclaration? alias? aggregation
+    | alias? valOf
     ;
 aggregation: sum | avg | count;
     
