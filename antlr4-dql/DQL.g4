@@ -30,7 +30,7 @@ block
     | namedBlock
     ;
 
-varBlock: 'var' name 'as' namedBlock;
+varBlock: name 'as' 'var' root selectionSet;
 
 anonymousBlock: 'var' root selectionSet;
 
@@ -54,7 +54,7 @@ eq(predicate, [$var1, "value", ..., $varN])
 predicate
     : BRACKET_STRING
     | name('@' lang)?
-    | 'uid' | 'has'
+    | 'uid'
     ;
 typeName
     : BRACKET_STRING
@@ -86,21 +86,23 @@ filterCriteria
     | '(' filterCriteria ')'
     ;
 
-eqCriteria: 'eq' '(' eqArgs ')';
+eqCriteria: EQ '(' eqArgs ')';
 eqArgs
     : predicate COMMA value
     | valOf COMMA value
-    | countOf COMMA intValue
+    | countOf COMMA intOrParam
     | predicate COMMA listValue
     ;
 
 ieCriteria: ieOp '(' ieArgs ')' ;
-ieOp: 'le' | 'lt' | 'ge' | 'gt' ;
+reserved: LE | LT | GT | GE | EQ | HAS | TYPE;
+
+ieOp: LE | LT | GT | GE ;
 ieArgs
     : predicate COMMA value
     | predicate COMMA valOf
     | valOf COMMA value
-    | countOf COMMA intValue
+    | countOf COMMA intOrParam
     ;
 
 termsOrTextCriteria: termsOrTextOp '(' predicate COMMA termsOrTextVal ')';
@@ -108,13 +110,14 @@ termsOrTextVal: STRING;
 
 termsOrTextOp: 'anyofterms' | 'allofterms' | 'anyoftext' | 'alloftext';
 
-hasCriteria: 'has' '(' predicate ')';
-typeCriteria: 'type' '(' typeName ')';
+hasCriteria: HAS '(' predicate ')';
+typeCriteria: TYPE '(' typeName ')';
 uidCriteria: 'uid' '(' listUidValue ')';
-uidValue: hexValue | variable;
+uidValue: hexValue | parameter;
 listUidValue: uidValue ( COMMA uidValue )*;
 
-variable: name;
+variable: name | 'gt';
+variableDeclaration: variable 'as';
 listVariable: variable ( COMMA variable )*;
 pagingOrOrdering
     : pagingFirst
@@ -148,9 +151,12 @@ expand
 
 //https://spec.graphql.org/October2021/#sec-Language.Fields
 field
-    : alias? predicate arguments? fieldDirectives? subSelectionSet?
+    : variableDeclaration? alias? predicate arguments? fieldDirectives? subSelectionSet?
+    | variableDeclaration? alias? aggregation
     ;
-
+aggregation
+    : 'sum' '(' 'val' '(' name ')' ')'
+    ;
 //https://spec.graphql.org/October2021/#sec-Language.Arguments
 arguments
     : '(' argument+ ')'
@@ -180,6 +186,14 @@ value
     | nullValue
     | enumValue
     | objectValue
+    ;
+intOrParam
+    : parameter
+    | intValue
+    ;
+hexOrParam
+    : parameter
+    | hexValue
     ;
 
 //https://spec.graphql.org/October2021/#sec-Int-Value
@@ -254,7 +268,7 @@ type_
     ;
 
 namedType
-    : name
+    : name | RESERVED
     ;
 
 listType
@@ -322,6 +336,13 @@ ID
     : STRING
     ;
 
+GT: 'gt';
+GE: 'ge';
+LT: 'lt';
+LE: 'le';
+EQ: 'eq';
+HAS: 'has';
+TYPE: 'type';
 
 //https://spec.graphql.org/October2021/#EscapedCharacter
 fragment ESC
