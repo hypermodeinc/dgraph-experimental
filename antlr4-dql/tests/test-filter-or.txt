@@ -1,7 +1,7 @@
 {
-  me(func: eq(name, "Steven Spielberg")) @filter(NOT ( allofterms(name, "jones indiana") OR allofterms(name, "jurassic park") )) {
-    name
-    <director.film>    {
+  me(func: eq(name, "Steven Spielberg")) @filter(NOT ( allofterms(name@en, "jones indiana") OR allofterms(name, "jurassic park") )) {
+    name@en
+    director.film    {
       uid
       name
     }
