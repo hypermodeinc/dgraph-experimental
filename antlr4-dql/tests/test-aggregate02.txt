@@ -1,0 +1,25 @@
+
+{
+  PJ as var(func:allofterms(name@en, "Peter Jackson")) {
+    director.film {
+      starring {
+        performance.actor {
+          movies as count(actor.film)
+
+        }
+        perf_total as sum(val(movies))
+      }
+      movie_total as sum(val(perf_total))
+    }
+    gt as sum(val(movie_total))
+  }
+
+  PJmovies(func: uid(0x12)) {
+    name@en
+    director.film  {
+      name@en
+      totalRoles : val(movie_total)
+    }
+    grandTotal : val(gt)
+  }
+}
