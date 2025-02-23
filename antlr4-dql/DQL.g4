@@ -451,3 +451,4 @@ UTF16_BOM
 UTF32_BOM
     : '\u0000FEFF'
     ;
+COMMENT   : '#' ~[\r\n\f]* -> skip;
