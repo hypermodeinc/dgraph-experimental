@@ -1,0 +1,7 @@
+{
+      people(func: type(Person)) {
+        uid
+        name
+        friends { name }
+      }
+    }

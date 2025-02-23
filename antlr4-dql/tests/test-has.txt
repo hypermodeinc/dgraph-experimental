@@ -1,0 +1,6 @@
+{
+      nodeCount(func: has(<rdfs:label>)) {
+        uid
+        label
+      }
+    }

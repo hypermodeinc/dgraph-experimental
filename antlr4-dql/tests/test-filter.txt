@@ -1,0 +1,7 @@
+{
+      people(func: type(Person)) @filter(not eq(<Person.name>,"bob")) {
+        uid
+        name
+        friends { name }
+      }
+    }

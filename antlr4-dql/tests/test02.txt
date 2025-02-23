@@ -1,0 +1,5 @@
+query myQuery2($name: string = "default") {
+   data(func:allofterms(name, "term1 term2 list")) { 
+    uid name 
+   }
+}

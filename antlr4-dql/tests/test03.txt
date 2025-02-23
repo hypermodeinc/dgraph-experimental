@@ -1,0 +1,6 @@
+{
+      nodeCount(func: has(<Person.name>)) {
+        uid
+        username:<Person.name>
+      }
+    }

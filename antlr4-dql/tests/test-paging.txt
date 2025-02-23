@@ -1,0 +1,8 @@
+
+query myQueryA () {
+   data(func:has(name), first:10, orderdesc:name, orderasc:val(c)) { 
+    id 
+   }
+}
+
+

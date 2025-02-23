@@ -1,12 +1,9 @@
 
 
 ```sh
-antlr4-parse DQLr.g4 request -tree
-query myQuery($name: string = "default") {
-   data(func:) { test }
-}
-
+antlr4-parse DQL.g4 request -tree tests/test01.txt
 ```
+
 ## eq
 eq(predicate, value)
 eq(val(varName), value)
@@ -25,10 +22,7 @@ IE(val(varName), value)
 IE(predicate, val(varName))
 IE(count(predicate), value)
 
-le less than or equal to
-lt less than
-ge greater than or equal to
-gt
+le, lt, ge or gt
 ## between
 Syntax Example: between(predicate, startDateValue, endDateValue)
 

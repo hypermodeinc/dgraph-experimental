@@ -1,0 +1,10 @@
+query myQuery ( $name:string ) {
+   data(func:eq(name,"username")) { 
+    uid 
+    name 
+   }
+}
+
+
+
+

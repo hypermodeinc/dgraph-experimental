@@ -1,0 +1,7 @@
+{
+      people(func: type(Person)) @cascade {
+        uid
+        name
+        friends { name }
+      }
+    }

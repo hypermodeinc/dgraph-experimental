@@ -1,0 +1,23 @@
+
+query myQueryA () {
+   data(func:uid(0x1a)) { 
+    id 
+   }
+}
+
+query myQueryB () {
+   data(func:uid(0x1a,0x1b)) { 
+    id 
+   }
+}
+query myQueryC () {
+   data(func:uid(somevar)) { 
+    id 
+   }
+}
+query myQueryC () {
+   data(func:uid(somevar1, somevar2)) { 
+    id 
+   }
+}
+
