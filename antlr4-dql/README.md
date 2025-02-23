@@ -60,12 +60,12 @@ comment@jp:ru:.	Look for comment tagged @jp, then @ru. If both not found, then f
 comment@*
 ## geolocation - TODO 
 
-# OPEN QUESTION
+# OPEN QUESTIONS
 from the doc we can use filters on count:
 ```
 C as count(~genre @filter(uid(F)))
 ```
-Is it possible at the root level ?
+Is it possible to use filter with count in filters and at the root level filter ?
 
 What are the characters allowed for the name of a block, for an alias, for a predicate ?
 
