@@ -49,4 +49,35 @@ allofterms(predicate, "space-separated term list")
 anyofterms(predicate, "space-separated term list")
 alloftext(predicate, "space-separated text") and anyoftext(predicate, "space-separated text")
 
+## lang
+comment	Look for an untagged string; return nothing if no untagged review exists.
+comment@.	Look for an untagged string, if not found, then return review in any language. But, this returns only a single value.
+comment@jp	Look for comment tagged @jp. If not found, the query returns nothing.
+comment@ru	Look for comment tagged @ru. If not found, the query returns nothing.
+comment@jp:.	Look for comment tagged @jp first. If not found, then find the untagged comment. If that’s not found too, return anyone comment in other languages.
+comment@jp:ru	Look for comment tagged @jp, then @ru. If neither is found, it returns nothing.
+comment@jp:ru:.	Look for comment tagged @jp, then @ru. If both not found, then find the untagged comment. If that’s not found too, return any other comment if it exists.
+comment@*
 ## geolocation - TODO 
+
+# OPEN QUESTION
+from the doc we can use filters on count:
+```
+C as count(~genre @filter(uid(F)))
+```
+Is it possible at the root level ?
+
+What are the characters allowed for the name of a block, for an alias, for a predicate ?
+
+Seems that it is
+```txt
+[A-Za-z_] [.0-9A-Za-z_]*
+```
+- cannot start with dot or a number but can contain dots and numbers.
+- can start and contain underscore and alplha.
+- at least one character.
+
+Is that true?
+
+
+What are the characters allowed in predicate name between < >?
