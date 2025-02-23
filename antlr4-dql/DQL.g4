@@ -85,6 +85,7 @@ filterCriteria
     | filterCriteria 'OR' filterCriteria
     | '(' filterCriteria ')'
     ;
+
 eqCriteria: 'eq' '(' eqArgs ')';
 eqArgs
     : predicate COMMA value
@@ -296,7 +297,7 @@ name: NAME;
 
 // name cannot start with a digit.
 NAME
-    : [A-Za-z] [0-9A-Za-z]*
+    : [A-Za-z_] [.0-9A-Za-z_]*
     ;
 
 fragment CHARACTER
