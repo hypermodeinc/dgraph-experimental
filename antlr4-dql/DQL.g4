@@ -28,6 +28,7 @@ block
     : anonymousBlock
     | varBlock
     | namedBlock
+    | emptyBlock
     ;
 
 varBlock: name 'as' 'var' root selectionSet;
@@ -36,8 +37,9 @@ anonymousBlock: 'var' root selectionSet;
 
 namedBlock: name root selectionSet;
 
-root: '(' 'func' ':' rootCriteria pagingOrOrdering* ')' rootDirective* rootFilter? rootDirective*;
+emptyBlock: name '(' ')' selectionSet;
 
+root: '(' 'func' ':' rootCriteria pagingOrOrdering* ')' rootDirective* rootFilter? rootDirective*;
 
 rootFilter: '@filter' '(' filterCriteria ')';
 fieldFilter: '@filter' '(' filterCriteria ')';
@@ -154,9 +156,11 @@ field
     : variableDeclaration? alias? predicate arguments? fieldDirectives? subSelectionSet?
     | variableDeclaration? alias? aggregation
     ;
-aggregation
-    : 'sum' '(' 'val' '(' name ')' ')'
-    ;
+aggregation: sum | avg | count;
+    
+sum: 'sum' '(' 'val' '(' name ')' ')';
+avg: 'avg' '(' 'val' '(' name ')' ')';
+count: 'count' '(' predicate ')';
 //https://spec.graphql.org/October2021/#sec-Language.Arguments
 arguments
     : '(' argument+ ')'
@@ -183,9 +187,6 @@ value
     | floatValue
     | stringValue
     | booleanValue
-    | nullValue
-    | enumValue
-    | objectValue
     ;
 intOrParam
     : parameter
@@ -224,10 +225,7 @@ nullValue
     : 'null'
     ;
 
-//https://spec.graphql.org/October2021/#sec-Enum-Value
-enumValue
-    : name
-    ; //{ not (nullValue | booleanValue) };
+
 
 //https://spec.graphql.org/October2021/#sec-List-Value
 listValue
@@ -268,7 +266,7 @@ type_
     ;
 
 namedType
-    : name | RESERVED
+    : name | reserved
     ;
 
 listType
