@@ -58,7 +58,13 @@ comment@jp:.	Look for comment tagged @jp first. If not found, then find the unta
 comment@jp:ru	Look for comment tagged @jp, then @ru. If neither is found, it returns nothing.
 comment@jp:ru:.	Look for comment tagged @jp, then @ru. If both not found, then find the untagged comment. If that’s not found too, return any other comment if it exists.
 comment@*
-## geolocation - TODO 
+
+# TODOs
+- geolocation  
+- between and other functions
+- expand ( Type1 , Type2 )
+- ordering and paging in fields:
+director.film (orderdesc: val(movie_total), first: 5)
 
 # OPEN QUESTIONS
 from the doc we can use filters on count:
