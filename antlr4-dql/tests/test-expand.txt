@@ -1,5 +1,5 @@
 {
       nodeCount(func: has(<rdfs:label>)) {
-        __expand_all__ { uid __expand_all__}
+        expand(_all_) { uid expand(_all_)}
       }
     }

@@ -1,6 +1,7 @@
+# some comments
 {
-  var(func: anyofterms(name@en, "Steven Tom")) {
-    a as count(director.film)
+  var(func: anyofterms(name@en, "Steven#Tom")) {
+    a as count(director.film) # test with comment
   }
 
   me() {
