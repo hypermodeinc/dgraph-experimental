@@ -39,7 +39,7 @@ namedBlock: name root selectionSet;
 
 emptyBlock: name '(' ')' selectionSet;
 
-root: '(' 'func' ':' rootCriteria pagingOrOrdering* ')' rootDirective* rootFilter? rootDirective*;
+root: '(' 'func' ':' rootCriteria (COMMA pagingOrOrderings)? ')' rootDirective* rootFilter? rootDirective*;
 
 rootFilter: '@filter' '(' filterCriteria ')';
 fieldFilter: '@filter' '(' filterCriteria ')';
@@ -97,7 +97,7 @@ eqArgs
     ;
 
 ieCriteria: ieOp '(' ieArgs ')' ;
-reserved: LE | LT | GT | GE | EQ | HAS | TYPE;
+
 
 ieOp: LE | LT | GT | GE ;
 ieArgs
@@ -115,12 +115,17 @@ termsOrTextOp: 'anyofterms' | 'allofterms' | 'anyoftext' | 'alloftext';
 hasCriteria: HAS '(' predicate ')';
 typeCriteria: TYPE '(' typeName ')';
 uidCriteria: 'uid' '(' listUidValue ')';
-uidValue: hexValue | parameter;
+uidValue: hexValue | parameter | variable;
 listUidValue: uidValue ( COMMA uidValue )*;
 
-variable: name | 'gt';
+variable: NAME | LE | LT | GT | GE | EQ | HAS | TYPE ;
+
+
 variableDeclaration: variable 'as';
 listVariable: variable ( COMMA variable )*;
+
+pagingOrOrderings: pagingOrOrdering COMMA pagingOrOrdering*;
+
 pagingOrOrdering
     : pagingFirst
     | pagingOffset
@@ -129,8 +134,8 @@ pagingOrOrdering
     ;
 
 
-pagingFirst: 'first' ':' intValue;
-pagingOffset: 'offset' ':' intValue;
+pagingFirst: 'first' ':' intOrParam;
+pagingOffset: 'offset' ':' intOrParam;
 pagingAfter: 'after' ':' uidValue;
 
 ordering: orderingDirection ':' (predicate | valOf);
@@ -156,7 +161,23 @@ field
     : variableDeclaration? alias? predicate arguments? fieldDirectives? subSelectionSet?
     | variableDeclaration? alias? aggregation
     | alias? valOf
+    | math
     ;
+// math must have alias or variable or both
+math
+    :  alias MATH '(' mathExpr ')'
+    | variableDeclaration MATH '(' mathExpr ')'
+    | variableDeclaration alias MATH '(' mathExpr ')'
+    ;
+
+mathExpr
+    : variable
+    | intValue
+    | floatValue 
+    | '(' mathExpr ')'
+    | mathExpr (ADD | MINUS) mathExpr
+    ;
+
 aggregation: sum | avg | count;
     
 sum: 'sum' '(' 'val' '(' name ')' ')';
@@ -253,26 +274,15 @@ parameterDefinitions
     ;
 
 parameterDefinition
-    : parameter ':' type_ defaultValue?
+    : parameter ':' basicType defaultValue?
     ;
 
 defaultValue
     : '=' value
     ;
 
-//https://spec.graphql.org/October2021/#sec-Type-References
-type_
-    : namedType '!'?
-    | listType '!'?
-    ;
 
-namedType
-    : name | reserved
-    ;
 
-listType
-    : '[' type_ ']'
-    ;
 
 
 rootDirectives: rootDirective+ ;
@@ -308,6 +318,23 @@ description
 //https://spec.graphql.org/October2021/#sec-Names
 name: NAME;
 
+
+basicType
+    : 'int'
+    | 'float'
+    | 'bool'
+    | 'string'
+    ;
+
+
+GT: 'gt';
+GE: 'ge';
+LT: 'lt';
+LE: 'le';
+EQ: 'eq';
+HAS: 'has';
+TYPE: 'type';
+MATH: 'math';
 // name cannot start with a digit.
 NAME
     : [A-Za-z_] [.0-9A-Za-z_]*
@@ -335,13 +362,6 @@ ID
     : STRING
     ;
 
-GT: 'gt';
-GE: 'ge';
-LT: 'lt';
-LE: 'le';
-EQ: 'eq';
-HAS: 'has';
-TYPE: 'type';
 
 //https://spec.graphql.org/October2021/#EscapedCharacter
 fragment ESC
@@ -427,7 +447,8 @@ fragment EXP
 WS
     : [ \t\n\r]+ -> skip
     ;
-
+ADD: '+';
+MINUS: '-';
 COMMA
     : ',' // -> skip
     ;
