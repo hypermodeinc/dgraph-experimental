@@ -49,22 +49,21 @@ allofterms(predicate, "space-separated term list")
 anyofterms(predicate, "space-separated term list")
 alloftext(predicate, "space-separated text") and anyoftext(predicate, "space-separated text")
 
-## lang
-comment	Look for an untagged string; return nothing if no untagged review exists.
-comment@.	Look for an untagged string, if not found, then return review in any language. But, this returns only a single value.
-comment@jp	Look for comment tagged @jp. If not found, the query returns nothing.
-comment@ru	Look for comment tagged @ru. If not found, the query returns nothing.
-comment@jp:.	Look for comment tagged @jp first. If not found, then find the untagged comment. If that’s not found too, return anyone comment in other languages.
-comment@jp:ru	Look for comment tagged @jp, then @ru. If neither is found, it returns nothing.
-comment@jp:ru:.	Look for comment tagged @jp, then @ru. If both not found, then find the untagged comment. If that’s not found too, return any other comment if it exists.
+- lang support
+comment@.
+comment@jp:.
+comment@en:fr
+comment@en
 comment@*
+
+- ordering and paging in fields using values or query parameters.
+
+- expand 
 
 # TODOs
 - geolocation  
 - between and other functions
-- expand ( Type1 , Type2 )
-- ordering and paging in fields:
-director.film (orderdesc: val(movie_total), first: 5)
+- check orderdesc: val(a) like director.film (orderdesc: val(movie_total), first: 5)
 
 # OPEN QUESTIONS
 from the doc we can use filters on count:
