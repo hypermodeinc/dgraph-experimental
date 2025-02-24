@@ -124,7 +124,7 @@ variable: NAME | LE | LT | GT | GE | EQ | HAS | TYPE ;
 variableDeclaration: variable 'as';
 listVariable: variable ( COMMA variable )*;
 
-pagingOrOrderings: pagingOrOrdering COMMA pagingOrOrdering*;
+pagingOrOrderings: pagingOrOrdering (COMMA pagingOrOrdering)*;
 
 pagingOrOrdering
     : pagingFirst
@@ -153,7 +153,7 @@ subSelectionSet
     : fieldFilter? '{' field* expand? field* '}'
     ;
 expand
-    : EXPAND_ALL selectionSet? ;
+    : 'expand' '(' ('_all_' | )')' selectionSet? ;
 
 
 //https://spec.graphql.org/October2021/#sec-Language.Fields
@@ -349,7 +349,9 @@ fragment NON_BRACKET_CHARACTER
 BRACKET_STRING
     : '<' NON_BRACKET_CHARACTER* '>'
     ;
-EXPAND_ALL: '__expand_all__';
+
+
+
 STRING
     : '"' CHARACTER* '"'
     ;
@@ -417,22 +419,6 @@ INT
     ;
 HEX_NUMBER: '0x' HEX+;
 
-//https://spec.graphql.org/October2021/#Punctuator
-PUNCTUATOR
-    : '!'
-    | '$'
-    | '('
-    | ')'
-    | '...'
-    | ':'
-    | '='
-    | '@'
-    | '['
-    | ']'
-    | '{'
-    | '}'
-    | '|'
-    ;
 
 // no leading zeros
 
