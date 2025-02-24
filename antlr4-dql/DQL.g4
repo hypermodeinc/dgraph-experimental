@@ -63,8 +63,9 @@ typeName
     | name
     ;
 lang
-    : 'en'
-    | 'fr'
+    : '*' 
+    | '.'
+    | NAME (':' NAME)* (':' '.')?
     ;
 
 rootCriteria
@@ -132,6 +133,7 @@ pagingOrOrdering
     | pagingAfter
     | ordering
     ;
+predicatePagingOrOrderings: '(' pagingOrOrderings ')';
 
 
 pagingFirst: 'first' ':' intOrParam;
@@ -158,7 +160,7 @@ expand
 
 //https://spec.graphql.org/October2021/#sec-Language.Fields
 field
-    : variableDeclaration? alias? predicate arguments? fieldDirectives? subSelectionSet?
+    : variableDeclaration? alias? predicate predicatePagingOrOrderings* fieldDirectives? subSelectionSet?
     | variableDeclaration? alias? aggregation
     | alias? valOf
     | math
