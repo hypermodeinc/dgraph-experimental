@@ -1,0 +1,11 @@
+{
+      people(func: type(Person))  {
+         name
+         name@en         
+         name@en:fr
+         name@*
+         name@.
+         name@en:.
+
+      }
+}
