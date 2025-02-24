@@ -1,0 +1,17 @@
+{
+  caro(func: eq(name@en, "Marc Caro")) {
+    name@en
+    director.film @filter(uid_in(~director.film, 0x99706)) {
+      name@en
+    }
+  }
+}
+
+{
+  caro(func: eq(name@en, "Marc Caro")) {
+    name@en
+    director.film @filter(uid_in(~director.film, uid(a))) {
+      name@en
+    }
+  }
+}

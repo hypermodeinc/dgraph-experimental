@@ -1,0 +1,11 @@
+{
+  directors(func: match(name@en, Stephen, 3)) {
+    name@en
+  }
+}
+
+{
+  directors(func: match(name, "Stephen Spiel", 4)) {
+    name
+  }
+}

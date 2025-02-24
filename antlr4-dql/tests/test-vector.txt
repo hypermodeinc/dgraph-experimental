@@ -1,0 +1,7 @@
+query slownessWithLogs() {
+    simVec(func: similar_to(Issue.vector_embedding, 3, "[ 0.28 0.75 0.35 0.48 ]")) 
+    {     
+        uid
+        Issue.description
+    }
+  }

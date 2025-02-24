@@ -1,0 +1,8 @@
+  {
+    me(func: between(initial_release_date, "1977-01-01", "1977-12-31")) {
+    name@en
+    genre {
+      name@en
+    }
+  }
+}
