@@ -55,7 +55,7 @@ eq(predicate, [$var1, "value", ..., $varN])
 
 predicate
     : BRACKET_STRING
-    | name('@' lang)?
+    | '~'? name ('@' (lang))?
     | 'uid'
     ;
 typeName
@@ -75,6 +75,9 @@ rootCriteria
     | hasCriteria
     | typeCriteria
     | uidCriteria
+    | matchCriteria
+    | similarCriteria
+    | betweenCriteria
     ;
 filterCriteria
     : eqCriteria
@@ -83,6 +86,10 @@ filterCriteria
     | hasCriteria
     | typeCriteria
     | uidCriteria
+    | matchCriteria
+    | similarCriteria
+    | betweenCriteria
+    | uidInCriteria
     | 'NOT' filterCriteria
     | filterCriteria 'AND' filterCriteria
     | filterCriteria 'OR' filterCriteria
@@ -114,6 +121,18 @@ termsOrTextVal: STRING;
 termsOrTextOp: 'anyofterms' | 'allofterms' | 'anyoftext' | 'alloftext';
 
 hasCriteria: HAS '(' predicate ')';
+matchCriteria: 'match' '(' predicate COMMA matchValue COMMA intOrParam ')';
+matchValue: NAME | STRING;
+similarCriteria : 'similar_to' '(' predicate COMMA intOrParam COMMA (vectorString | parameter) ')';
+betweenCriteria: 'between' '(' predicate COMMA value COMMA value')';
+
+uidInCriteria: 'uid_in' '(' predicate COMMA uidInValue ')';
+uidInValue
+    : hexValue | parameter
+    | '[' hexValue | parameter (COMMA (hexValue | parameter))* ']'
+    | 'uid' '(' variable ')'
+    ;
+
 typeCriteria: TYPE '(' typeName ')';
 uidCriteria: 'uid' '(' listUidValue ')';
 uidValue: hexValue | parameter | variable;
@@ -249,7 +268,8 @@ nullValue
     : 'null'
     ;
 
-
+// '"[' FLOAT (COMMA? FLOAT)* ']"' -> not working. TODO: set proper vector string definition
+vectorString: STRING;
 
 //https://spec.graphql.org/October2021/#sec-List-Value
 listValue
