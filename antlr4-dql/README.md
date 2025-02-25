@@ -65,6 +65,9 @@ comment@*
 
 ## TODOs
 - geolocation  
+- @recurse directive
+- shortest path
+- groupby
 - facets
 - check orderdesc: val(a) like director.film (orderdesc: val(movie_total), first: 5)
 
