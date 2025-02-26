@@ -171,7 +171,7 @@ selectionSet
     : '{' field* expand? field* '}'
     ;
 subSelectionSet
-    : fieldFilter? '{' field* expand? field* '}'
+    : fieldDirectives* fieldFilter? fieldDirectives* '{' field* expand? field* '}'
     ;
 expand
     : 'expand' '(' ('_all_' | )')' selectionSet? ;
@@ -179,7 +179,7 @@ expand
 
 //https://spec.graphql.org/October2021/#sec-Language.Fields
 field
-    : variableDeclaration? alias? predicate predicatePagingOrOrderings* fieldDirectives? subSelectionSet?
+    : variableDeclaration? alias? predicate predicatePagingOrOrderings*  subSelectionSet?
     | variableDeclaration? alias? aggregation
     | alias? valOf
     | math
@@ -318,7 +318,7 @@ rootDirective
     ;
 fieldDirectives: fieldDirective+ ;
 fieldDirective
-    : '@test'
+    : '@normalize'
     ;
 
 
