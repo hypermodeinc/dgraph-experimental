@@ -19,18 +19,13 @@ import {
   addRelatedEntities,
   addRelationalEntities,
   getKGSchemaByName,
-} from "./ontology";
+} from "./kg-kit";
 import { LAB_DGRAPH } from "./dgraph-utils";
-export { addKGClass, getKGClasses , deleteKGClass, queryEntities} from "./ontology";
+
+export { addKGSchema, addKGClass, getKGSchemaByName, getKGClasses , deleteKGClass, queryEntities} from "./kg-kit";
+export { addHypermodeDefaultSchema } from "./kg-schema-default";
 const MODEL_DEBUG = false;
-
-
-export function getKGSchema(): KGSchema {
-  return getKGSchemaByName("rag/example");
-}
-
-
-
+const DEFAULT_NAMESPACE = "rag/example";
 
 export function simulateEntities(text: string): Entity[] {
   const entities = JSON.parse<Entity[]>(`
@@ -96,7 +91,7 @@ export function extractEntities(
   // extractEntities can be used in a pipeline where the ontology is already loaded
   // or to test an ontology before saving it to the Knowledge Graph
   if (ontology == null) {
-    ontology = getKGSchema();
+    ontology = getKGSchemaByName(DEFAULT_NAMESPACE);
   }
   // The imported OpenAIChatModel interface follows the OpenAI chat completion model input format.
   const model = models.getModel<OpenAIChatModel>("llm");
@@ -176,7 +171,7 @@ export function extractRelatedEntities(
   // extractEntities can be used in a pipeline where the ontology is already loaded
   // or to test an ontology before saving it to the Knowledge Graph
   if (ontology == null) {
-    ontology = getKGSchema();
+    ontology = getKGSchemaByName(DEFAULT_NAMESPACE);
   }
   const model = models.getModel<OpenAIChatModel>("llm");
   model.debug = MODEL_DEBUG;
@@ -230,7 +225,7 @@ export function extractRelationalEntities(
   // extractEntities can be used in a pipeline where the ontology is already loaded
   // or to test an ontology before saving it to the Knowledge Graph
   if (ontology == null) {
-    ontology = getKGSchema();
+    ontology = getKGSchemaByName(DEFAULT_NAMESPACE);
   }
   const model = models.getModel<OpenAIChatModel>("llm");
   model.debug = MODEL_DEBUG;
@@ -309,7 +304,7 @@ export function analyzeRelationships(text: string): string {
 
 export function pipeline(text: string): string {
   var status = "";
-  const ontology = getKGSchema();
+  const ontology = getKGSchemaByName(DEFAULT_NAMESPACE);
   const entities = extractEntities(text, ontology);
   // list entities in the status
   status += "Entities:\n";
