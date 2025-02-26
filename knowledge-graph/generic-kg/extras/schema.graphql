@@ -1,6 +1,6 @@
 type KGSchema {
-  label: String! @id @dgraph(pred: "<rdfs:label>")
-  description: String @dgraph(pred: "<rdfs:comment>")
+  label: String! @id
+  description: String
   classes: [KGClass] @hasInverse(field: isDefinedBy)
 }
 enum KGClassRole {
@@ -11,7 +11,7 @@ enum KGClassRole {
 type KGClass {
   id: String! @id # set has namespace#label
   role: KGClassRole!
-  label: String! @dgraph(pred: "<rdfs:label>")
-  description: String @dgraph(pred: "<rdfs:comment>")
+  label: String!
+  description: String
   isDefinedBy: KGSchema @hasInverse(field: classes)
 }
