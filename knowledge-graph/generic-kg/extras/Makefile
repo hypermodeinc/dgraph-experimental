@@ -6,11 +6,11 @@ help: ## Print target help
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 	
 up: ## Init and Start dgraph/standalone container (local development)
-	docker run -d --name dgraph-rag -p "8080:8080" -p "9080:9080" -v $(current_dir):/export -v ~/dgraph-rag:/dgraph  dgraph/standalone:$(DGRAPH_VERSION)
+	docker run -d --name dgraph-kg -p "8080:8080" -p "9080:9080" -v $(current_dir):/export -v ~/dgraph-kg:/dgraph  dgraph/standalone:$(DGRAPH_VERSION)
 start: ## Start dgraph/standalone container (local development) after you stopped it
-	docker start dgraph-rag
+	docker start dgraph-kg
 down: ## Stop the container (local development)
-	docker stop  dgraph-rag
+	docker stop  dgraph-kg
 
 schema-gql: ## Load/update a GraphQL schema (local development)
 ifneq (,$(wildcard ./schema.graphql))
