@@ -1,9 +1,8 @@
 
-import { KGSchema,getKGSchemaByNames, addKGSchema, addKGClass } from "./kg-kit";  
+import { KGSchema,getKGSchemas, addKGSchema, AddKGClassInput, GenericResult } from "./kg-kit";  
 
-export function addHypermodeDefaultSchema(): KGSchema[] {
-    addKGSchema("Hypermode/default", "The default schema for the Hypermode knowledge graph");
-    addKGClass("Hypermode/default", [
+export function addHypermodeDefaultSchema(): KGSchema {
+    const classes: AddKGClassInput[] = [
         {
             role: "MAIN",
             label: "Person",
@@ -40,7 +39,10 @@ export function addHypermodeDefaultSchema(): KGSchema[] {
             label: "AgentiveEvent",
             description: "an action performed by a person or entity, the 'subject', on another entity, 'the object'."
         }
-    ]);
+    ]
+    return addKGSchema(
+        "Hypermode/default", 
+        "The default schema for the Hypermode knowledge graph",
+        classes);
 
-    return getKGSchemaByNames(["Hypermode/default"])
 }

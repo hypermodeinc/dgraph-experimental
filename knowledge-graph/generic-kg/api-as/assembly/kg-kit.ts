@@ -3,10 +3,12 @@ import { dgraph } from "@hypermode/modus-sdk-as";
 import { JSON } from "json-as";
 
 const connection = "dgraph";
+
 @json 
-export class GenericResult {
+export class GenericResult<T> {
   status: string = "Success";
   message: string = "";
+  data: T | null = null;
 }
 
 @json
@@ -81,6 +83,7 @@ export class KGClass {
 }
 
 
+
 @json
 class Relationship {
   domain: string[] = [];
@@ -89,9 +92,14 @@ class Relationship {
   description: string = "";
 }
 
-export function getKGSchemaByNames(names: string[]): KGSchema[] {
+export function getKGSchemas(names: string[] | null): KGSchema[] {
+  let func = `has(KGSchema.label)`
+  if (names !== null) {
+     func = `eq(KGSchema.label,${JSON.stringify(names)})`
+  }
+
   const statement = `query GetKGSchema() {
-      list(func:eq(KGSchema.label,${JSON.stringify(names)})) {
+      list(func:${func}) {
           KGSchema.label
           KGSchema.description
           KGSchema.classes {
@@ -154,13 +162,14 @@ export function getKGClasses(): KGClass[] {
   const data = JSON.parse<ListOf<KGClass>>(response.Json);
   return data.list;
 }
+
 @json
-class addKGClassInput {
+export class AddKGClassInput {
   label: string = "";
   role: string = "";
   description: string = "";
 }
-export function addKGClass(namespace: string,classes: addKGClassInput[]): Map<string, string> | null{
+export function addKGClass(namespace: string,classes: AddKGClassInput[]): Map<string, string> | null{
   // const ontology = getOntologyByName(namespace);
   let query_statement = `
      {
@@ -186,7 +195,8 @@ export function addKGClass(namespace: string,classes: addKGClassInput[]): Map<st
   const response = dgraph.executeQuery(connection, new dgraph.Query(query_statement), new dgraph.Mutation().withSetNquads(nquads).withCondition("@if(eq(len(s), 1))"));
   return response.Uids;
 }
-export function addKGSchema(namespace: string, description:string): Map<string, string> | null{
+
+export function addKGSchema(namespace: string, description:string, classes: AddKGClassInput[] | null): KGSchema{
 
   const kg_obj = new KGSchema();
   kg_obj.label = namespace;
@@ -205,8 +215,12 @@ export function addKGSchema(namespace: string, description:string): Map<string, 
 
     `);
 
-  const response = dgraph.executeQuery(connection, query, mutation);
-  return response.Uids;
+  dgraph.executeQuery(connection, query, mutation);
+  if (classes !== null) {
+    addKGClass(namespace, classes);
+  }
+  return getKGSchemas([namespace])[0];
+
 }
 
 export function addEntities(namespace: string, entities: Entity[]): string {

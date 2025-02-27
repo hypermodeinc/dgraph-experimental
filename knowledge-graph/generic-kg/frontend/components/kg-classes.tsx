@@ -36,6 +36,21 @@ const ADD_CLASS = gql`
     addKGClass(role: $role, label: $label, description: $description, namespace: $namespace) 
   }
 `;
+const LOAD_SCHEMA = gql`
+  mutation AddHypermodeDefaultSchema {
+    addHypermodeDefaultSchema {
+        label
+        description
+        classes {
+            uid
+            id
+            role
+            label
+            description
+        }
+    }
+}
+`;
 
 export default function KgClasses() {
   const { data, loading, error, refetch } = useQuery(GET_CLASSES);
@@ -48,6 +63,9 @@ export default function KgClasses() {
     } ,
   });
   const [addClass] = useMutation(ADD_CLASS, {
+    onCompleted: () => refetch(),
+  });
+  const [loadSchema] = useMutation(LOAD_SCHEMA, {
     onCompleted: () => refetch(),
   });
 
@@ -66,6 +84,9 @@ export default function KgClasses() {
     await addClass({ variables: { ...newClass } });
     setNewClass({ role: "", label: "", description: "", namespace: "rag/example" });
   };
+  const loadKGSchema = async () => {
+    await loadSchema();
+  }
 
   const groupedClasses:Map<string,KGClass[]> = new Map<string,KGClass[]>();
     groupedClasses.set("MAIN", []);
@@ -117,13 +138,14 @@ export default function KgClasses() {
           </div>
         ))}
       </div>
-// Add button to load default classes
+
       <Button
-        onClick={() => loadKGSchema("hypermode/default")}
+        onClick={() => loadKGSchema()}
         size="sm"
         className="mt-4">
         Load Hypermode/default
       </Button>
+
       <div className="mt-6 p-4 border rounded-lg">
         <h3 className="text-lg font-semibold mb-2">Add New Class</h3>
         <div className="flex gap-2 mb-2">

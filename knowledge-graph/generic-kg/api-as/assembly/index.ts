@@ -19,7 +19,7 @@ import {
   addEntities,
   addRelatedEntities,
   addRelationalEntities,
-  getKGSchemaByNames,
+  getKGSchemas,
 } from "./kg-kit";
 import { 
   addHypermodeDefaultSchema
@@ -27,7 +27,7 @@ import {
 
 import { LAB_DGRAPH } from "./dgraph-utils";
 
-export { addKGSchema, addKGClass, getKGSchemaByNames, getKGClasses , deleteKGClass, queryEntities} from "./kg-kit";
+export { addKGSchema, addKGClass, getKGSchemas, getKGClasses , deleteKGClass, queryEntities} from "./kg-kit";
 export { addHypermodeDefaultSchema } from "./kg-schema-default";
 const MODEL_DEBUG = false;
 const DEFAULT_NAMESPACE = "Hypermode/default";
@@ -104,6 +104,7 @@ class ExtractEntitiesResponse {
  */
 export function extractEntities(
   text: string,
+  verification: bool = false,
   namespaces: string[] | null = null,
 ): ExtractEntitiesResponse {
   const response = new ExtractEntitiesResponse();
@@ -113,7 +114,7 @@ export function extractEntities(
   if (namespaces == null) {
     namespaces = [DEFAULT_NAMESPACE];
   }
-  let ontologies = getKGSchemaByNames(namespaces);
+  let ontologies = getKGSchemas(namespaces);
   // if no ontology is found, add the default ontology and use it
   if (ontologies == null) {
     let ontologies = addHypermodeDefaultSchema();
@@ -164,7 +165,7 @@ export function extractEntities(
    */
   const verified_response: Entity[] = [];
   for (let i = 0; i < list.length; i++) {
-    if (verifyEntity(list[i], all_classes)) {
+    if (verifyEntity(list[i], all_classes, verification)) {
       verified_response.push(list[i]);
     } else {
       console.warn(`Removing ${list[i].is_a} : ${list[i].label} `);
@@ -204,16 +205,19 @@ function verifyAssertion(assertion: string): bool {
     .includes("true");
 }
 
-function verifyEntity(entity: Entity, classes: KGClass[]): bool {
+function verifyEntity(entity: Entity, classes: KGClass[], llm_verification: bool = false): bool {
 
   // verify the the entity is present in the classes
   if (!isValidEntity(entity, classes)) {
     return false;
   }
-  const description: string =
-    entity.description != null ? entity.description! : "";
-  const assertion = `${entity.label}, ${description} is a ${entity.is_a}.`;
-  return verifyAssertion(assertion);
+  if (llm_verification) {
+    const description: string =
+      entity.description != null ? entity.description! : "";
+    const assertion = `${entity.label}, ${description} is a ${entity.is_a}.`;
+    return verifyAssertion(assertion);
+  }
+  return true;
   
 }
 
@@ -232,7 +236,7 @@ export function extractRelatedEntities(
   if (namespaces == null) {
     namespaces = [DEFAULT_NAMESPACE];
   }
-  const ontologies = getKGSchemaByNames(namespaces);
+  const ontologies = getKGSchemas(namespaces);
   const ontology = ontologies[0];
   const model = models.getModel<OpenAIChatModel>("llm");
   model.debug = MODEL_DEBUG;
@@ -288,7 +292,7 @@ export function extractRelationalEntities(
   if (namespaces == null) {
     namespaces = [DEFAULT_NAMESPACE];
   }
-  const ontology = getKGSchemaByNames(namespaces)[0];
+  const ontology = getKGSchemas(namespaces)[0];
   const model = models.getModel<OpenAIChatModel>("llm");
   model.debug = MODEL_DEBUG;
   var instruction = `User submits a text. `;
