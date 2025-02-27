@@ -12,20 +12,25 @@ import {
 
 import {
   KGSchema,
+  KGClass,
   Entity,
   RelatedEntity,
   RelationalEntity,
   addEntities,
   addRelatedEntities,
   addRelationalEntities,
-  getKGSchemaByName,
+  getKGSchemaByNames,
 } from "./kg-kit";
+import { 
+  addHypermodeDefaultSchema
+} from "./kg-schema-default";
+
 import { LAB_DGRAPH } from "./dgraph-utils";
 
-export { addKGSchema, addKGClass, getKGSchemaByName, getKGClasses , deleteKGClass, queryEntities} from "./kg-kit";
+export { addKGSchema, addKGClass, getKGSchemaByNames, getKGClasses , deleteKGClass, queryEntities} from "./kg-kit";
 export { addHypermodeDefaultSchema } from "./kg-schema-default";
 const MODEL_DEBUG = false;
-const DEFAULT_NAMESPACE = "rag/example";
+const DEFAULT_NAMESPACE = "Hypermode/default";
 
 export function simulateEntities(text: string): Entity[] {
   const entities = JSON.parse<Entity[]>(`
@@ -82,32 +87,65 @@ export function readEntities(entities: Entity[]): string {
   }
   return status;
 }
-
+@json
+class ExtractEntitiesResponse {
+  status: string = "Success";
+  msg: string | null = null;
+  entities: Entity[] = [];
+}
+/**
+ * Extract entities from a text 
+ * Given a list of namespaces.
+ * @param text - The text to extract entities from.
+ * @param namespaces - The list of namespaces to extract entities from.
+ * if no namespace is provided, the default namespace is used.
+ * if the default namespace is not found it is added to the Knowledge Graph.
+ * 
+ */
 export function extractEntities(
   text: string,
-  ontology: KGSchema | null = null,
-): Entity[] {
+  namespaces: string[] | null = null,
+): ExtractEntitiesResponse {
+  const response = new ExtractEntitiesResponse();
   // if not provided get the ontology from the connected Knowledge Graph
   // extractEntities can be used in a pipeline where the ontology is already loaded
   // or to test an ontology before saving it to the Knowledge Graph
-  if (ontology == null) {
-    ontology = getKGSchemaByName(DEFAULT_NAMESPACE);
+  if (namespaces == null) {
+    namespaces = [DEFAULT_NAMESPACE];
   }
-  // The imported OpenAIChatModel interface follows the OpenAI chat completion model input format.
-  const model = models.getModel<OpenAIChatModel>("llm");
-  model.debug = MODEL_DEBUG;
-  var instruction = `User submits a text. List the main entities from the text.
-  Look for all entities types from this list:
-  `;
-  for (let i = 0; i < ontology.classes.length; i++) {
-    if (ontology.classes[i].role == "MAIN") {
-      instruction += `${ontology.classes[i].label}: ${ontology.classes[i].description}\n`;
+  let ontologies = getKGSchemaByNames(namespaces);
+  // if no ontology is found, add the default ontology and use it
+  if (ontologies == null) {
+    let ontologies = addHypermodeDefaultSchema();
+  }
+  // group all entities form the ontologies
+  const all_classes: KGClass[] = [];
+  for (let o = 0; o < ontologies.length; o++) {
+    const ontology = ontologies[o];
+    for (let i = 0; i < ontology.classes.length; i++) {
+      all_classes.push(ontology.classes[i]);
     }
   }
 
+  // The imported OpenAIChatModel interface follows the OpenAI chat completion model input format.
+  const model = models.getModel<OpenAIChatModel>("llm");
+  model.debug = MODEL_DEBUG;
+  response.msg = `Looking for entities of type: \n`;
+  var instruction = `User submits a text. List the main entities from the text.
+  Look for all entities types from this list:
+  `;
+ 
+  for (let i = 0; i < all_classes.length; i++) {
+    if (all_classes[i].role == "MAIN") {
+      instruction += `${all_classes[i].label}: ${all_classes[i].description}\n`;
+      response.msg! += `${all_classes[i].label}\n`;
+    }
+  }
+  
+
   instruction += `Reply with a JSON document containing the list of entities with an identifier label and a short semantic description using the example:
   {
-    "list": [{"label": "Uranus", "is_a": "CelestialBody", "description": "a planet from the solar system."}]
+    "list": [{"label": "name or short label", "is_a": "one of the entity type", "description": "description found in the text if any"}]
   }`;
 
   // We'll start by creating an input object using the instruction and prompt provided.
@@ -126,14 +164,16 @@ export function extractEntities(
    */
   const verified_response: Entity[] = [];
   for (let i = 0; i < list.length; i++) {
-    if (verifyEntity(list[i])) {
+    if (verifyEntity(list[i], all_classes)) {
       verified_response.push(list[i]);
     } else {
       console.warn(`Removing ${list[i].is_a} : ${list[i].label} `);
+      response.msg! += `Removing ${list[i].is_a} : ${list[i].label} \n`;
     }
   }
   console.log(`Verified Entities: ${JSON.stringify(verified_response)}`);
-  return verified_response;
+  response.entities = verified_response;
+  return response;
 }
 /**
  *
@@ -141,14 +181,20 @@ export function extractEntities(
  * This can be done with an entailment model trained on the ontology.
  * We are using an LLM at the moment.
  */
+function isValidEntity(entity: Entity, classes: KGClass[]): bool {
 
-function verifyEntity(entity: Entity): bool {
-  const description: string =
-    entity.description != null ? entity.description! : "";
-  const assertion = `${entity.label}, ${description} is a ${entity.is_a}.`;
+  // verify the the entity is present in the classes
+  for (let i = 0; i < classes.length; i++) {
+    if (classes[i].label == entity.is_a) {
+      return true;
+    }
+  }
+  return false
+}
+function verifyAssertion(assertion: string): bool {
+
   var instruction =
     `Reply 'true' or 'false' to following assertion: ` + assertion;
-
   const model = models.getModel<OpenAIChatModel>("llm");
   const input = model.createInput([new UserMessage(instruction)]);
   input.responseFormat = ResponseFormat.Text;
@@ -158,6 +204,19 @@ function verifyEntity(entity: Entity): bool {
     .includes("true");
 }
 
+function verifyEntity(entity: Entity, classes: KGClass[]): bool {
+
+  // verify the the entity is present in the classes
+  if (!isValidEntity(entity, classes)) {
+    return false;
+  }
+  const description: string =
+    entity.description != null ? entity.description! : "";
+  const assertion = `${entity.label}, ${description} is a ${entity.is_a}.`;
+  return verifyAssertion(assertion);
+  
+}
+
 export function saveEntities(entities: Entity[]): string {
   return addEntities("rag/example", entities);
 }
@@ -165,14 +224,16 @@ export function saveEntities(entities: Entity[]): string {
 export function extractRelatedEntities(
   text: string,
   entities: Entity[],
-  ontology: KGSchema | null = null,
+  namespaces: string[] | null = null,
 ): RelatedEntity[] {
   // if not provided get the ontology from the connected Knowledge Graph
   // extractEntities can be used in a pipeline where the ontology is already loaded
   // or to test an ontology before saving it to the Knowledge Graph
-  if (ontology == null) {
-    ontology = getKGSchemaByName(DEFAULT_NAMESPACE);
+  if (namespaces == null) {
+    namespaces = [DEFAULT_NAMESPACE];
   }
+  const ontologies = getKGSchemaByNames(namespaces);
+  const ontology = ontologies[0];
   const model = models.getModel<OpenAIChatModel>("llm");
   model.debug = MODEL_DEBUG;
   var instruction = `User submits a text. `;
@@ -219,14 +280,15 @@ export function saveRelatedEntities(entities: RelatedEntity[]): string {
 export function extractRelationalEntities(
   text: string,
   entities: Entity[],
-  ontology: KGSchema | null = null,
+  namespaces: string[] | null = null,
 ): RelationalEntity[] {
   // if not provided get the ontology from the connected Knowledge Graph
   // extractEntities can be used in a pipeline where the ontology is already loaded
   // or to test an ontology before saving it to the Knowledge Graph
-  if (ontology == null) {
-    ontology = getKGSchemaByName(DEFAULT_NAMESPACE);
+  if (namespaces == null) {
+    namespaces = [DEFAULT_NAMESPACE];
   }
+  const ontology = getKGSchemaByNames(namespaces)[0];
   const model = models.getModel<OpenAIChatModel>("llm");
   model.debug = MODEL_DEBUG;
   var instruction = `User submits a text. `;
@@ -304,15 +366,14 @@ export function analyzeRelationships(text: string): string {
 
 export function pipeline(text: string): string {
   var status = "";
-  const ontology = getKGSchemaByName(DEFAULT_NAMESPACE);
-  const entities = extractEntities(text, ontology);
+  const entities = extractEntities(text).entities;
   // list entities in the status
   status += "Entities:\n";
   for (let i = 0; i < entities.length; i++) {
     status += `  ${entities[i].label} is a ${entities[i].is_a}\n`;
   }
   saveEntities(entities);
-  const relatedEntities = extractRelatedEntities(text, entities, ontology);
+  const relatedEntities = extractRelatedEntities(text, entities);
   // list related entities in the status
   status += "Related Entities:\n";
   for (let i = 0; i < relatedEntities.length; i++) {

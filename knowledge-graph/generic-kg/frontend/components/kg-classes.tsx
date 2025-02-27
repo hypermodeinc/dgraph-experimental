@@ -117,21 +117,27 @@ export default function KgClasses() {
           </div>
         ))}
       </div>
-
+// Add button to load default classes
+      <Button
+        onClick={() => loadKGSchema("hypermode/default")}
+        size="sm"
+        className="mt-4">
+        Load Hypermode/default
+      </Button>
       <div className="mt-6 p-4 border rounded-lg">
         <h3 className="text-lg font-semibold mb-2">Add New Class</h3>
         <div className="flex gap-2 mb-2">
-        <Select value={newClass.role}
-            onValueChange={(e) => setNewClass({ ...newClass, role: e })}>
-      <SelectTrigger className="w-48">
-        <SelectValue placeholder="Select Role" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="MAIN">MAIN</SelectItem>
-        <SelectItem value="RELATED">RELATED</SelectItem>
-        <SelectItem value="RELATION">RELATION</SelectItem>
-      </SelectContent>
-    </Select>
+          <Select value={newClass.role}
+              onValueChange={(e) => setNewClass({ ...newClass, role: e })}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Select Role" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="MAIN">MAIN</SelectItem>
+              <SelectItem value="RELATED">RELATED</SelectItem>
+              <SelectItem value="RELATION">RELATION</SelectItem>
+            </SelectContent>
+          </Select>
           <Input
             placeholder="Label"
             value={newClass.label}

@@ -89,9 +89,9 @@ class Relationship {
   description: string = "";
 }
 
-export function getKGSchemaByName(name: string): KGSchema {
-  const statement = `query GetKGSchema($name: string) {
-      list(func:eq(KGSchema.label,$name)) {
+export function getKGSchemaByNames(names: string[]): KGSchema[] {
+  const statement = `query GetKGSchema() {
+      list(func:eq(KGSchema.label,${JSON.stringify(names)})) {
           KGSchema.label
           KGSchema.description
           KGSchema.classes {
@@ -102,10 +102,10 @@ export function getKGSchemaByName(name: string): KGSchema {
           }
       }
     }`;
-  const query = new dgraph.Query(statement).withVariable("$name", name);
+  const query = new dgraph.Query(statement);
   const response = dgraph.executeQuery(connection, query);
   const data = JSON.parse<ListOf<KGSchema>>(response.Json);
-  return data.list[0];
+  return data.list;
 }
 export function deleteKGClass(namespace: string, label: string): Map<string, string> | null {
   const id = `${namespace}/${label}`;

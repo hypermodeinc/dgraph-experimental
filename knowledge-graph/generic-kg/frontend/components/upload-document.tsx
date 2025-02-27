@@ -7,10 +7,14 @@ import { Entity } from "./types";
 // function=extractEntities or simulateEntities
 const UPLOAD_TEXT_QUERY = gql`
   query ExtractEntities($content: String!) {
-    entities: extractEntities(text: $content) {
-      label
-      is_a
-      description
+    result: extractEntities(text: $content) {
+      status
+      msg
+      entities {
+          label
+          is_a
+          description
+      }
     }
   }
 `;
@@ -91,7 +95,7 @@ export default function UploadDocument({
     try {
       const { data } = await uploadText({ variables: { content } });
       console.log("GraphQL Response:", JSON.stringify(data, null, 2));
-      const entities:Entity[] = data.entities; 
+      const entities:Entity[] = data.result.entities; 
       setEntityData(entities);
       setThinking(false);
     } catch (err) {
