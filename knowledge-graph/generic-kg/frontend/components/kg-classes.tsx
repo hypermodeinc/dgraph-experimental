@@ -51,6 +51,21 @@ const LOAD_SCHEMA = gql`
     }
 }
 `;
+const LOAD_SCHEMA_FOOD = gql`
+  mutation AddHypermodeFoodIndustry {
+    addHypermodeFoodIndustry {
+        label
+        description
+        classes {
+            uid
+            id
+            role
+            label
+            description
+        }
+    }
+}
+`;
 
 export default function KgClasses() {
   const { data, loading, error, refetch } = useQuery(GET_CLASSES);
@@ -66,6 +81,9 @@ export default function KgClasses() {
     onCompleted: () => refetch(),
   });
   const [loadSchema] = useMutation(LOAD_SCHEMA, {
+    onCompleted: () => refetch(),
+  });
+  const [loadSchemaFood] = useMutation(LOAD_SCHEMA_FOOD, {
     onCompleted: () => refetch(),
   });
 
@@ -87,6 +105,10 @@ export default function KgClasses() {
   const loadKGSchema = async () => {
     await loadSchema();
   }
+  const loadKGSchemaFood = async () => {
+    await loadSchemaFood();
+  }
+
 
   const groupedClasses:Map<string,KGClass[]> = new Map<string,KGClass[]>();
     groupedClasses.set("MAIN", []);
@@ -144,6 +166,12 @@ export default function KgClasses() {
         size="sm"
         className="mt-4">
         Load Hypermode/default
+      </Button>
+      <Button
+        onClick={() => loadKGSchemaFood()}
+        size="sm"
+        className="mt-4">
+        Load Hypermode/food-industry
       </Button>
 
       <div className="mt-6 p-4 border rounded-lg">

@@ -4,6 +4,7 @@ import { JSON } from "json-as";
 
 const connection = "dgraph";
 
+
 @json 
 export class GenericResult<T> {
   status: string = "Success";
@@ -31,8 +32,9 @@ export class KGSchema {
 export class Entity {
   id: string = "";
   label: string = "";
-  is_a: string = ""; // reference to a class label
+  is_a: string = ""; // reference to a KGClass id
   description: string | null = null;
+  related_to: Entity | null = null;
 }
 
 
@@ -223,43 +225,7 @@ export function addKGSchema(namespace: string, description:string, classes: AddK
 
 }
 
-export function addEntities(namespace: string, entities: Entity[]): string {
-  for (let i = 0; i < entities.length; i++) {
-    addEntity(namespace, entities[i]);
-  }
-  return "Success";
-}
-export function addEntity(namespace: string, entity: Entity): string {
-  // add entity using DQL
-  const xid = `${entity.is_a}#${entity.label}`;
-  const query = new dgraph.Query(`
-    {
-        v as var(func: eq(xid, "${xid}"))
-        c as var(func: eq(<rdfs:label>,"${entity.is_a}"))
-    }
-    `);
-  var nquads = `
-    uid(v) <xid> "${xid}" .
-    uid(v) <rdfs:label> "${entity.label}" .
-    uid(v) <is_a> uid(c) .
-    `;
-  if (entity.description) {
-    nquads += `uid(v) <rdfs:comment> "${entity.description!}" .`;
-  }
-  const mutation = new dgraph.Mutation(
-    "",
-    "",
-    nquads,
-    "",
-    "@if(eq(len(c), 1))",
-  );
-  console.log(`Mutation: ${nquads}`);
-  const response = dgraph.execute(
-    connection,
-    new dgraph.Request(query, [mutation]),
-  );
-  return response.Json;
-}
+
 
 export function addRelatedEntities(
   namespace: string,
@@ -347,6 +313,45 @@ export function addRelationalEntity(
     nquads,
     "",
     "@if(eq(len(source), 1) AND eq(len(target), 1))",
+  );
+  console.log(`Mutation: ${nquads}`);
+  const response = dgraph.execute(
+    connection,
+    new dgraph.Request(query, [mutation]),
+  );
+  return response.Json;
+}
+
+
+export function addEntities(entities: Entity[]): string {
+  for (let i = 0; i < entities.length; i++) {
+    addEntity(entities[i]);
+  }
+  return "Success";
+}
+export function addEntity( entity: Entity): string {
+  // add entity using DQL
+  const xid = `${entity.is_a}#${entity.label}`;
+  const query = new dgraph.Query(`
+    {
+        v as var(func: eq(xid, "${xid}"))
+        c as var(func: eq(KGClass.id,"${entity.is_a}"))
+    }
+    `);
+  var nquads = `
+    uid(v) <xid> "${xid}" .
+    uid(v) <rdfs:label> "${entity.label}" .
+    uid(v) <is_a> uid(c) .
+    `;
+  if (entity.description) {
+    nquads += `uid(v) <rdfs:comment> "${entity.description!}" .`;
+  }
+  const mutation = new dgraph.Mutation(
+    "",
+    "",
+    nquads,
+    "",
+    "@if(eq(len(c), 1))",
   );
   console.log(`Mutation: ${nquads}`);
   const response = dgraph.execute(

@@ -46,3 +46,29 @@ export function addHypermodeDefaultSchema(): KGSchema {
         classes);
 
 }
+
+export function addHypermodeFoodIndustry(): KGSchema {
+    const classes: AddKGClassInput[] = [
+        { 
+        role: "MAIN",
+        label: "Food product",
+        description: "food produced by a food production process."
+        },
+        { 
+        role: "MAIN",
+        label: "Ingredient",
+        description: "raw ingredient involved in a food production process."
+        },
+        { 
+        role: "MAIN",
+        label: "Certification",
+        description: "a quality label for food processing."
+        }
+
+    ]
+    return addKGSchema(
+        "Hypermode/food-industry", 
+        "Classes for goods and services in the food industry",
+        classes);
+
+}
