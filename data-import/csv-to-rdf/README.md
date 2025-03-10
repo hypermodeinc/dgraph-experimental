@@ -65,7 +65,7 @@ You can use functions to generate data
 
 ```txt
 <_:School_[School.ID]> <geoloc> =geoloc([LAT],[LNG]) .
-<_:Donation_[Donation.ID]> <day> "=randomDate(2020-01-01,2022-12-31)" .
+<_:Donation_[Donation.ID]> <day> =randomDate(2020-01-01,2022-12-31) .
 ```
 
 Available functions :

@@ -119,26 +119,26 @@ def substituteFunctions(match_obj, row):
     # substitute is used by substituteInTemplate
     # evaluate function like <_:[HotelCode]> <Hotel.map>  =geoloc([LAT],[LONG]) .
     if match_obj.group() is not None:
-        func = match_obj.group(1)
+        func = match_obj.group(2)
         if func == "geoloc":
-            lat = float(match_obj.group(2))
-            lng = float(match_obj.group(3))
+            lat = float(match_obj.group(3))
+            lng = float(match_obj.group(4))
             # fmt.Sprintf("\"{\\type\\\":\\\"Point\\\",\\\"coordinates\\\":[%s,%s]}\"^^<geo:geojson>", opMatch[2], opMatch[3]
-            return f"\"{{'type':'Point','coordinates':[{lng:.8f},{lat:.8f}]}}\"^^<geo:geojson>"
+            return match_obj.group(1)+f"\"{{'type':'Point','coordinates':[{lng:.8f},{lat:.8f}]}}\"^^<geo:geojson>"
         elif func == "datetime":
-            date_string = match_obj.group(2)
-            format = match_obj.group(3)
+            date_string = match_obj.group(3)
+            format = match_obj.group(4)
             date = datetime.strptime(date_string, format)
-            return date.strftime("%Y-%m-%dT%H:%M:%S")
+            return match_obj.group(1)+'"'+date.strftime("%Y-%m-%dT%H:%M:%S")+'"'
         elif func == "randomDate":
-            start = datetime.strptime(match_obj.group(2), "%Y-%m-%d")
-            end = datetime.strptime(match_obj.group(3), "%Y-%m-%d")
+            start = datetime.strptime(match_obj.group(3), "%Y-%m-%d")
+            end = datetime.strptime(match_obj.group(4), "%Y-%m-%d")
             # Generate a random number of days between start and end
             random_days = random.randint(0, (end - start).days)
             # Add the random number of days to the start date
             random_date = start + timedelta(days=random_days)
             # Return the date in the desired format
-            return random_date.strftime("%Y-%m-%d")
+            return match_obj.group(1)+'"'+random_date.strftime("%Y-%m-%d")+'"'
         else:
             raise ValueError("unsupported function " + func)
 
@@ -146,10 +146,12 @@ def substituteFunctions(match_obj, row):
 re_column = re.compile(r"(\[[\w .,|]+\])")
 # re_uid = re.compile(r"<[^[]*(\[[\w .,|]+\])[^>]*>")
 re_uid = re.compile(r"<_:[^>]*?(\[[^\]]+\])(?:[^>]*?(\[[^\]]+\]))?[^>]*?>")
-re_functions = re.compile(r"=(\w+)\(([^,)]+),?([^,)]+)?\)")
+# =func(param1,param2) not in a string
+re_functions = re.compile(r'(^[^"]*)=(\w+)\(([^,)]+),?([^,)]+)?\)')
 
 
 def substituteInTemplate(template, row):
+    
     fields = re_column.findall(template)
     for field in fields:
         column = field[1:-1].split(",")[0]
@@ -160,10 +162,10 @@ def substituteInTemplate(template, row):
     subst2 = re_column.sub(
         lambda match_obj: substitute_in_value(match_obj, row), subst1
     )
-
-    return re_functions.sub(
+    subst3 = re_functions.sub(
         lambda match_obj: substituteFunctions(match_obj, row), subst2
     )
+    return subst3
 
 
 def transformDataFrame(df, template):
