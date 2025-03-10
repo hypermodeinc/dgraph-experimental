@@ -260,7 +260,7 @@ for filename in os.listdir(csvdir):
             template_file = open(templatefilename, "r")
             template = template_file.read()
             template_file.close()
-            df = pd.read_csv(f, keep_default_na=True)
+            df = pd.read_csv(f, keep_default_na=True, dtype=str)
             #
             # transform the dataframe and load to dgraph
             #
