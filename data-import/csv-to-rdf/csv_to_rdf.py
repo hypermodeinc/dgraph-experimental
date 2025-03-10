@@ -38,7 +38,7 @@ for filename in os.listdir(csvdir):
             template = template_file.read()
             template_file.close()
             # xidmap = df_to_dgraph(df,template,gclient,xidpredicate,xidmap)
-            for chunk in pd.read_csv(f, keep_default_na=True, chunksize=CHUNK_SIZE):
+            for chunk in pd.read_csv(f, keep_default_na=True, chunksize=CHUNK_SIZE, dtype=str):
                 # transform the dataframe and write to file
                 print('.', end='', flush=True) # progress indicator
                 df_to_rdffile(chunk, template, rdf_file_handle)
