@@ -15,3 +15,7 @@ type KGClass {
   description: String
   isDefinedBy: KGSchema @hasInverse(field: classes)
 }
+type KGDocument {
+  id: String! @id
+
+}

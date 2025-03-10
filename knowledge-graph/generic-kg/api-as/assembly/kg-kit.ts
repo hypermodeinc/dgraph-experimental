@@ -84,7 +84,23 @@ export class KGClass {
  // isDefinedBy: KGSchema | null = null;
 }
 
-
+@json 
+export class KGDocument {
+    @alias("KGDocument.id")
+    id: string = "";
+    @alias("KGDocument.url")
+    @omitnull()
+    url: string | null = null;
+    @alias("KGDocument.version")
+    @omitnull()
+    version: string | null = null;
+    @alias("KGDocument.title")
+    @omitnull()
+    title: string | null = null;
+    @alias("KGDocument.text")
+    @omitnull()
+    text: string = "";
+}
 
 @json
 class Relationship {
@@ -323,25 +339,37 @@ export function addRelationalEntity(
 }
 
 
-export function addEntities(entities: Entity[]): string {
+export function addEntities(entities: Entity[],docid: string | null): string {
   for (let i = 0; i < entities.length; i++) {
-    addEntity(entities[i]);
+    addEntity(entities[i], docid);
   }
   return "Success";
 }
-export function addEntity( entity: Entity): string {
+export function addEntity( entity: Entity, docid: string | null): string {
   // add entity using DQL
   const xid = `${entity.is_a}#${entity.label}`;
+  let d_val = "";
+  let d_rel = "";
+  if (docid !== null) {
+    d_val = `d as var(func: eq(KGDocument.id,"${docid}"))`
+    d_rel = `
+    uid(v) <found_in> uid(d) .
+    uid(d) <KGDocument.id> "${docid}" .
+    uid(d) <dgraph.type> "KGDocument" .
+    `
+  }
   const query = new dgraph.Query(`
     {
         v as var(func: eq(xid, "${xid}"))
         c as var(func: eq(KGClass.id,"${entity.is_a}"))
+        ${d_val}
     }
     `);
   var nquads = `
     uid(v) <xid> "${xid}" .
     uid(v) <rdfs:label> "${entity.label}" .
     uid(v) <is_a> uid(c) .
+    ${d_rel}
     `;
   if (entity.description) {
     nquads += `uid(v) <rdfs:comment> "${entity.description!}" .`;

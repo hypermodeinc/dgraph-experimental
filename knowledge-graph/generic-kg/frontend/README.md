@@ -1,9 +1,8 @@
-# Modus Neo4j Movie Search - Frontend
+# Knowledge Graph - Frontend
 
 The frontend for this recipe is a Next.js app that uses Apollo Client to interact with our Modus API
 app.
 
-![Modus Neo4j Movie search](../img/moviesearch.png)
 
 ## Getting Started
 
@@ -28,7 +27,4 @@ Start the Next.js app
 npm run dev
 ```
 
-This will start a local web server at `http://localhost:3000` with your Modus Neo4j movie app! Click
-the "Generate Embeddings" to generate embeddings and save to Neo4j before searching for movies. By
-default only 200 movies embeddings are generated with each request, however this can be adjusted in
-`components/movie-search.tsx`
+This will start a local web server at `http://localhost:3000` 

@@ -1,2 +1,3 @@
 xid: string @upsert @index(hash) .
 is_a: uid .
+found_in: [uid] @reverse .

@@ -10,7 +10,7 @@ import {
 import { 
     addHypermodeDefaultSchema
   } from "./kg-schema-default";
-import { Entity, getKGSchemas, KGClass, ListOf, addEntities} from "./kg-kit";
+import { Entity, getKGSchemas, KGClass, ListOf, addEntities, KGDocument} from "./kg-kit";
 export { addHypermodeDefaultSchema } from "./kg-schema-default";
 
 const DEFAULT_NAMESPACE = "Hypermode/default";
@@ -32,12 +32,15 @@ class ExtractEntitiesResponse {
   entities: Entity[] = [];
 }
 
+
+
 export function extractEntities(
-  text: string,
+  document: KGDocument,
   verify: bool = false,
   save: bool = true,
   namespaces: string[] | null = null,
 ): ExtractEntitiesResponse {
+  const text = document.text;
   const response = new ExtractEntitiesResponse();
   // if not provided get the ontology from the connected Knowledge Graph
   // extractEntities can be used in a pipeline where the ontology is already loaded
@@ -116,7 +119,7 @@ export function extractEntities(
   setEntityClassIdFromLabel(verified_response, all_classes);
   response.entities = verified_response;
   if (save) {
-    addEntities(verified_response);
+    addEntities(verified_response, document.id);
   }
   return response;
 }

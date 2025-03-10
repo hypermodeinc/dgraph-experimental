@@ -1,5 +1,5 @@
 {
-  "name": "movies-neo4j-modus-starter-kit",
+  "name": "knowledge-graph-frontend",
   "version": "0.1.0",
   "private": true,
   "scripts": {

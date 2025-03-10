@@ -20,6 +20,7 @@ import {
   addRelatedEntities,
   addRelationalEntities,
   getKGSchemas,
+  KGDocument
 } from "./kg-kit";
 import { extractEntities } from "./kg-kits-api";
 import { LAB_DGRAPH } from "./dgraph-utils";
@@ -235,16 +236,16 @@ export function analyzeRelationships(text: string): string {
   return output.choices[0].message.content.trim();
 }
 
-export function pipeline(text: string): string {
+export function pipeline(doc: KGDocument): string {
   var status = "";
-  const entities = extractEntities(text).entities;
+  const entities = extractEntities(doc).entities;
   // list entities in the status
   status += "Entities:\n";
   for (let i = 0; i < entities.length; i++) {
     status += `  ${entities[i].label} is a ${entities[i].is_a}\n`;
   }
-  addEntities(entities);
-  const relatedEntities = extractRelatedEntities(text, entities);
+  addEntities(entities,doc.id);
+  const relatedEntities = extractRelatedEntities(doc.text, entities);
   // list related entities in the status
   status += "Related Entities:\n";
   for (let i = 0; i < relatedEntities.length; i++) {
