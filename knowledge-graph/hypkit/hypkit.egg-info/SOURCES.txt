@@ -1,9 +1,0 @@
-README.md
-setup.py
-hypkit/__init__.py
-hypkit/hello.py
-hypkit.egg-info/PKG-INFO
-hypkit.egg-info/SOURCES.txt
-hypkit.egg-info/dependency_links.txt
-hypkit.egg-info/top_level.txt
-tests/test_hello.py

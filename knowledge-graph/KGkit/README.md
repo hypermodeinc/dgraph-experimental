@@ -1,8 +1,8 @@
-# Hypermode hypkit python package
+# Hypermode kgkit python package
 
-hypkit/
+KGkit/
 │
-├── hypkit/
+├── KGkit/
 │   ├── __init__.py
 │   ├── sdk.py
 │  
@@ -19,4 +19,11 @@ hypkit/
 ### Tests
 ```sh
 python -m unittest discover tests
+```
+
+### Install
+To install the package locally in "editable" mode, run the following command in the root directory (where setup.py is located):
+
+```
+pip install -e .
 ```

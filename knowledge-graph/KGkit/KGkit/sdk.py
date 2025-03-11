@@ -3,10 +3,10 @@ import pydgraph
 import grpc
 import json
 from typing import Optional
+from .rdf_lib import df_to_rdf_map
+from .upload_csv import rdf_map_to_dgraph
 
-
-
-class Hypkit(object):
+class KGkit(object):
     dgraph_token: Optional[str] = None
     dgraph_grpc: Optional[str] = None
     dgraph_client: any = None
@@ -66,3 +66,27 @@ class Hypkit(object):
 
         finally:
             txn.discard()
+    def load(self, df, entity_name):
+        unique_columns = get_unique_columns(df)
+        template = generateTemplate(entity_name, unique_columns[0], df.columns)
+        print(template)
+        rdfmap = df_to_rdf_map(df, template)
+        rdf_map_to_dgraph(rdfmap, {}, self.dgraph_client)
+        return rdfmap
+
+
+def get_unique_columns(df):
+    df_small = df.head(100)
+    unique_columns = []
+    for column in df_small.columns:
+        if df_small[column].dropna().is_unique:
+            unique_columns.append(column)
+    return unique_columns
+
+def generateTemplate(entity, id_field, columns):
+    uid = "_:{}_[{}]".format(entity,id_field)
+    template = "<{}> <dgraph.type> \"{}\" .\n".format(uid,entity)
+    template +=  "{} <xid> \"{}\" .\n".format(uid,uid)
+    for column in columns:
+        template += "<{}> <Product.{}> \"[{}]\" .\n".format(uid,column,column)
+    return template

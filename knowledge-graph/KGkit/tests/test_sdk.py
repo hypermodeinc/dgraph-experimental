@@ -1,9 +1,9 @@
 import unittest
-from hypkit.sdk import Hypkit
+from kgkit.sdk import KGkit
 
 class TestHypkitFunction(unittest.TestCase):
     def test_constructor(self):
-        kit = Hypkit()  
+        kit = KGkit()  
         self.assertIsNotNone(kit.check_version())
 
 if __name__ == "__main__":
