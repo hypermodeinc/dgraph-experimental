@@ -26,7 +26,7 @@ Template files are named from the CSV files:
 
 ```
 
-If a predicate can be repeated for the same entity id (list) then mark it with a star \* instead a dot at the end of the RDF template :
+If a predicate can be repeated for the same entity id (list) then mark it with a star `*` instead a dot at the end of the RDF template :
 
 ```txt
 <_:Donor[Donor.ID]> <donor_donation> <_:Donation_[Donation.ID]> *
@@ -66,12 +66,15 @@ You can use functions to generate data
 ```txt
 <_:School_[School.ID]> <geoloc> =geoloc([LAT],[LNG]) .
 <_:Donation_[Donation.ID]> <day> =randomDate(2020-01-01,2022-12-31) .
+<_:Donation_[Donation.ID]> <created_at> =datetime([CREATION_DATE},%Y-%m-%d) .
 ```
 
 Available functions :
 
 - geoloc(lat,long) : generate a RDF value with geoloc json string
 - datetime(column, format): convert the string value from the format to the expected format "%Y-%m-%dT%H:%M:%S"
+- randomDate(start,end): generate a date between start and end.
+- split(value): handle value in the form of an array "['a','b']". Generate an RDF for each value in the array. Should be used with `*` end tag.
 
 ```txt
 # Example of datetime conversion
