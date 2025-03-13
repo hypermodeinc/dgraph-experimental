@@ -1,10 +1,16 @@
 import pandas as pd
-from KGkit.sdk import KGkit
+from pprint import pprint
+from KGkit import KG
 
-c = KGkit()
+c = KG()
 # print(c.check_version())
 # print(c.schema())
 
-df = pd.read_csv('data.csv',dtype=str)
+df1 = pd.read_csv('Projects-CA10.csv',dtype=str)
+df2 = pd.read_csv('Schools-CA10.csv',dtype=str)
 
-c.load(df,"Product")
+res = c.load({
+    "Project": df1,
+    "School":  df2
+    })
+pprint(res)

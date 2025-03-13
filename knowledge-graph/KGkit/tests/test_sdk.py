@@ -1,10 +1,25 @@
 import unittest
-from kgkit.sdk import KGkit
-
+import pandas as pd
+from KGkit import KG
+from KGkit.sdk import guess_properties, guess_relationships
 class TestHypkitFunction(unittest.TestCase):
     def test_constructor(self):
-        kit = KGkit()  
-        self.assertIsNotNone(kit.check_version())
+
+        kg = KG()
+        self.assertIsNotNone(kg.check_version())
+        self.assertIsNone(kg.drop_data_and_schema())
+        self.assertIsNone(kg.GraphQL_datamodel())
+        self.assertEqual(kg.schema(),'<xid>:  string @index(hash) .\n')
+
+        data = {
+        'Project:ID': ['x', 'y'],
+        'Project.Name': ['nx', 'ny']
+        }
+
+        # Create the DataFrame
+        df = pd.DataFrame(data)
+        self.assertEqual(guess_properties('Project',['Project:ID', 'Project.Name', 'Test']), ['Project:ID', 'Project.Name'])
+        self.assertEqual(guess_relationships('Project',['Project:ID', 'Project.Name', 'School.ID'],['Project','School']), ['School.ID'])
 
 if __name__ == "__main__":
     unittest.main()
