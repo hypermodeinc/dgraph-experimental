@@ -1,4 +1,6 @@
-# Hypermode kgkit python package
+# Hypermode KGKit python package
+
+WORK IN PROGRESS - NOT TO BE USED
 
 KGkit/
 │

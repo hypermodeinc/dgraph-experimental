@@ -3,3 +3,4 @@ grpc
 json
 pandas
 re
+graphql-core

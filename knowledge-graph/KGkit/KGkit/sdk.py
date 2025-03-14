@@ -3,18 +3,18 @@ import pydgraph
 import grpc
 import re
 import json
-from pandas import DataFrame
-from typing import Optional
+from graphql import GraphQLSchema,build_schema
+from typing import Optional, List
 from .rdf_lib import df_to_rdf_map
 from .upload_csv import rdf_map_to_dgraph
 
-from .types import TableMappingMap, TableMapping, DataFrameMap
+from .types import DataSource, TableEntityMapping, TableMapping
 
 class KG(object):
     dgraph_token: Optional[str] = None
     dgraph_grpc: Optional[str] = None
     dgraph_client: any = None
-
+    __graphql_schema__: str = None
     def __init__(
             self, 
             token: Optional[str] = None,
@@ -29,8 +29,10 @@ class KG(object):
     def __add_types_and_predicates__(self, schema):
         op = pydgraph.Operation(schema=schema)
         return self.dgraph_client.alter(op)
+
     def __init_schema__(self):
         self.__add_types_and_predicates__(schema='<xid>: string @index(hash) .')
+
     def _init_client(self):
         if "cloud.dgraph.io" in self.dgraph_grpc:
             client_stub = pydgraph.DgraphClientStub.from_cloud(self.dgraph_grpc, self.dgraph_token)
@@ -80,43 +82,67 @@ class KG(object):
 
         finally:
             txn.discard()
-    def GraphQL_datamodel(self):
+
+    def GraphQL_schema(self) -> GraphQLSchema:
         txn = self.dgraph_client.txn()
         try:
         # Run query.
             query = "{ schema(func:has(dgraph.graphql.schema)) { datamodel:dgraph.graphql.schema}}"
             res = txn.query(query)
             data = json.loads(res.json)
-            if (len(data['schema']) == 0) or (data['schema'][0]['datamodel'] == ''):
-                return None
-            else:
-                return (data['schema'][0]['datamodel'])
+            schema_text = None
+            schema = None
+            if (len(data['schema']) > 0) and (data['schema'][0]['datamodel'] != ''):
+                schema_text = (data['schema'][0]['datamodel'])
+                schema = build_schema(schema_text)
+            self.__graphql_schema__ = schema_text
+            return schema
         finally:
             txn.discard()
 
     def load(self,
-             tables: DataFrameMap
-             ) -> TableMappingMap:
-        table_mapping = {}
-        entities = tables.keys()
-        for entity_name in tables:
-            table_mapping[entity_name] = self.__load_entity(entity_name, tables[entity_name], entities)
-        return table_mapping
+             sources: List[DataSource],
+             mutate: Optional[bool] = True
+             ) -> List[TableMapping]:
+        table_mappings = []
+        for source in sources:
+            table_mappings.append(self.__load_entity( source, mutate))
+        return table_mappings
 
-    def __load_entity(self, entity_name: str, df: DataFrame, entities: list[str]) -> TableMapping:
-        mapping = TableMapping(entity=entity_name)
-        mapping.id_field = guess_id_field(df)
-        mapping.columns = df.columns.to_list()
-        mapping.properties = guess_properties(entity_name, df.columns.to_list())
-        mapping.relationships = guess_relationships(entity_name, df.columns.to_list(), entities)
-        if any(mapping.properties):
-            template = generateTemplate(entity_name, mapping)
+    def __load_entity(self, source: DataSource, mutate: bool = False) -> TableMapping:
+        entities = extract_entities(source)
+        entity_name = entities[0]
+        df = source.data_frame
+        mapping = TableMapping()
+        entity_mapping = TableEntityMapping(entity_name)
+        entity_mapping.id_field = guess_id_field(df)
+        entity_mapping.columns = df.columns.to_list()
+        entity_mapping.properties = guess_properties(entity_name, df.columns.to_list())
+        entity_mapping.relationships = guess_relationships(entity_name, df.columns.to_list())
+        if any(entity_mapping.properties):
+            template = generateTemplate(entity_name, entity_mapping)
+            mapping.schema = generateSchema(entity_name, entity_mapping)
             mapping.template = template
-            rdfmap = df_to_rdf_map(df, template)
-            rdf_map_to_dgraph(rdfmap, {}, self.dgraph_client)
+            if mutate:
+                self.__add_types_and_predicates__(mapping.schema)
+                rdfmap = df_to_rdf_map(df, template)
+                rdf_map_to_dgraph(rdfmap, {}, self.dgraph_client)
+
         else:
             mapping.error = "No unique columns found"
+        mapping.entity_mappings.append(entity_mapping)
         return mapping
+def extract_entities(source: DataSource) -> List[str]:
+    # get all entities for columns matching the pattern "{entity_name}[._:](.*)"
+    entities = []
+    pattern = r"([^._:]*)[._:](.*)$"
+    for column in source.data_frame.columns.to_list():
+        match = re.match(pattern, column)
+        if match:
+            entities.append(match[1])
+            break
+    print(list(entities))
+    return list(entities)
 
 # Heuristic to get ID field
 # get first field that seems unique
@@ -127,6 +153,7 @@ def guess_id_field(df):
         if df_small[column].dropna().is_unique:
             unique_columns.append(column)
     return unique_columns[0]
+
 # Heuristic to get properties for the entity_name
 # Get all columns prefix with <entity_name>.
 # if none, get all columns
@@ -137,21 +164,23 @@ def guess_properties(entity_name: str,columns: list[str]):
     if any(prefixed_columns):
         return prefixed_columns
     else:
-        return df.columns
+        return columns
+
 # Heuristic to find the relationships from the columns names
 # If a columns name start with an entity name present in the list of entities, it is considered as a relationship
-def guess_relationships(entity_name,columns: list[str],entities: list[str]):
-    print("Guessing relationships "+str(entities) )
+def guess_relationships(entity_name,columns: list[str]):
+    print(f"guess_relationships: {entity_name} in {columns}")
     pattern = r"([^._:]*)[._:](.*)"
     field = re.compile(pattern)
     relationships = []
     for item in columns:
         match = field.match(item)
-        if match and match[1] != entity_name and match[1] in entities:
+        if match and match[1] != entity_name:
             relationships.append(item)
+    print(f"relationships: {relationships}")
     return relationships
 
-def generateTemplate(entity, mapping: TableMapping):
+def generateTemplate(entity, mapping: TableEntityMapping):
     id_field = mapping.id_field
     columns = mapping.properties
     uid = "_:{}_[{}]".format(entity,id_field)
@@ -162,8 +191,23 @@ def generateTemplate(entity, mapping: TableMapping):
         template += "<{}> <{}> \"[{}]\" .\n".format(uid,predicate,column)
     for column in mapping.relationships:
         target = column.split(".")[0]
-        predicate = f"{entity}_{target}"
+        predicate = f"{entity}.{target}"
         target_blank_uid = "<_:{}_[{}]>".format(target,column)
         template += "<{}> <{}> {} .\n".format(uid,predicate,target_blank_uid)
         template += "{} <dgraph.type> \"{}\" .\n".format(target_blank_uid,target)
     return template
+def generateSchema(entity, mapping: TableEntityMapping) -> str:
+    types = ''
+    predicates = ''
+    types += "type {0} {{\n".format(entity)
+    for column in mapping.properties:
+        predicate = column if column.startswith(entity+".") else entity+"."+column
+        types += "  <{0}>\n".format(predicate)
+        predicates += "<{0}>: string .\n".format(predicate)
+    for column in mapping.relationships:
+        target = column.split(".")[0]
+        predicate = f"{entity}.{target}"
+        types += "  <{0}>\n".format(predicate)
+        predicates += "<{0}>: uid @reverse .\n".format(predicate)
+    types += "}\n"
+    return predicates + types

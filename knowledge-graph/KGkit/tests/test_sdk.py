@@ -6,9 +6,11 @@ class TestHypkitFunction(unittest.TestCase):
     def test_constructor(self):
 
         kg = KG()
+        print(kg.dgraph_grpc)
         self.assertIsNotNone(kg.check_version())
         self.assertIsNone(kg.drop_data_and_schema())
-        self.assertIsNone(kg.GraphQL_datamodel())
+        gql = kg.GraphQL_schema()
+        self.assertIsNone(gql)
         self.assertEqual(kg.schema(),'<xid>:  string @index(hash) .\n')
 
         data = {
