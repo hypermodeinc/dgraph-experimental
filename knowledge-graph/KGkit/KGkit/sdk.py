@@ -112,19 +112,26 @@ class KG(object):
     def __load_entity(self, source: DataSource, mutate: bool = False) -> TableMapping:
         entities = extract_entities(source)
         entity_name = entities[0]
+        # Assuming only one main entity per data source for now
+        # TODO: Handle multiple entities in one data source
         df = source.data_frame
         mapping = TableMapping()
         entity_mapping = TableEntityMapping(entity_name)
         entity_mapping.id_field = guess_id_field(df)
         entity_mapping.columns = df.columns.to_list()
-        entity_mapping.properties = guess_properties(entity_name, df.columns.to_list())
+        entity_mapping.properties = guess_properties(entity_name, columns=df.columns.to_list())
+
         entity_mapping.relationships = guess_relationships(entity_name, df.columns.to_list())
         if any(entity_mapping.properties):
-            template = generateTemplate(entity_name, entity_mapping)
+            template, test = generateTemplate(entity_name, entity_mapping)
+            print(test)
             mapping.schema = generateSchema(entity_name, entity_mapping)
             mapping.template = template
             if mutate:
-                self.__add_types_and_predicates__(mapping.schema)
+                try:
+                    self.__add_types_and_predicates__(mapping.schema)
+                except Exception as e:
+                    mapping.error = str(e)
                 rdfmap = df_to_rdf_map(df, template)
                 rdf_map_to_dgraph(rdfmap, {}, self.dgraph_client)
 
@@ -134,14 +141,18 @@ class KG(object):
         return mapping
 def extract_entities(source: DataSource) -> List[str]:
     # get all entities for columns matching the pattern "{entity_name}[._:](.*)"
+    # For now just get the first entity found
     entities = []
     pattern = r"([^._:]*)[._:](.*)$"
+    print(source.data_frame.columns)
+    print(source.data_frame.columns.to_list())
     for column in source.data_frame.columns.to_list():
         match = re.match(pattern, column)
         if match:
             entities.append(match[1])
             break
-    print(list(entities))
+    if not any(entities):
+        entities.append("Thing")
     return list(entities)
 
 # Heuristic to get ID field
@@ -157,19 +168,27 @@ def guess_id_field(df):
 # Heuristic to get properties for the entity_name
 # Get all columns prefix with <entity_name>.
 # if none, get all columns
-def guess_properties(entity_name: str,columns: list[str]):
-    pattern = f"{entity_name}[._:](.*)"
-    field = re.compile(pattern)
-    prefixed_columns = [item for item in columns if field.match(item)]
-    if any(prefixed_columns):
-        return prefixed_columns
-    else:
-        return columns
+def guess_properties(entity_name: str,columns: list[str],is_main_entity = True):
+    # a pattern to find field in the form of <entity_name>[._:]<something>
+    pattern = r"([^._:]*)[._:](.*)"
+    prefixed_field = re.compile(pattern)
+    property_columns = []
+    # get prefixed fields matching the entity_name and simple fields if it is the main entity
+    for item in columns:
+        match = prefixed_field.match(item)
+        if match:
+            if match[1] == entity_name:
+                property_columns.append(item)
+        else:
+            if is_main_entity:
+                property_columns.append(item)
+
+    return property_columns if any(property_columns) else columns
+
 
 # Heuristic to find the relationships from the columns names
 # If a columns name start with an entity name present in the list of entities, it is considered as a relationship
-def guess_relationships(entity_name,columns: list[str]):
-    print(f"guess_relationships: {entity_name} in {columns}")
+def guess_relationships(entity_name: str, columns: list[str]):
     pattern = r"([^._:]*)[._:](.*)"
     field = re.compile(pattern)
     relationships = []
@@ -181,21 +200,40 @@ def guess_relationships(entity_name,columns: list[str]):
     return relationships
 
 def generateTemplate(entity, mapping: TableEntityMapping):
+    template = {}
     id_field = mapping.id_field
     columns = mapping.properties
     uid = "_:{}_[{}]".format(entity,id_field)
     template = "<{}> <dgraph.type> \"{}\" .\n".format(uid,entity)
-    template +=  "{} <xid> \"{}\" .\n".format(uid,uid)
+    template +=  "<{}> <xid> \"{}\" .\n".format(uid,uid)
+
+    geo_loc = {}
     for column in columns:
-        predicate = column if column.startswith(entity+".") else entity+"."+column
-        template += "<{}> <{}> \"[{}]\" .\n".format(uid,predicate,column)
+        if (prefix_lat := guess_latitude(column)) is not None:
+            if prefix_lat not in geo_loc:
+                geo_loc[prefix_lat] = {}
+            geo_loc[prefix_lat]['lat'] = column
+        elif (prefix_long := guess_longitude(column)) is not None:
+            if prefix_long not in geo_loc:
+                geo_loc[prefix_long] = {}
+            geo_loc[prefix_long]['long'] = column
+        else:
+            predicate = column if column.startswith(entity+".") else entity+"."+column
+            template += "<{}> <{}> \"[{}]\" .\n".format(uid,predicate,column)
+    # check geo_loc fields
+    print(geo_loc)
+    for prefix, fields in geo_loc.items():
+        lat_field = fields.get('lat')
+        long_field = fields.get('long')
+        if (lat_field is not None) and (long_field is not None):
+            template += "<{}> <{}.{}> \"{{'type':'Point','coordinates':[[{}],[{}]]}}\"^^<geo:geojson> .\n".format(uid,entity,prefix,lat_field,long_field)
     for column in mapping.relationships:
         target = column.split(".")[0]
         predicate = f"{entity}.{target}"
         target_blank_uid = "<_:{}_[{}]>".format(target,column)
         template += "<{}> <{}> {} .\n".format(uid,predicate,target_blank_uid)
         template += "{} <dgraph.type> \"{}\" .\n".format(target_blank_uid,target)
-    return template
+    return template, template
 def generateSchema(entity, mapping: TableEntityMapping) -> str:
     types = ''
     predicates = ''
@@ -211,3 +249,15 @@ def generateSchema(entity, mapping: TableEntityMapping) -> str:
         predicates += "<{0}>: uid @reverse .\n".format(predicate)
     types += "}\n"
     return predicates + types
+def guess_latitude(column:str) -> str:
+    for postfix in ['latitude','lat']:
+        if column.lower().endswith(postfix):
+            prefix = column[:-len(postfix)] if column[:-len(postfix)] != '' else 'location'
+            return prefix
+    return None
+def guess_longitude(column:str) -> str:
+    for postfix in ['longitude','long','lng']:
+        if column.lower().endswith(postfix):
+            prefix = column[:-len(postfix)] if column[:-len(postfix)] != '' else 'location'
+            return prefix
+    return None
