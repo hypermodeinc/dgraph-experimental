@@ -4,3 +4,4 @@ json
 pandas
 re
 graphql-core
+mistralai

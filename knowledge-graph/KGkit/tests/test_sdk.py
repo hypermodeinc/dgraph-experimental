@@ -2,7 +2,8 @@ import unittest
 import pandas as pd
 from KGkit import KG
 from KGkit.sdk import guess_properties, guess_relationships
-class TestHypkitFunction(unittest.TestCase):
+
+class TestKGkitFunction(unittest.TestCase):
     def test_constructor(self):
 
         kg = KG()
@@ -20,8 +21,9 @@ class TestHypkitFunction(unittest.TestCase):
 
         # Create the DataFrame
         df = pd.DataFrame(data)
-        self.assertEqual(guess_properties('Project',['Project:ID', 'Project.Name', 'Test']), ['Project:ID', 'Project.Name'])
-        self.assertEqual(guess_relationships('Project',['Project:ID', 'Project.Name', 'School.ID'],['Project','School']), ['School.ID'])
+        self.assertEqual(guess_properties('Project',['Project:ID', 'Project.Name', 'Test']), ['Project:ID', 'Project.Name','Test'])
+        self.assertEqual(guess_properties('Project',['Project:ID', 'Project.Name', 'Test'],False), ['Project:ID', 'Project.Name'])
+        self.assertEqual(guess_relationships('Project',['Project:ID', 'Project.Name', 'School.ID']), ['School.ID'])
 
 if __name__ == "__main__":
     unittest.main()

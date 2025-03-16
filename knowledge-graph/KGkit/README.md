@@ -49,3 +49,6 @@ Geoloc:
 - add embeddings capability
 - detect/handle columns containing array of strings
 
+## Open points
+Deploying GraphQL Schema in python in not possible using pydgraph and grpcTarget
+-> must use HTTP request on HTTP endpoint!

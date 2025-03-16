@@ -1,6 +1,7 @@
 import pandas as pd
 from typing import Dict, List
 from dataclasses import dataclass, field
+from typing import Optional
 
 class DataSource:
     def __init__(self, name: str, data: pd.DataFrame):
@@ -24,3 +25,21 @@ class TableMapping:
 TableMappingMap = Dict[str, TableMapping]
 # Define the type alias
 DataFrameMap = Dict[str, pd.DataFrame]
+
+
+
+
+@dataclass
+class KGClass:
+    uid: str = ""
+    id: str = ""
+    role: str = "MAIN"
+    label: str = ""
+    description: str = ""
+
+
+@dataclass
+class KGSchema:
+    label: str = ""
+    description: Optional[str] = None
+    classes: List['KGClass'] = field(default_factory=list)

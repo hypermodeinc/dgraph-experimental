@@ -1,37 +1,54 @@
 # Hypkit class to interact with Hypkit API
 import pydgraph
+import requests
 import grpc
 import re
 import json
-from graphql import GraphQLSchema,build_schema
+from mistralai import Mistral
+from graphql import GraphQLSchema,build_schema,print_schema
 from typing import Optional, List
 from .rdf_lib import df_to_rdf_map
 from .upload_csv import rdf_map_to_dgraph
-
-from .types import DataSource, TableEntityMapping, TableMapping
+from .types import  DataSource, TableEntityMapping, TableMapping
 
 class KG(object):
     dgraph_token: Optional[str] = None
     dgraph_grpc: Optional[str] = None
-    dgraph_client: any = None
-    __graphql_schema__: str = None
+    dgraph_http: Optional[str] = None
+    dgraph_client: pydgraph.DgraphClient = None
+    __graphql_schema__: GraphQLSchema = None
+    __llm_mistral: Mistral = None
+    __llm_model: str = None
     def __init__(
             self, 
             token: Optional[str] = None,
-            grpc_target: Optional[str] = None):
+            grpc_target: Optional[str] = None,
+            http_endpoint: Optional[str] = None):
         if grpc_target is None:
             grpc_target = "localhost:9080"
+        if http_endpoint is None:
+            http_endpoint = "http://localhost:8080"
         self.dgraph_grpc = grpc_target
+        self.dgraph_http = http_endpoint
         self.dgraph_token = token
         self._init_client()
         self.__init_schema__()
-
+        self.__init_GraphQL_schema__()
+    def with_mistral(self,model:str, mistral: Mistral):
+        self.__llm_mistral = mistral
+        self.__llm_model = model
+        return self
     def __add_types_and_predicates__(self, schema):
         op = pydgraph.Operation(schema=schema)
         return self.dgraph_client.alter(op)
 
     def __init_schema__(self):
-        self.__add_types_and_predicates__(schema='<xid>: string @index(hash) .')
+        self.__add_types_and_predicates__(schema='''
+        <xid>: string @index(hash) .
+        KGSchema.label: string @index(hash) .
+        ''')
+    def __init_GraphQL_schema__(self):
+        self.GraphQL_schema()
 
     def _init_client(self):
         if "cloud.dgraph.io" in self.dgraph_grpc:
@@ -52,7 +69,7 @@ class KG(object):
         op = pydgraph.Operation(drop_all=True)
         self.dgraph_client.alter(op)
         self.__init_schema__()
-
+    # load DQL schema
     def schema(self):
         txn = self.dgraph_client.txn()
         try:
@@ -82,25 +99,37 @@ class KG(object):
 
         finally:
             txn.discard()
-
+    # get GraphQL schema
     def GraphQL_schema(self) -> GraphQLSchema:
-        txn = self.dgraph_client.txn()
+        txn = self.dgraph_client.txn(read_only=True)
         try:
         # Run query.
             query = "{ schema(func:has(dgraph.graphql.schema)) { datamodel:dgraph.graphql.schema}}"
             res = txn.query(query)
             data = json.loads(res.json)
             schema_text = None
-            schema = None
+            self.__graphql_schema__ = None
             if (len(data['schema']) > 0) and (data['schema'][0]['datamodel'] != ''):
                 schema_text = (data['schema'][0]['datamodel'])
-                schema = build_schema(schema_text)
-            self.__graphql_schema__ = schema_text
-            return schema
+                self.__graphql_schema__ = build_schema(schema_text,assume_valid=True)
+            return self.__graphql_schema__
         finally:
             txn.discard()
+    # deploy GraphQL schema
+    def deploy_GraphQL_schema(self,schema: str):
+        url = self.dgraph_http+"/admin/schema"
+        headers = {
+            "Content-Type": "application/json"
+        }
+        if (self.dgraph_token is not None):
+            headers["X-Auth-Token"] = self.dgraph_token
+            headers["Authorization"] = f"Bearer {self.dgraph_token}"
 
-    def load(self,
+        # Send the POST request
+        response = requests.post(url, headers=headers, data=schema, timeout=10)
+        if response.status_code != 200:
+            raise Exception(f"Failed to deploy GraphQL schema: {response.text}")
+    def load_tabular_data(self,
              sources: List[DataSource],
              mutate: Optional[bool] = True
              ) -> List[TableMapping]:
@@ -110,7 +139,7 @@ class KG(object):
         return table_mappings
 
     def __load_entity(self, source: DataSource, mutate: bool = False) -> TableMapping:
-        entities = extract_entities(source)
+        entities = extract_entities_from_column_names(source)
         entity_name = entities[0]
         # Assuming only one main entity per data source for now
         # TODO: Handle multiple entities in one data source
@@ -139,7 +168,119 @@ class KG(object):
             mapping.error = "No unique columns found"
         mapping.entity_mappings.append(entity_mapping)
         return mapping
-def extract_entities(source: DataSource) -> List[str]:
+
+    def with_kg_schema(self,schema:str):
+        new_types = build_schema(schema,assume_valid=True)
+        ## add annotations to the schema
+        for new_type in new_types.type_map:
+            new_types.type_map[new_type].description = "KG Schema: "+new_types.type_map[new_type].description
+        if self.__graphql_schema__ is not None:
+            for new_type in new_types.type_map:
+                self.__graphql_schema__.type_map[new_type] = new_types.type_map[new_type]
+        else:
+            self.__graphql_schema__ = new_types
+        schema_text = print_schema(self.__graphql_schema__)
+        self.deploy_GraphQL_schema(schema_text)
+        return self
+    def get_kg_schema(self) -> GraphQLSchema:
+        kg_types = self.__graphql_schema__
+        # remove type from type_map with description not starting with "KG Schema: "
+        if kg_types is None:
+            return ""
+        for type_name in list(kg_types.type_map):
+            if not kg_types.type_map[type_name].description.startswith("KG Schema: "):
+                del kg_types.type_map[type_name]
+        return kg_types
+    def get_kg_schema_str(self) -> str:
+        kg_types = self.get_kg_schema()
+        return print_schema(kg_types)
+
+
+    def suggest_entities(self,text: str) -> str:
+        # Error if no LLM
+
+        if (self.__llm_mistral is None):
+            raise ValueError("LLM model not set. Use withMistral() or withOpenAI() to set the model")
+
+        instruction = """
+        Suggest entity concepts mentioned in the prompt.
+        Reply with a JSON document containing the list of entities types and a short semantic description using the example:
+
+        {"entity_types": [
+            {
+            "type": "Abstract name",
+            "description": "semantic description of the entity to help LLM matching",
+            "examples": ["example found in the text", "example 2 found in the text"]
+            }
+            ]
+        }
+       Use the most abstract name that can apply.
+        """
+
+        # Create the messages for the chat completion
+        messages = [
+            {"role": "system", "content": instruction},
+            {"role": "user", "content": text}
+        ]
+
+        params = {
+            "model": self.__llm_model,
+            "messages": messages,
+            "response_format": {"type": "json_object"}
+        }
+
+        # Invoke the model with the input parameters
+        # response = llm.ChatCompletion.create(**params)
+        response = self.__llm_mistral.chat.complete(**params)
+
+        # Extract and return the content of the first choice
+        output = response.choices[0].message.content.strip()
+        return output
+    def extract_entities_from_text(self,text:str) -> str:
+        # Prepare instruction for the LLM
+        instruction = (
+            "User submits a text. List the main entities from the text.\n"
+            "Look for all entities types from this list:\n"
+        )
+        kg_types = self.get_kg_schema()
+        for type_name in kg_types.type_map:
+            description = kg_types.type_map[type_name].description
+            instruction += f"- {type_name} : {description}\n"
+        instruction += (
+        "Reply with a JSON document containing the list of entities with an identifier label "
+        "and a short semantic description.\n\n"
+        "Follow this example:\n"
+        "{\n"
+        '  "list": [\n'
+        '    {\n'
+        '      "label": "name or short label",\n'
+        '      "is_a": "one of the entity type",\n'
+        '      "description": "description found in the text if any"\n'
+        '    }\n'
+        '  ]\n'
+        "}"
+        )
+        # Create the messages for the chat completion
+        messages = [
+            {"role": "system", "content": instruction},
+            {"role": "user", "content": text}
+        ]
+
+        params = {
+            "model": self.__llm_model,
+            "messages": messages,
+            "response_format": {"type": "json_object"}
+        }
+
+        # Invoke the model with the input parameters
+        # response = llm.ChatCompletion.create(**params)
+        response = self.__llm_mistral.chat.complete(**params)
+
+        # Extract and return the content of the first choice
+        output = response.choices[0].message.content.strip()
+        return output
+
+def extract_entities_from_column_names(source: DataSource) -> List[str]:
     # get all entities for columns matching the pattern "{entity_name}[._:](.*)"
     # For now just get the first entity found
     entities = []

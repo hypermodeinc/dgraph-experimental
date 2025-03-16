@@ -1,5 +1,5 @@
 import pandas as pd
-from pprint import pprint
+# from pprint import pprint
 from KGkit import KG,DataSource
 
 kg = KG()
@@ -11,7 +11,7 @@ df2 = pd.read_csv('Schools-CA10.csv',dtype=str)
 df3 = pd.read_csv('Donations-CA10.csv',dtype=str, usecols=['Donation.ID','Project.ID','Donor.ID','Donation.Amount'])
 # set the columns order first column must be the identifier of the main entity
 df3 = df3[['Donation.ID','Project.ID','Donor.ID','Donation.Amount']]
-res = kg.load([
+res = kg.load_tabular_data([
     DataSource("Projects",df1),
     DataSource("Schools",df2),
     DataSource("Donations",df3)
