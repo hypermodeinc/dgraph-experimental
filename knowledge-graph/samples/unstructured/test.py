@@ -3,7 +3,7 @@ from mistralai import Mistral
 
 from KGkit import KG
 
-kg = KG().with_mistral("mistral-small-latest",Mistral(api_key="jxBB0Km9uxjHWhwTOhuScNohphaLqIq0"))
+kg = KG().with_mistral("mistral-small-latest",Mistral(api_key=""))
 # print(c.check_version())
 # print(c.schema())
 
