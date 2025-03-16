@@ -1,9 +1,12 @@
 import json
+import dotenv
+import os
 from mistralai import Mistral
-
 from KGkit import KG
 
-kg = KG().with_mistral("mistral-small-latest",Mistral(api_key=""))
+dotenv.load_dotenv()
+
+kg = KG().with_mistral("mistral-small-latest",Mistral(api_key=os.getenv("MISTRAL_API_KEY")))
 # print(c.check_version())
 # print(c.schema())
 
