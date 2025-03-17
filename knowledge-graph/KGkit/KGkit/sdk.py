@@ -1,12 +1,13 @@
 # Hypkit class to interact with Hypkit API
 import pydgraph
+from python_graphql_client import GraphqlClient
 import requests
 import grpc
 import re
 import json
 from mistralai import Mistral
-from graphql import GraphQLSchema,build_schema,print_schema
-from typing import Optional, List
+from graphql import GraphQLSchema,build_schema,print_schema,GraphQLObjectType,GraphQLScalarType,GraphQLField,GraphQLList
+from typing import Optional, List, Any
 from .rdf_lib import df_to_rdf_map
 from .upload_csv import rdf_map_to_dgraph
 from .types import  DataSource, TableEntityMapping, TableMapping
@@ -31,9 +32,12 @@ class KG(object):
         self.dgraph_grpc = grpc_target
         self.dgraph_http = http_endpoint
         self.dgraph_token = token
-        self._init_client()
-        self.__init_schema__()
-        self.__init_GraphQL_schema__()
+        try:
+            self._init_client()
+            self.__init_schema__()
+            self.__init_GraphQL_schema__()
+        except Exception as e:
+            raise Exception(f"Failed to connect to Dgraph server: {e}") from e
     def with_mistral(self,model:str, mistral: Mistral):
         self.__llm_mistral = mistral
         self.__llm_model = model
@@ -61,6 +65,7 @@ class KG(object):
         else:
             client_stub = pydgraph.DgraphClientStub(self.dgraph_grpc)
         self.dgraph_client = pydgraph.DgraphClient(client_stub)
+        self.graphql_client = GraphqlClient(endpoint=self.dgraph_http)
         return self.dgraph_client
     
     def check_version(self):
@@ -117,6 +122,7 @@ class KG(object):
             txn.discard()
     # deploy GraphQL schema
     def deploy_GraphQL_schema(self,schema: str):
+        print(f"Deploying GraphQL schema: {schema}")
         url = self.dgraph_http+"/admin/schema"
         headers = {
             "Content-Type": "application/json"
@@ -129,6 +135,8 @@ class KG(object):
         response = requests.post(url, headers=headers, data=schema, timeout=10)
         if response.status_code != 200:
             raise Exception(f"Failed to deploy GraphQL schema: {response.text}")
+        if 'errors' in response.json():
+            raise Exception(f"Failed to deploy GraphQL schema: {response.json()['errors']}")
     def load_tabular_data(self,
              sources: List[DataSource],
              mutate: Optional[bool] = True
@@ -170,17 +178,19 @@ class KG(object):
         return mapping
 
     def with_kg_schema(self,schema:str):
-        new_types = build_schema(schema,assume_valid=True)
+        new_types = build_schema(schema,assume_valid_sdl=True)
         ## add annotations to the schema
-        for new_type in new_types.type_map:
-            new_types.type_map[new_type].description = "KG Schema: "+new_types.type_map[new_type].description
-        if self.__graphql_schema__ is not None:
-            for new_type in new_types.type_map:
-                self.__graphql_schema__.type_map[new_type] = new_types.type_map[new_type]
-        else:
+        for key,new_type in new_types.type_map.items():
+            if isinstance(new_type, GraphQLObjectType) and not key.startswith("__"):
+                new_type.description = "KG Schema: "+new_type.description
+                if self.__graphql_schema__ is not None:
+                    self.__graphql_schema__.type_map[key] = new_type
+        if self.__graphql_schema__ is None:
             self.__graphql_schema__ = new_types
         schema_text = print_schema(self.__graphql_schema__)
-        self.deploy_GraphQL_schema(schema_text)
+        # schema_text must be the updated schema but the generation does not include directives
+        # for the moment use the schema provided
+        self.deploy_GraphQL_schema(schema)
         return self
     def get_kg_schema(self) -> GraphQLSchema:
         kg_types = self.__graphql_schema__
@@ -188,7 +198,9 @@ class KG(object):
         if kg_types is None:
             return ""
         for type_name in list(kg_types.type_map):
-            if not kg_types.type_map[type_name].description.startswith("KG Schema: "):
+            if type_name.startswith("__") \
+            or not isinstance(kg_types.type_map[type_name], GraphQLObjectType) \
+            or not kg_types.type_map[type_name].description.startswith("KG Schema: "):
                 del kg_types.type_map[type_name]
         return kg_types
     def get_kg_schema_str(self) -> str:
@@ -204,7 +216,7 @@ class KG(object):
 
         instruction = """
         Suggest entity concepts mentioned in the prompt.
-        Reply with a JSON document containing the list of entities types and a short semantic description using the example:
+        Reply with a JSON document with no quotes on field names, containing the list of entities types and a short semantic description using the example:
 
         {"entity_types": [
             {
@@ -236,30 +248,34 @@ class KG(object):
         # Extract and return the content of the first choice
         output = response.choices[0].message.content.strip()
         return output
-    def extract_entities_from_text(self,text:str) -> str:
+    def get_entity_context(self, entity: str, with_nested: bool = True, level: int = 0) -> str:
+        context = None
+        kg_types = self.get_kg_schema()
+        type = kg_types.type_map.get(entity)
+        if type is not None:
+            context = ""
+            if level == 0:
+                context+= f" - {entity} : {type.description}\n with fields:\n"
+            indent = " "*(level+1)*4
+            for field_name,field in type.fields.items():
+                if isinstance(field.type,GraphQLScalarType) or isinstance(field.type.of_type, GraphQLScalarType ):
+                    context += f"{indent} - {field_name}, {field.description}\n"
+                elif with_nested:
+                    nested = is_list_of_objects(field)
+                    if (nested is not None):
+                        context += f"{indent} - {field_name}, {field.description}\n"
+                        context += f"{indent}   a list of nested objects with fields:\n"
+                        context += self.get_entity_context(nested, False, level+1)
+        return context
+
+    def extract_entities_from_text(self,text:str, entity:str) -> Any:
         # Prepare instruction for the LLM
         instruction = (
-            "User submits a text. List the main entities from the text.\n"
-            "Look for all entities types from this list:\n"
+            "You create knowledge base. List all entities from the user input\n"
+            "Reply with a JSON document with no quotes on field names, containing the list of \n"+ self.get_entity_context(entity)
         )
-        kg_types = self.get_kg_schema()
-        for type_name in kg_types.type_map:
-            description = kg_types.type_map[type_name].description
-            instruction += f"- {type_name} : {description}\n"
-        instruction += (
-        "Reply with a JSON document containing the list of entities with an identifier label "
-        "and a short semantic description.\n\n"
-        "Follow this example:\n"
-        "{\n"
-        '  "list": [\n'
-        '    {\n'
-        '      "label": "name or short label",\n'
-        '      "is_a": "one of the entity type",\n'
-        '      "description": "description found in the text if any"\n'
-        '    }\n'
-        '  ]\n'
-        "}"
-        )
+
+        print(f"Prompt: \n{instruction}\n")
         # Create the messages for the chat completion
         messages = [
             {"role": "system", "content": instruction},
@@ -278,8 +294,46 @@ class KG(object):
 
         # Extract and return the content of the first choice
         output = response.choices[0].message.content.strip()
-        return output
+        print("output:")
+        print(output)
+        json_output = json.loads(output)
+        self.mutate_extracted_entities(entity, json_output)
+        return json_output
+    def mutate_extracted_entities(self,type_name:str, entities: Any ) -> str:
+        data = entities[type_name] # the array of entities
+        data_str = dict_to_js_object_notation(data)
+        mutation = f"""
+        mutation Add{type_name} {{
+            add{type_name}(input: {data_str},
+            upsert: true) {{
+                numUids
+            }}
+        }}
+        """
+        print(mutation)
+        # Define the headers, including the Content-Type for JSON
+        headers = {
+            'Content-Type': 'application/json'
+        }
 
+        # Define the payload with the query
+        payload = {
+            'query': mutation
+        }
+        print(json.dumps(payload, indent=2))
+        url = "http://localhost:8080/graphql"
+        # Send the POST request to the GraphQL endpoint
+        response = requests.post(url, headers=headers, data=json.dumps(payload),timeout=10)
+        print(json.dumps(response.json(), indent=2))
+
+
+def is_list_of_objects(field:GraphQLField) -> str:
+    field_type = field.type
+    if isinstance(field_type, GraphQLList):
+        inner_type = field_type.of_type
+        if isinstance(inner_type, GraphQLObjectType):
+            return inner_type.name
+    return None
 def extract_entities_from_column_names(source: DataSource) -> List[str]:
     # get all entities for columns matching the pattern "{entity_name}[._:](.*)"
     # For now just get the first entity found
@@ -402,3 +456,9 @@ def guess_longitude(column:str) -> str:
             prefix = column[:-len(postfix)] if column[:-len(postfix)] != '' else 'location'
             return prefix
     return None
+
+def dict_to_js_object_notation(data: dict) -> str:
+    # Remove quotes around object keys
+    json_str = json.dumps(data)
+    json_like_js = re.sub(r'"(\w+)"\s*:', r'\1:', json_str)
+    return json_like_js
