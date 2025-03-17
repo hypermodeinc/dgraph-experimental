@@ -12,6 +12,7 @@ from .rdf_lib import df_to_rdf_map
 from .upload_csv import rdf_map_to_dgraph
 from .types import  DataSource, TableEntityMapping, TableMapping
 
+DESC_PREFIX = "KG:"
 class KG(object):
     dgraph_token: Optional[str] = None
     dgraph_grpc: Optional[str] = None
@@ -182,7 +183,7 @@ class KG(object):
         ## add annotations to the schema
         for key,new_type in new_types.type_map.items():
             if isinstance(new_type, GraphQLObjectType) and not key.startswith("__"):
-                new_type.description = "KG Schema: "+new_type.description
+                new_type.description = DESC_PREFIX+new_type.description
                 if self.__graphql_schema__ is not None:
                     self.__graphql_schema__.type_map[key] = new_type
         if self.__graphql_schema__ is None:
@@ -200,7 +201,7 @@ class KG(object):
         for type_name in list(kg_types.type_map):
             if type_name.startswith("__") \
             or not isinstance(kg_types.type_map[type_name], GraphQLObjectType) \
-            or not kg_types.type_map[type_name].description.startswith("KG Schema: "):
+            or not kg_types.type_map[type_name].description.startswith(DESC_PREFIX):
                 del kg_types.type_map[type_name]
         return kg_types
     def get_kg_schema_str(self) -> str:
