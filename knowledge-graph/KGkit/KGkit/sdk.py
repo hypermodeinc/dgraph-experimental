@@ -191,7 +191,7 @@ class KG(object):
                     self.__graphql_schema__.type_map[key] = new_type
         if self.__graphql_schema__ is None:
             self.__graphql_schema__ = new_types
-        schema_text = print_schema(self.__graphql_schema__)
+        # schema_text = print_schema(self.__graphql_schema__)
         # schema_text must be the updated schema but the generation does not include directives
         # for the moment use the schema provided
         self.deploy_GraphQL_schema(schema)
@@ -204,7 +204,7 @@ class KG(object):
         for type_name in list(kg_types.type_map):
             if type_name.startswith("__") \
             or not isinstance(kg_types.type_map[type_name], GraphQLObjectType) \
-            or kg_types.type_map[type_name].description == None \
+            or kg_types.type_map[type_name].description is None \
             or not kg_types.type_map[type_name].description.startswith(DESC_PREFIX):
                 del kg_types.type_map[type_name]
         return kg_types
