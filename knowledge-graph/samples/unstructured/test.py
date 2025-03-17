@@ -28,6 +28,13 @@ kg.with_kg_schema('''
                     name: String! @id
                     """ List of food products provided by this business."""
                     products: [FoodProduct]
+                    """ contact email of the organization."""
+                    contact_email: String
+                    """ contact phone number of the organization."""
+                    contact_phone: String
+                    """ website of the organization."""
+                    website: String
+                   
                   }
                   """A person (alive, dead, undead, or fictional)."""
                   type Person {
