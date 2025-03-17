@@ -5,26 +5,39 @@ from mistralai import Mistral
 from KGkit import KG
 
 dotenv.load_dotenv()
+# Add a .env file to the root of the project with the following content:
+# MISTRAL_API_KEY=YOUR_API_KEY
 
-kg = KG().with_mistral("mistral-small-latest",Mistral(api_key=os.getenv("MISTRAL_API_KEY")))
-# print(c.check_version())
-# print(c.schema())
+kg = KG().with_mistral("mistral-large-latest",Mistral(api_key=os.getenv("MISTRAL_API_KEY")))
+
+# Declare a GraphQL Data model for the knowledge graph
+# The schema is written in the Dgraph GraphQL schema syntax
+# Include comments to describe types and the fields
 
 kg.with_kg_schema('''
-                  """A natural body in space, such as a planet, star, or moon."""
-                  type CelestialBody {
-                    """ Short name uniquely identifying the celestial body."""
-                    label: ID!
+                  """food produced by a food production process."""
+                  type FoodProduct {
+                    """Short name uniquely identifying the food product."""
+                    name: String! @id
+                    """ description/benefits of the food product."""
+                    description: String
+                  }
+                  """A particular physical business or branch of an organization"""
+                  type LocalBusiness {
+                    """ Short name uniquely identifying the organization."""
+                    name: String! @id
+                    """ List of food products provided by this business."""
+                    products: [FoodProduct]
+                  }
+                  """A person (alive, dead, undead, or fictional)."""
+                  type Person {
+                    """ complete name uniquely identifying the person."""
+                    name: String! @id
                   }
                   ''')
-print(kg.get_kg_schema_str())
-
-suggestion = kg.extract_entities_from_text("""
-## Jupiter
-**Jupiter** is the fifth planet from the [Sun](/wiki/Sun "Sun"), and is the largest planet in the
-[Solar System](/wiki/Solar_System "Solar System"). It is a giant planet with a mass one-thousandth
-that of the Sun, but two-and-a-half times that of all the other planets in the Solar System
-combined. Jupiter and [Saturn](/wiki/Saturn "Saturn") are [gas giants](/wiki/Gas_giant "Gas giant");
-the other two giant planets, [Uranus](/wiki/Uranus "Uranus") and [Neptune](/wiki/Neptune "Neptune")"
-""")
-print(json.dumps(json.loads(suggestion), indent=2))
+# print(kg.get_kg_schema_str())
+# read text file
+with open("company_info.txt", "r") as file:
+    data = file.read()
+    extracted = kg.extract_entities_from_text(data, "LocalBusiness")
+    print(json.dumps(extracted, indent=2))
