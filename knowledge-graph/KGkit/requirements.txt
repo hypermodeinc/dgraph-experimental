@@ -1,0 +1,8 @@
+pydgraph
+grpc
+json
+pandas
+re
+graphql-core
+mistralai
+python_graphql_client

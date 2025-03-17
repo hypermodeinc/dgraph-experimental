@@ -1,0 +1,21 @@
+type KGSchema {
+  label: String! @id
+  description: String
+  classes: [KGClass] @hasInverse(field: isDefinedBy)
+}
+enum KGClassRole {
+  MAIN
+  RELATED
+  RELATION
+}
+type KGClass {
+  id: String! @id # set has namespace#label
+  role: KGClassRole!
+  label: String!
+  description: String
+  isDefinedBy: KGSchema @hasInverse(field: classes)
+}
+type KGDocument {
+  id: String! @id
+
+}
