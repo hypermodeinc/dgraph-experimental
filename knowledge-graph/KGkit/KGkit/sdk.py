@@ -23,15 +23,13 @@ class KG(object):
     __llm_model: str = None
     def __init__(
             self, 
-            token: Optional[str] = None,
             grpc_target: Optional[str] = None,
-            http_endpoint: Optional[str] = None):
+            token: Optional[str] = None
+            ):
         if grpc_target is None:
             grpc_target = "localhost:9080"
-        if http_endpoint is None:
-            http_endpoint = "http://localhost:8080"
+
         self.dgraph_grpc = grpc_target
-        self.dgraph_http = http_endpoint
         self.dgraph_token = token
         try:
             self._init_client()
@@ -50,15 +48,20 @@ class KG(object):
     def __init_schema__(self):
         self.__add_types_and_predicates__(schema='''
         <xid>: string @index(hash) .
-        KGSchema.label: string @index(hash) .
         ''')
     def __init_GraphQL_schema__(self):
         self.GraphQL_schema()
 
     def _init_client(self):
+        if self.dgraph_grpc == "localhost:9080":
+            self.dgraph_http = "http://localhost:8080"
         if "cloud.dgraph.io" in self.dgraph_grpc:
+            base_url = self.dgraph_grpc.split(":")[0].replace(".grpc.",".")
+            self.dgraph_http = "https://"+base_url
             client_stub = pydgraph.DgraphClientStub.from_cloud(self.dgraph_grpc, self.dgraph_token)
         elif "hypermode.host" in self.dgraph_grpc:
+            base_url = self.dgraph_grpc.split(":")[0]
+            self.dgraph_http = "https://"+base_url+"/dgraph"
             creds = grpc.ssl_channel_credentials()
             call_credentials = grpc.access_token_call_credentials(self.dgraph_token)
             composite_credentials = grpc.composite_channel_credentials(creds, call_credentials)
@@ -123,7 +126,7 @@ class KG(object):
             txn.discard()
     # deploy GraphQL schema
     def deploy_GraphQL_schema(self,schema: str):
-        print(f"Deploying GraphQL schema: {schema}")
+        # print(f"Deploying GraphQL schema: {schema}")
         url = self.dgraph_http+"/admin/schema"
         headers = {
             "Content-Type": "application/json"
@@ -133,11 +136,11 @@ class KG(object):
             headers["Authorization"] = f"Bearer {self.dgraph_token}"
 
         # Send the POST request
-        response = requests.post(url, headers=headers, data=schema, timeout=10)
+        response = requests.post(url, headers=headers, data=schema, timeout=50)
         if response.status_code != 200:
-            raise Exception(f"Failed to deploy GraphQL schema: {response.text}")
+            raise Exception(f"Failed to deploy GraphQL schema on {url} - status code:{response.status_code}")
         if 'errors' in response.json():
-            raise Exception(f"Failed to deploy GraphQL schema: {response.json()['errors']}")
+            raise Exception(f"Failed to deploy GraphQL schema on {url} : {response.json()['errors']}")
     def load_tabular_data(self,
              sources: List[DataSource],
              mutate: Optional[bool] = True
@@ -201,6 +204,7 @@ class KG(object):
         for type_name in list(kg_types.type_map):
             if type_name.startswith("__") \
             or not isinstance(kg_types.type_map[type_name], GraphQLObjectType) \
+            or kg_types.type_map[type_name].description == None \
             or not kg_types.type_map[type_name].description.startswith(DESC_PREFIX):
                 del kg_types.type_map[type_name]
         return kg_types
@@ -314,7 +318,8 @@ class KG(object):
         print(mutation)
         # Define the headers, including the Content-Type for JSON
         headers = {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': f"Bearer {self.dgraph_token}"
         }
 
         # Define the payload with the query
@@ -322,9 +327,11 @@ class KG(object):
             'query': mutation
         }
         print(json.dumps(payload, indent=2))
-        url = "http://localhost:8080/graphql"
+
         # Send the POST request to the GraphQL endpoint
-        response = requests.post(url, headers=headers, data=json.dumps(payload),timeout=10)
+        print(f"POST {self.dgraph_http}/graphql")
+        response = requests.post(self.dgraph_http+"/graphql", headers=headers, data=json.dumps(payload),timeout=10)
+        print(response.text)
         print(json.dumps(response.json(), indent=2))
 
 
