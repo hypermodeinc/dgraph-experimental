@@ -3,22 +3,7 @@
 WORK IN PROGRESS - NOT TO BE USED
 
 
-## Package structure
-KGkit/
-│
-├── KGkit/
-│   ├── __init__.py
-│   ├── sdk.py
-│  
-│
-├── tests/
-│   ├── __init__.py
-│   ├── test_sdk.py
-│   
-│
-├── setup.py
-├── README.md
-└── requirements.txt
+
 
 ### Tests
 ```sh
@@ -45,6 +30,10 @@ Geoloc:
 - detect/handle LAT LONG or latitude longitude columns
 
 ### KG from text or pdf
+- declare a datamodel using fluent interface
+- extract entities from a PDF file
+- extract entities from a text file
+
 
 ## Backlog
 - KG from Tabular data
