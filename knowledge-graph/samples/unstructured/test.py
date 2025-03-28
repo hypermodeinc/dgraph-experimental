@@ -12,11 +12,13 @@ dotenv.load_dotenv()
 
 # kg=KG() for localhost:9080 dgraph instance
 kg = KG(grpc_target=os.getenv("DGRAPH_GRPC"), token=os.getenv("DGRAPH_TOKEN"))\
-.with_mistral("mistral-large-latest",Mistral(api_key=os.getenv("MISTRAL_API_KEY")))
+.with_mistral("mistral-small-latest",Mistral(api_key=os.getenv("MISTRAL_API_KEY")))
 
 # Declare a GraphQL Data model for the knowledge graph
 # The schema is written in the Dgraph GraphQL schema syntax
 # Include comments to describe types and the fields
+# Create a schema
+
 
 kg.with_kg_schema('''
                   """food produced by a food production process."""
@@ -50,6 +52,7 @@ kg.with_kg_schema('''
                   ''')
 # print(kg.get_kg_schema_str())
 # read text file
+
 with open("company_info.txt", "r") as file:
     data = file.read()
     extracted = kg.extract_entities_from_text(data, "LocalBusiness")

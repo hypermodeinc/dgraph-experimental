@@ -19,6 +19,11 @@ class TableMapping:
     template: str = None
     schema: str = None
     error: str = None
+@dataclass
+class ExtractedData:
+    error: str = None
+    prompt: str = None
+    json: str = None
 
 # Define a namedtuple for the Person structure
 

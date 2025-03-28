@@ -4,5 +4,6 @@ json
 pandas
 re
 graphql-core
+fitz
 mistralai
 python_graphql_client

@@ -5,14 +5,103 @@ import requests
 import grpc
 import re
 import json
+import fitz  # PyMuPDF
 from mistralai import Mistral
-from graphql import GraphQLSchema,build_schema,print_schema,GraphQLObjectType,GraphQLScalarType,GraphQLField,GraphQLList
-from typing import Optional, List, Any
+from graphql import GraphQLSchema,build_schema,print_schema,GraphQLObjectType,GraphQLField,GraphQLList
+from typing import Optional, List, Any, Dict
 from .rdf_lib import df_to_rdf_map
 from .upload_csv import rdf_map_to_dgraph
-from .types import  DataSource, TableEntityMapping, TableMapping
+from .types import DataSource, TableEntityMapping, TableMapping, ExtractedData
 
 DESC_PREFIX = "KG:"
+class DataModel:
+    def __init__(self):
+        self.types: Dict[str, ObjectType] = {}
+
+    def withObjectTypes(self, type_list):
+        for cls in type_list:
+            self.types[cls.name] = cls
+
+        # Validate relations after all classes are added
+        self._validateRelations()
+        return self
+
+    def _validateRelations(self):
+        type_names = set(self.types.keys())
+
+        for cls in self.types.values():
+            for _, info in cls.relations.items():
+                target = info["target"]
+                if target not in type_names:
+                    raise ValueError(
+                        f"Invalid association: Class '{cls.name}' references unknown class '{target}'"
+                    )
+
+    def generate(self):
+        output = []
+        for cls in self.types.values():
+            output.append(cls.generate())
+        return "\n\n".join(output)
+
+class Field:
+    def __init__(self, name, dtype, comment=None):
+        self.name = name
+        self.dtype = dtype
+        self.comment = comment
+
+class ObjectType:
+    def __init__(self, name, comment=None):
+        self.name = name
+        self.comment = comment
+        self.identifier = None
+        self.scalar_fields: Dict[str, Field] = {}
+        self.relations = {}
+
+    def withIdentifier(self, name, dtype, comment=None):
+        self.identifier = Field(name, dtype, comment)
+        return self
+
+    def withScalarField(self, name, dtype, comment=None):
+        self.scalar_fields[name] = Field(name, dtype, comment)
+        return self
+
+    def withRelation(self, name, target, is_list=False, has_inverse=None, comment=None):
+        self.relations[name] = {
+            "target": target,
+            "is_list": is_list,
+            "has_inverse": has_inverse,
+            "comment": comment,
+        }
+        return self
+
+    def generate(self):
+        lines = []
+        if self.comment:
+            lines.append(f'"""{self.comment}"""')
+        lines.append(f'type {self.name} {{')
+
+        if self.identifier:
+            if self.identifier.comment:
+                lines.append(f'  """{self.identifier.comment}"""')
+            lines.append(
+                f'  {self.identifier.name}: {self.identifier.dtype}! @id'
+            )
+
+        for attr, info in self.scalar_fields.items():
+            if info.comment:
+                lines.append(f'  """{info.comment}"""')
+            lines.append(f'  {attr}: {info.dtype}')
+
+        for assoc, info in self.relations.items():
+            relation_type = f'[{info["target"]}]' if info["is_list"] else info["target"]
+            inverse = f' @hasInverse(field: {info["has_inverse"]})' if info["has_inverse"] else ''
+            if info["comment"]:
+                lines.append(f'  """{info["comment"]}"""')
+            lines.append(f'  {assoc}: {relation_type}{inverse}')
+
+        lines.append('}')
+        return "\n".join(lines)
+
 class KG(object):
     dgraph_token: Optional[str] = None
     dgraph_grpc: Optional[str] = None
@@ -141,6 +230,7 @@ class KG(object):
             raise Exception(f"Failed to deploy GraphQL schema on {url} - status code:{response.status_code}")
         if 'errors' in response.json():
             raise Exception(f"Failed to deploy GraphQL schema on {url} : {response.json()['errors']}")
+        self.__graphql_schema__ = build_schema(schema,assume_valid=True)
     def load_tabular_data(self,
              sources: List[DataSource],
              mutate: Optional[bool] = True
@@ -181,7 +271,7 @@ class KG(object):
         mapping.entity_mappings.append(entity_mapping)
         return mapping
 
-    def with_kg_schema(self,schema:str):
+    def with_graphql_schema(self,schema:str):
         new_types = build_schema(schema,assume_valid_sdl=True)
         ## add annotations to the schema
         for key,new_type in new_types.type_map.items():
@@ -196,9 +286,16 @@ class KG(object):
         # for the moment use the schema provided
         self.deploy_GraphQL_schema(schema)
         return self
+    def with_data_model(self,data_model:DataModel):
+        self.__data_model__ = data_model
+        # generate the schema
+        schema = data_model.generate()
+        self.deploy_GraphQL_schema(schema)
+
+
     def get_kg_schema(self) -> GraphQLSchema:
         kg_types = self.__graphql_schema__
-        # remove type from type_map with description not starting with "KG Schema: "
+        # remove type from type_map with description not starting with DESC_PREFIX
         if kg_types is None:
             return ""
         for type_name in list(kg_types.type_map):
@@ -255,33 +352,42 @@ class KG(object):
         return output
     def get_entity_context(self, entity: str, with_nested: bool = True, level: int = 0) -> str:
         context = None
-        kg_types = self.get_kg_schema()
-        type = kg_types.type_map.get(entity)
+        type = self.__data_model__.types.get(entity)
         if type is not None:
             context = ""
             if level == 0:
-                context+= f" - {entity} : {type.description}\n with fields:\n"
+                context+= f" - {entity} : {type.comment}\n with fields:\n"
             indent = " "*(level+1)*4
-            for field_name,field in type.fields.items():
-                if isinstance(field.type,GraphQLScalarType) or isinstance(field.type.of_type, GraphQLScalarType ):
-                    context += f"{indent} - {field_name}, {field.description}\n"
-                elif with_nested:
-                    nested = is_list_of_objects(field)
-                    if (nested is not None):
-                        context += f"{indent} - {field_name}, {field.description}\n"
-                        context += f"{indent}   a list of nested objects with fields:\n"
-                        context += self.get_entity_context(nested, False, level+1)
+            if type.identifier is not None:
+                context += f"{indent} - {type.identifier.name}, {type.identifier.comment}\n"
+            for field_name,field in type.scalar_fields.items():
+                context += f"{indent} - {field_name}, {field.comment}\n"
+            if with_nested:
+                for field_name,field in type.relations.items():
+                    context += f"{indent} - {field_name}, {field['comment']}\n"
+                    context += f"{indent}   a list of nested objects with fields:\n"
+                    context += self.get_entity_context(field['target'], False, level+1)
         return context
+    def extract_entities_from_pdf(self, pdf_bytes: bytes, entity:str) -> ExtractedData:
+        # extract text from pdf
+        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+        # Extract text from all pages
+        extracted_text = "\n".join([page.get_text("text") for page in doc])
+        return self.extract_entities_from_text(extracted_text, entity)
 
-    def extract_entities_from_text(self,text:str, entity:str) -> Any:
+    def extract_entities_from_text(self,text:str, entity:str) -> ExtractedData:
         # Prepare instruction for the LLM
+        result: ExtractedData = ExtractedData()
         instruction = (
             "You create knowledge base. List all entities from the user input\n"
-            "Reply with a JSON document with no quotes on field names, containing the list of \n"+ self.get_entity_context(entity)
+            "Reply with a JSON document, containing the list of \n"+ self.get_entity_context(entity)
         )
-
-        print(f"Prompt: \n{instruction}\n")
+        result.prompt = instruction
         # Create the messages for the chat completion
+        # take first 2000 characters
+        #if len(text) > 2000:
+        #    text = text[:2000]
+        #print(f"Text: \n{text}\n")
         messages = [
             {"role": "system", "content": instruction},
             {"role": "user", "content": text}
@@ -299,13 +405,17 @@ class KG(object):
 
         # Extract and return the content of the first choice
         output = response.choices[0].message.content.strip()
-        print("output:")
-        print(output)
         json_output = json.loads(output)
-        self.mutate_extracted_entities(entity, json_output)
-        return json_output
+        result.json = json_output
+        try:
+            self.mutate_extracted_entities(entity, json_output)
+        except Exception as e:
+            result.error = str(e)
+        return result
     def mutate_extracted_entities(self,type_name:str, entities: Any ) -> str:
         data = entities[type_name] # the array of entities
+        if data is None:
+            raise ValueError(f"Invalid entity data for {type_name} in {entities}")
         data_str = dict_to_js_object_notation(data)
         mutation = f"""
         mutation Add{type_name} {{
@@ -315,7 +425,6 @@ class KG(object):
             }}
         }}
         """
-        print(mutation)
         # Define the headers, including the Content-Type for JSON
         headers = {
             'Content-Type': 'application/json',
@@ -326,15 +435,23 @@ class KG(object):
         payload = {
             'query': mutation
         }
-        print(json.dumps(payload, indent=2))
-
-        # Send the POST request to the GraphQL endpoint
-        print(f"POST {self.dgraph_http}/graphql")
         response = requests.post(self.dgraph_http+"/graphql", headers=headers, data=json.dumps(payload),timeout=10)
-        print(response.text)
-        print(json.dumps(response.json(), indent=2))
+        if response.status_code != 200:
+            raise Exception(f"Failed to mutate data: {response.status_code} - {response.text}")
+        if 'errors' in response.json():
+            raise Exception(f"Failed to mutate data: {response.json()['errors'][0]['message']}")
+
+    @staticmethod
+    def newDataModel():
+        return DataModel()
+
+    @staticmethod
+    def newObjectType(name, comment=None):
+        return ObjectType(name, comment)
 
 
+
+# check if a GraphQLField is a list of objects
 def is_list_of_objects(field:GraphQLField) -> str:
     field_type = field.type
     if isinstance(field_type, GraphQLList):
