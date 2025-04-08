@@ -1,0 +1,53 @@
+sources:
+  my-pg-source:
+    kind: postgres
+    host: 127.0.0.1
+    port: 5432
+    database: ecommerce
+    user: ecommerce
+    password: ecommerce
+  my-dgraph-source:
+    kind: dgraph
+    dgraphUrl: http://localhost:8080
+tools:
+  search-product-by-title:
+    kind: postgres-sql
+    source: my-pg-source
+    description: Find products using a search term. Returns a list of product details including brand, category, title, ASIN, average rating, number of ratings, and price. The ASIN is a unique value that identifies the product.
+    parameters:
+      - name: name
+        type: string
+        description: The search term to search for products by keywords in the product description. You can search for products by title or by description.
+    statement: SELECT * FROM products WHERE title ILIKE '%' || $1 || '%'  LIMIT 100;
+  product-details-by-asin:
+    kind: postgres-sql
+    source: my-pg-source
+    description: Given a product's ASIN, return product details like brand, category, title, average rating, number of ratings, and price.
+    parameters:
+      - name: asin
+        type: string
+        description: The ASIN of the product to find.
+    statement: SELECT * FROM products WHERE asin = $1 LIMIT 1;
+  get-product-reviews:
+    kind: dgraph-dql
+    source: my-dgraph-source
+    statement: |
+      query all($asin: string){
+        productReviews(func: type(Product), first: 10) @filter(eq(Product.asin, $asin )) {
+          uid
+          Product.asin
+          Product.reviews {
+            Review.title
+            Review.text
+            Review.rating
+          }
+        }
+      }
+    isQuery: true
+    timeout: 20s
+    description: |
+      Use this tool to find product reviews for a specific product.
+    parameters:
+      - name: asin
+        type: string
+        description: The product ASIN
