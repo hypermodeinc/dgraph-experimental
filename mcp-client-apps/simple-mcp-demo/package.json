@@ -1,0 +1,22 @@
+{
+  "name": "simple-mcp-demo",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Simple web client demo for MCP SSE servers",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "esbuild src/index.js --bundle --outfile=public/bundle.js --platform=browser",
+    "serve": "npx http-server public -p 8082"
+  },
+  "keywords": ["mcp", "client", "demo"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.11.4"
+  },
+  "devDependencies": {
+    "esbuild": "^0.20.0",
+    "http-server": "^14.1.1"
+  }
+}
