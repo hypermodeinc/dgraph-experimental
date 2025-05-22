@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple MCP Client Demo</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.5;
+        }
+        h1, h2, h3 {
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .column {
+            flex: 1;
+            min-width: 400px;
+        }
+        .card {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .field {
+            margin-bottom: 12px;
+        }
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-top: 8px;
+            margin-right: 8px;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        button:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 16px;
+            border-radius: 4px;
+            overflow: auto;
+            font-family: 'Menlo', 'Monaco', monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            max-height: 400px;
+        }
+        .debug-panel {
+            background: #fffbf0;
+            border: 1px solid #e2c883;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+        .debug-entry {
+            margin-bottom: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 12px;
+        }
+        .debug-header {
+            font-weight: bold;
+            margin-bottom: 4px;
+            color: #3b82f6;
+        }
+        .debug-data {
+            font-family: 'Menlo', 'Monaco', monospace;
+            font-size: 13px;
+            background: #f8fafc;
+            padding: 8px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin-top: 4px;
+            white-space: pre-wrap;
+        }
+        .debug-toggle {
+            background: #fef3c7;
+            border: 1px solid #fcd34d;
+            color: #92400e;
+            font-weight: bold;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 12px;
+        }
+        .log {
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            border-radius: 4px;
+            background: #f8fafc;
+            font-family: 'Menlo', 'Monaco', monospace;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple MCP Client Demo</h1>
+    <p>A web client for interacting with different MCP SSE servers</p>
+
+    <div class="card">
+        <h2>Connection</h2>
+        <div class="field">
+            <label for="serverType">Server Type:</label>
+            <select id="serverType">
+                <option value="kgms">KGMS Server (Knowledge Graph Memory Server)</option>
+                <option value="dgraph">Dgraph MCP Server</option>
+                <option value="custom">Custom Server URL</option>
+            </select>
+        </div>
+        <div class="field">
+            <label for="serverUrl">Server URL:</label>
+            <input type="text" id="serverUrl" value="http://localhost:9191" placeholder="http://localhost:9191">
+        </div>
+        <button id="connectBtn">Connect</button>
+        <button id="disconnectBtn" disabled>Disconnect</button>
+    </div>
+
+    <div class="container">
+        <div class="column">
+            <div class="card">
+                <h2>Operations</h2>
+                <div class="field">
+                    <label for="toolSelect">Available Tools:</label>
+                    <select id="toolSelect" disabled>
+                        <option value="">-- Select a tool --</option>
+                    </select>
+                </div>
+                <div id="toolParams" class="card" style="display: none;">
+                    <h3>Tool Parameters</h3>
+                    <div id="paramsContainer">
+                        <!-- Dynamic parameters will be added here -->
+                    </div>
+                    <button id="callToolBtn" disabled>Call Tool</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>Parsed JSON Results</h2>
+                <p class="hint">Pretty-printed JSON from response text field</p>
+                <pre id="parsedJson">No parsed results yet</pre>
+            </div>
+        </div>
+
+        <div class="column">
+            <div class="card">
+                <h2>Log</h2>
+                <div class="log" id="log"></div>
+            </div>
+
+            <div class="card">
+                <h2>Results</h2>
+                <pre id="results">No results yet</pre>
+            </div>
+            
+            <div class="card debug-panel">
+                <h2>Debug Information</h2>
+                <button class="debug-toggle" id="toggleDebug">Show/Hide Debug Logs</button>
+                <div id="debugInfo"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load the bundled JavaScript -->
+    <script src="bundle.js"></script>
+</body>
+</html>
