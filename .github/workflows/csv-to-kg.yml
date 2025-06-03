@@ -19,6 +19,9 @@ on:
       - .github/actions/csv-to-kg/**
       - .github/workflows/csv-to-kg.yml
 
+env:
+  MODUS_DIR: ""
+
 jobs:
   build-all:
     if: "!contains(github.event.head_commit.message, '[skip-ci]')"
@@ -106,3 +109,43 @@ jobs:
           echo "Stopping Dgraph containers..."
           docker compose down
           echo "Dgraph containers stopped."
+
+  modus-build:
+    name: modus build
+    if: "!contains(github.event.head_commit.message, '[skip-ci]')"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Locate directory with modus.json
+        id: set-dir
+        run: |
+          MODUS_JSON=$(find $(pwd) -name 'modus.json' -print0 | xargs -0 -n1 echo)
+          if [ -n "$MODUS_JSON" ]; then
+            MODUS_DIR=$(dirname "$MODUS_JSON")
+            echo "MODUS_DIR=$MODUS_DIR" >> $GITHUB_ENV
+          else
+            echo "modus.json not found"
+            exit 1
+          fi
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+
+      - name: Setup TinyGo
+        uses: acifani/setup-tinygo@v2
+        with:
+          tinygo-version: 0.34.0
+
+      - name: Build project
+        run: npx -p @hypermode/modus-cli -y modus build
+        working-directory: ${{ env.MODUS_DIR }}
+        shell: bash
