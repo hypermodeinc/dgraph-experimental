@@ -1,6 +1,13 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
 
 export interface CSVFileData {
   id: string;
@@ -34,13 +41,15 @@ interface CSVStoreContextType {
   setInputPrompt: (text: string) => void;
 }
 
-const CSVStoreContext = createContext<CSVStoreContextType | undefined>(undefined);
+const CSVStoreContext = createContext<CSVStoreContextType | undefined>(
+  undefined,
+);
 
 export function CSVStoreProvider({ children }: { children: React.ReactNode }) {
   const [csvFiles, setCsvFiles] = useState<CSVFileData[]>([]);
   const [currentFile, setCurrentFile] = useState<CSVFileData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [inputPrompt, setInputPrompt] = useState<string>('');
+  const [inputPrompt, setInputPrompt] = useState<string>("");
 
   const initRef = useRef(false);
 
@@ -48,7 +57,7 @@ export function CSVStoreProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (initRef.current) return;
 
-    const storedFiles = localStorage.getItem('csvFiles');
+    const storedFiles = localStorage.getItem("csvFiles");
     if (storedFiles) {
       try {
         const parsedFiles = JSON.parse(storedFiles);
@@ -62,15 +71,17 @@ export function CSVStoreProvider({ children }: { children: React.ReactNode }) {
 
         if (matches && matches[1]) {
           const fileId = matches[1];
-          const foundFile = parsedFiles.find((file: CSVFileData) => file.id === fileId);
+          const foundFile = parsedFiles.find(
+            (file: CSVFileData) => file.id === fileId,
+          );
 
           if (foundFile) {
             setCurrentFile(foundFile);
           }
         }
       } catch (error) {
-        console.error('Failed to parse CSV files from localStorage:', error);
-        localStorage.removeItem('csvFiles');
+        console.error("Failed to parse CSV files from localStorage:", error);
+        localStorage.removeItem("csvFiles");
       }
     }
 
@@ -80,7 +91,7 @@ export function CSVStoreProvider({ children }: { children: React.ReactNode }) {
   // Update localStorage whenever csvFiles changes
   useEffect(() => {
     if (!initRef.current) return;
-    localStorage.setItem('csvFiles', JSON.stringify(csvFiles));
+    localStorage.setItem("csvFiles", JSON.stringify(csvFiles));
   }, [csvFiles]);
 
   // Helper function to read a file as text
@@ -88,10 +99,10 @@ export function CSVStoreProvider({ children }: { children: React.ReactNode }) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (event) => {
-        if (event.target && typeof event.target.result === 'string') {
+        if (event.target && typeof event.target.result === "string") {
           resolve(event.target.result);
         } else {
-          reject(new Error('Failed to read file'));
+          reject(new Error("Failed to read file"));
         }
       };
       reader.onerror = () => reject(reader.error);
@@ -129,7 +140,7 @@ export function CSVStoreProvider({ children }: { children: React.ReactNode }) {
 
         return newFile;
       } catch (error) {
-        console.error('Failed to process CSV file:', error);
+        console.error("Failed to process CSV file:", error);
 
         throw error;
       } finally {
@@ -143,10 +154,10 @@ export function CSVStoreProvider({ children }: { children: React.ReactNode }) {
     (id: string) => {
       const file = csvFiles.find((f) => f.id === id);
       if (file) {
-        console.log('Selecting CSV file:', file.name);
+        console.log("Selecting CSV file:", file.name);
         setCurrentFile(file);
       } else {
-        console.warn('CSV file not found with ID:', id);
+        console.warn("CSV file not found with ID:", id);
       }
     },
     [csvFiles],
@@ -248,7 +259,7 @@ export function CSVStoreProvider({ children }: { children: React.ReactNode }) {
   const clearAllFiles = useCallback(() => {
     setCsvFiles([]);
     setCurrentFile(null);
-    localStorage.removeItem('csvFiles');
+    localStorage.removeItem("csvFiles");
   }, []);
 
   const value = {
@@ -269,14 +280,18 @@ export function CSVStoreProvider({ children }: { children: React.ReactNode }) {
     setInputPrompt,
   };
 
-  return <CSVStoreContext.Provider value={value}>{children}</CSVStoreContext.Provider>;
+  return (
+    <CSVStoreContext.Provider value={value}>
+      {children}
+    </CSVStoreContext.Provider>
+  );
 }
 
 // Custom hook to use the CSV store
 export function useCSVStore() {
   const context = useContext(CSVStoreContext);
   if (context === undefined) {
-    throw new Error('useCSVStore must be used within a CSVStoreProvider');
+    throw new Error("useCSVStore must be used within a CSVStoreProvider");
   }
   return context;
 }

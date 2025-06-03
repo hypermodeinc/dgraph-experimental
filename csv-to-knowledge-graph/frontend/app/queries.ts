@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const GENERATE_GRAPH = gql`
   query GenerateGraph($columnNames: [String!]!) {
@@ -25,7 +25,13 @@ export const GENERATE_BATCH_GRAPH = gql`
 `;
 
 export const GENERATE_BATCH_RDF_TEMPLATE = gql`
-  query GenerateBatchRDFTemplate($graphJson: String!, $fileColumnNamesMatrix: [[String!]!]!) {
-    generateBatchRDFTemplate(graphJson: $graphJson, fileColumnNamesMatrix: $fileColumnNamesMatrix)
+  query GenerateBatchRDFTemplate(
+    $graphJson: String!
+    $fileColumnNamesMatrix: [[String!]!]!
+  ) {
+    generateBatchRDFTemplate(
+      graphJson: $graphJson
+      fileColumnNamesMatrix: $fileColumnNamesMatrix
+    )
   }
 `;

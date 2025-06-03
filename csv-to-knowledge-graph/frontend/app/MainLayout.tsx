@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { ReactNode } from 'react';
-import Link from 'next/link';
-import SideBar from '@/components/Side-Bar';
-import { BatchStoreProvider } from '@/store/batch';
+import React, { ReactNode } from "react";
+import Link from "next/link";
+import SideBar from "@/components/Side-Bar";
+import { BatchStoreProvider } from "@/store/batch";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -20,9 +20,15 @@ export function MainLayout({ children }: MainLayoutProps) {
                 <Link href="/">
                   <div className="flex items-center">
                     <div className="w-8 h-8 bg-purple-700 rounded flex items-center justify-center mr-2">
-                      <img src="/hypermode-white-logomark.svg" alt="Hypermode Logo" className="h-5 w-5" />
+                      <img
+                        src="/hypermode-white-logomark.svg"
+                        alt="Hypermode Logo"
+                        className="h-5 w-5"
+                      />
                     </div>
-                    <h1 className="text-lg font-medium">CSV to Knowledge Graph</h1>
+                    <h1 className="text-lg font-medium">
+                      CSV to Knowledge Graph
+                    </h1>
                   </div>
                 </Link>
               </div>

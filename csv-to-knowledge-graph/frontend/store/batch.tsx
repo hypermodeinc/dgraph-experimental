@@ -1,7 +1,14 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { CSVFileData } from './csv';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
+import { CSVFileData } from "./csv";
 
 export interface BatchData {
   id: string;
@@ -20,7 +27,11 @@ interface BatchStoreContextType {
   currentBatch: BatchData | null;
   selectBatch: (id: string) => void;
   clearCurrentBatch: () => void;
-  addBatch: (name: string, files: CSVFileData[], description?: string) => BatchData;
+  addBatch: (
+    name: string,
+    files: CSVFileData[],
+    description?: string,
+  ) => BatchData;
   addFileToBatch: (batchId: string, file: CSVFileData) => void;
   removeFileFromBatch: (batchId: string, fileId: string) => void;
   removeBatch: (id: string) => void;
@@ -34,9 +45,15 @@ interface BatchStoreContextType {
   setBatchRdfTemplate: (rdfTemplate: string) => void;
 }
 
-const BatchStoreContext = createContext<BatchStoreContextType | undefined>(undefined);
+const BatchStoreContext = createContext<BatchStoreContextType | undefined>(
+  undefined,
+);
 
-export function BatchStoreProvider({ children }: { children: React.ReactNode }) {
+export function BatchStoreProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [batches, setBatches] = useState<BatchData[]>([]);
   const [currentBatch, setCurrentBatch] = useState<BatchData | null>(null);
   const [isLoading] = useState<boolean>(false);
@@ -47,14 +64,14 @@ export function BatchStoreProvider({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     if (initRef.current) return;
 
-    const storedBatches = localStorage.getItem('batches');
+    const storedBatches = localStorage.getItem("batches");
     if (storedBatches) {
       try {
         const parsedBatches = JSON.parse(storedBatches);
         setBatches(parsedBatches);
       } catch (error) {
-        console.error('Failed to parse batches from localStorage:', error);
-        localStorage.removeItem('batches');
+        console.error("Failed to parse batches from localStorage:", error);
+        localStorage.removeItem("batches");
       }
     }
 
@@ -64,36 +81,39 @@ export function BatchStoreProvider({ children }: { children: React.ReactNode }) 
   // Update localStorage whenever batches changes
   useEffect(() => {
     if (!initRef.current) return;
-    localStorage.setItem('batches', JSON.stringify(batches));
+    localStorage.setItem("batches", JSON.stringify(batches));
   }, [batches]);
 
   // Add a new batch
-  const addBatch = useCallback((name: string, files: CSVFileData[], description?: string): BatchData => {
-    // Generate a unique ID
-    const id = `batch-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+  const addBatch = useCallback(
+    (name: string, files: CSVFileData[], description?: string): BatchData => {
+      // Generate a unique ID
+      const id = `batch-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
-    // Create new batch data object
-    const newBatch: BatchData = {
-      id,
-      name,
-      description,
-      files,
-      timestamp: Date.now(),
-      graphData: null,
-      rdfData: undefined,
-      rdfTemplate: undefined,
-    };
+      // Create new batch data object
+      const newBatch: BatchData = {
+        id,
+        name,
+        description,
+        files,
+        timestamp: Date.now(),
+        graphData: null,
+        rdfData: undefined,
+        rdfTemplate: undefined,
+      };
 
-    // Update state with the new batch
-    setBatches((prevBatches) => {
-      // Remove any existing batch with the same name to avoid duplicates
-      const filteredBatches = prevBatches.filter((b) => b.name !== name);
-      return [newBatch, ...filteredBatches].slice(0, 10); // Limit to 10 most recent batches
-    });
+      // Update state with the new batch
+      setBatches((prevBatches) => {
+        // Remove any existing batch with the same name to avoid duplicates
+        const filteredBatches = prevBatches.filter((b) => b.name !== name);
+        return [newBatch, ...filteredBatches].slice(0, 10); // Limit to 10 most recent batches
+      });
 
-    setCurrentBatch(newBatch);
-    return newBatch;
-  }, []);
+      setCurrentBatch(newBatch);
+      return newBatch;
+    },
+    [],
+  );
 
   // Add a file to an existing batch
   const addFileToBatch = useCallback(
@@ -272,7 +292,7 @@ export function BatchStoreProvider({ children }: { children: React.ReactNode }) 
   const clearAllBatches = useCallback(() => {
     setBatches([]);
     setCurrentBatch(null);
-    localStorage.removeItem('batches');
+    localStorage.removeItem("batches");
     processedBatchesRef.current.clear(); // Clear processed batches tracking
   }, []);
 
@@ -294,14 +314,18 @@ export function BatchStoreProvider({ children }: { children: React.ReactNode }) 
     setBatchRdfTemplate,
   };
 
-  return <BatchStoreContext.Provider value={value}>{children}</BatchStoreContext.Provider>;
+  return (
+    <BatchStoreContext.Provider value={value}>
+      {children}
+    </BatchStoreContext.Provider>
+  );
 }
 
 // Custom hook to use the batch store
 export function useBatchStore() {
   const context = useContext(BatchStoreContext);
   if (context === undefined) {
-    throw new Error('useBatchStore must be used within a BatchStoreProvider');
+    throw new Error("useBatchStore must be used within a BatchStoreProvider");
   }
   return context;
 }

@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useCSVStore } from '@/store/csv';
-import CSVFileWidget from '@/components/CsvFileWidget';
-import ConnectionBanner from '@/components/ConnectionBanner';
-import GraphBackground from '@/components/GraphBackground';
-import { FileSpreadsheet } from 'lucide-react';
-import Link from 'next/link';
+import React, { useState, useEffect, useRef } from "react";
+import { useCSVStore } from "@/store/csv";
+import CSVFileWidget from "@/components/CsvFileWidget";
+import ConnectionBanner from "@/components/ConnectionBanner";
+import GraphBackground from "@/components/GraphBackground";
+import { FileSpreadsheet } from "lucide-react";
+import Link from "next/link";
 
 export default function HomePage() {
   const { csvFiles, addCSVFile, isLoading } = useCSVStore();
@@ -50,14 +50,14 @@ export default function HomePage() {
 
   const processFile = async (fileToProcess: File) => {
     if (!fileToProcess) {
-      setUploadError('No file selected');
+      setUploadError("No file selected");
       return null;
     }
 
     try {
       // Make sure the file is a CSV
-      if (!fileToProcess.name.toLowerCase().endsWith('.csv')) {
-        setUploadError('Please upload a CSV file.');
+      if (!fileToProcess.name.toLowerCase().endsWith(".csv")) {
+        setUploadError("Please upload a CSV file.");
         return null;
       }
 
@@ -68,11 +68,13 @@ export default function HomePage() {
       if (fileData && fileData.id) {
         return fileData;
       } else {
-        throw new Error('Invalid file data returned');
+        throw new Error("Invalid file data returned");
       }
     } catch (error) {
-      console.error('Error processing file:', error);
-      setUploadError('Failed to process file. Please try again with a different CSV file.');
+      console.error("Error processing file:", error);
+      setUploadError(
+        "Failed to process file. Please try again with a different CSV file.",
+      );
       return null;
     }
   };
@@ -93,7 +95,9 @@ export default function HomePage() {
 
             {/* Getting Started - Compact */}
             <div className="bg-[#1c1c1c] rounded-lg border border-[#2a2a2a] mb-6 p-4">
-              <h2 className="text-lg font-bold text-white mb-3">Getting Started</h2>
+              <h2 className="text-lg font-bold text-white mb-3">
+                Getting Started
+              </h2>
 
               <div className="space-y-3">
                 <div className="p-3 rounded-lg border-l-2 border-purple-500 bg-[#282828]">
@@ -102,7 +106,9 @@ export default function HomePage() {
                       1
                     </div>
                     <div className="ml-3">
-                      <h3 className="font-medium text-sm text-white">Upload CSV files</h3>
+                      <h3 className="font-medium text-sm text-white">
+                        Upload CSV files
+                      </h3>
                     </div>
                   </div>
                 </div>
@@ -113,7 +119,9 @@ export default function HomePage() {
                       2
                     </div>
                     <div className="ml-3">
-                      <h3 className="font-medium text-sm text-white">Review entities</h3>
+                      <h3 className="font-medium text-sm text-white">
+                        Review entities
+                      </h3>
                     </div>
                   </div>
                 </div>
@@ -124,7 +132,9 @@ export default function HomePage() {
                       3
                     </div>
                     <div className="ml-3">
-                      <h3 className="font-medium text-sm text-white">Import to Dgraph</h3>
+                      <h3 className="font-medium text-sm text-white">
+                        Import to Dgraph
+                      </h3>
                     </div>
                   </div>
                 </div>
@@ -136,20 +146,32 @@ export default function HomePage() {
               <div className="bg-[#1c1c1c] rounded-lg border border-[#2a2a2a] p-4">
                 <div className="flex justify-between items-center mb-3">
                   <h2 className="text-lg font-bold text-white">Recent Files</h2>
-                  <span className="text-xs bg-[#333] px-2 py-0.5 rounded-full text-gray-300">{csvFiles.length}</span>
+                  <span className="text-xs bg-[#333] px-2 py-0.5 rounded-full text-gray-300">
+                    {csvFiles.length}
+                  </span>
                 </div>
 
                 <div className="space-y-2">
                   {csvFiles.slice(0, 3).map((fileData) => (
-                    <Link key={fileData.id} href={`/csv/${fileData.id}/spreadsheet`} className="block">
+                    <Link
+                      key={fileData.id}
+                      href={`/csv/${fileData.id}/spreadsheet`}
+                      className="block"
+                    >
                       <div className="p-2 border border-[#2a2a2a] rounded-lg bg-[#222] hover:bg-[#282828] cursor-pointer group">
                         <div className="flex items-center">
                           <div className="w-8 h-8 rounded flex items-center justify-center bg-[#333] mr-2">
                             <FileSpreadsheet className="h-4 w-4 text-purple-400" />
                           </div>
                           <div className="overflow-hidden">
-                            <h3 className="font-medium text-sm text-white truncate">{fileData.name}</h3>
-                            <p className="text-xs text-gray-500">{new Date(fileData.timestamp).toLocaleDateString()}</p>
+                            <h3 className="font-medium text-sm text-white truncate">
+                              {fileData.name}
+                            </h3>
+                            <p className="text-xs text-gray-500">
+                              {new Date(
+                                fileData.timestamp,
+                              ).toLocaleDateString()}
+                            </p>
                           </div>
                         </div>
                       </div>

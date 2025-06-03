@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 
 export default function GraphBackground() {
   return (
@@ -13,39 +13,255 @@ export default function GraphBackground() {
         xmlns="http://www.w3.org/2000/svg"
       >
         {/* Main connections - centered more toward the middle of the screen */}
-        <line x1="490" y1="220" x2="680" y2="340" stroke="#9333ea" strokeOpacity="0.06" strokeWidth="1" />
-        <line x1="680" y1="340" x2="850" y2="270" stroke="#9333ea" strokeOpacity="0.06" strokeWidth="1" />
-        <line x1="850" y1="270" x2="940" y2="450" stroke="#9333ea" strokeOpacity="0.06" strokeWidth="1" />
-        <line x1="940" y1="450" x2="780" y2="520" stroke="#9333ea" strokeOpacity="0.06" strokeWidth="1" />
-        <line x1="780" y1="520" x2="680" y2="340" stroke="#9333ea" strokeOpacity="0.06" strokeWidth="1" />
-        <line x1="490" y1="220" x2="320" y2="380" stroke="#9333ea" strokeOpacity="0.06" strokeWidth="1" />
-        <line x1="320" y1="380" x2="440" y2="560" stroke="#9333ea" strokeOpacity="0.06" strokeWidth="1" />
-        <line x1="440" y1="560" x2="600" y2="630" stroke="#9333ea" strokeOpacity="0.06" strokeWidth="1" />
-        <line x1="600" y1="630" x2="780" y2="520" stroke="#9333ea" strokeOpacity="0.06" strokeWidth="1" />
-        <line x1="600" y1="630" x2="720" y2="780" stroke="#9333ea" strokeOpacity="0.05" strokeWidth="1" />
-        <line x1="720" y1="780" x2="880" y2="740" stroke="#9333ea" strokeOpacity="0.05" strokeWidth="1" />
-        <line x1="880" y1="740" x2="980" y2="580" stroke="#9333ea" strokeOpacity="0.05" strokeWidth="1" />
-        <line x1="980" y1="580" x2="940" y2="450" stroke="#9333ea" strokeOpacity="0.05" strokeWidth="1" />
-        <line x1="780" y1="520" x2="980" y2="580" stroke="#9333ea" strokeOpacity="0.05" strokeWidth="1" />
+        <line
+          x1="490"
+          y1="220"
+          x2="680"
+          y2="340"
+          stroke="#9333ea"
+          strokeOpacity="0.06"
+          strokeWidth="1"
+        />
+        <line
+          x1="680"
+          y1="340"
+          x2="850"
+          y2="270"
+          stroke="#9333ea"
+          strokeOpacity="0.06"
+          strokeWidth="1"
+        />
+        <line
+          x1="850"
+          y1="270"
+          x2="940"
+          y2="450"
+          stroke="#9333ea"
+          strokeOpacity="0.06"
+          strokeWidth="1"
+        />
+        <line
+          x1="940"
+          y1="450"
+          x2="780"
+          y2="520"
+          stroke="#9333ea"
+          strokeOpacity="0.06"
+          strokeWidth="1"
+        />
+        <line
+          x1="780"
+          y1="520"
+          x2="680"
+          y2="340"
+          stroke="#9333ea"
+          strokeOpacity="0.06"
+          strokeWidth="1"
+        />
+        <line
+          x1="490"
+          y1="220"
+          x2="320"
+          y2="380"
+          stroke="#9333ea"
+          strokeOpacity="0.06"
+          strokeWidth="1"
+        />
+        <line
+          x1="320"
+          y1="380"
+          x2="440"
+          y2="560"
+          stroke="#9333ea"
+          strokeOpacity="0.06"
+          strokeWidth="1"
+        />
+        <line
+          x1="440"
+          y1="560"
+          x2="600"
+          y2="630"
+          stroke="#9333ea"
+          strokeOpacity="0.06"
+          strokeWidth="1"
+        />
+        <line
+          x1="600"
+          y1="630"
+          x2="780"
+          y2="520"
+          stroke="#9333ea"
+          strokeOpacity="0.06"
+          strokeWidth="1"
+        />
+        <line
+          x1="600"
+          y1="630"
+          x2="720"
+          y2="780"
+          stroke="#9333ea"
+          strokeOpacity="0.05"
+          strokeWidth="1"
+        />
+        <line
+          x1="720"
+          y1="780"
+          x2="880"
+          y2="740"
+          stroke="#9333ea"
+          strokeOpacity="0.05"
+          strokeWidth="1"
+        />
+        <line
+          x1="880"
+          y1="740"
+          x2="980"
+          y2="580"
+          stroke="#9333ea"
+          strokeOpacity="0.05"
+          strokeWidth="1"
+        />
+        <line
+          x1="980"
+          y1="580"
+          x2="940"
+          y2="450"
+          stroke="#9333ea"
+          strokeOpacity="0.05"
+          strokeWidth="1"
+        />
+        <line
+          x1="780"
+          y1="520"
+          x2="980"
+          y2="580"
+          stroke="#9333ea"
+          strokeOpacity="0.05"
+          strokeWidth="1"
+        />
 
         {/* Left side connections - shifted right for better centering */}
-        <line x1="320" y1="380" x2="250" y2="580" stroke="#9333ea" strokeOpacity="0.04" strokeWidth="1" />
-        <line x1="250" y1="580" x2="330" y2="750" stroke="#9333ea" strokeOpacity="0.04" strokeWidth="1" />
-        <line x1="330" y1="750" x2="540" y2="730" stroke="#9333ea" strokeOpacity="0.04" strokeWidth="1" />
-        <line x1="540" y1="730" x2="600" y2="630" stroke="#9333ea" strokeOpacity="0.04" strokeWidth="1" />
-        <line x1="540" y1="730" x2="720" y2="780" stroke="#9333ea" strokeOpacity="0.04" strokeWidth="1" />
+        <line
+          x1="320"
+          y1="380"
+          x2="250"
+          y2="580"
+          stroke="#9333ea"
+          strokeOpacity="0.04"
+          strokeWidth="1"
+        />
+        <line
+          x1="250"
+          y1="580"
+          x2="330"
+          y2="750"
+          stroke="#9333ea"
+          strokeOpacity="0.04"
+          strokeWidth="1"
+        />
+        <line
+          x1="330"
+          y1="750"
+          x2="540"
+          y2="730"
+          stroke="#9333ea"
+          strokeOpacity="0.04"
+          strokeWidth="1"
+        />
+        <line
+          x1="540"
+          y1="730"
+          x2="600"
+          y2="630"
+          stroke="#9333ea"
+          strokeOpacity="0.04"
+          strokeWidth="1"
+        />
+        <line
+          x1="540"
+          y1="730"
+          x2="720"
+          y2="780"
+          stroke="#9333ea"
+          strokeOpacity="0.04"
+          strokeWidth="1"
+        />
 
         {/* Upper connections - filling in the center top area */}
-        <line x1="490" y1="220" x2="590" y2="120" stroke="#9333ea" strokeOpacity="0.05" strokeWidth="1" />
-        <line x1="590" y1="120" x2="720" y2="170" stroke="#9333ea" strokeOpacity="0.05" strokeWidth="1" />
-        <line x1="720" y1="170" x2="850" y2="270" stroke="#9333ea" strokeOpacity="0.05" strokeWidth="1" />
-        <line x1="720" y1="170" x2="680" y2="340" stroke="#9333ea" strokeOpacity="0.05" strokeWidth="1" />
+        <line
+          x1="490"
+          y1="220"
+          x2="590"
+          y2="120"
+          stroke="#9333ea"
+          strokeOpacity="0.05"
+          strokeWidth="1"
+        />
+        <line
+          x1="590"
+          y1="120"
+          x2="720"
+          y2="170"
+          stroke="#9333ea"
+          strokeOpacity="0.05"
+          strokeWidth="1"
+        />
+        <line
+          x1="720"
+          y1="170"
+          x2="850"
+          y2="270"
+          stroke="#9333ea"
+          strokeOpacity="0.05"
+          strokeWidth="1"
+        />
+        <line
+          x1="720"
+          y1="170"
+          x2="680"
+          y2="340"
+          stroke="#9333ea"
+          strokeOpacity="0.05"
+          strokeWidth="1"
+        />
 
         {/* Right side connections - shifted left for better centering */}
-        <line x1="980" y1="580" x2="1060" y2="680" stroke="#9333ea" strokeOpacity="0.04" strokeWidth="1" />
-        <line x1="1060" y1="680" x2="940" y2="800" stroke="#9333ea" strokeOpacity="0.03" strokeWidth="1" />
-        <line x1="940" y1="800" x2="760" y2="850" stroke="#9333ea" strokeOpacity="0.03" strokeWidth="1" />
-        <line x1="760" y1="850" x2="720" y2="780" stroke="#9333ea" strokeOpacity="0.03" strokeWidth="1" />
+        <line
+          x1="980"
+          y1="580"
+          x2="1060"
+          y2="680"
+          stroke="#9333ea"
+          strokeOpacity="0.04"
+          strokeWidth="1"
+        />
+        <line
+          x1="1060"
+          y1="680"
+          x2="940"
+          y2="800"
+          stroke="#9333ea"
+          strokeOpacity="0.03"
+          strokeWidth="1"
+        />
+        <line
+          x1="940"
+          y1="800"
+          x2="760"
+          y2="850"
+          stroke="#9333ea"
+          strokeOpacity="0.03"
+          strokeWidth="1"
+        />
+        <line
+          x1="760"
+          y1="850"
+          x2="720"
+          y2="780"
+          stroke="#9333ea"
+          strokeOpacity="0.03"
+          strokeWidth="1"
+        />
 
         {/* Primary nodes - better centered on the screen */}
         <circle cx="490" cy="220" r="14" fill="#9333ea" fillOpacity="0.11" />

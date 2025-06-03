@@ -1,7 +1,14 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { RdfToDgraph } from '@hypermode/csvkit-rdf-to-dgraph';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
+import { RdfToDgraph } from "@hypermode/csvkit-rdf-to-dgraph";
 
 interface NodeType {
   name: string;
@@ -30,17 +37,27 @@ interface ConnectionStoreContextType {
   hasValidNodeTypes: boolean;
 }
 
-const ConnectionStoreContext = createContext<ConnectionStoreContextType | undefined>(undefined);
+const ConnectionStoreContext = createContext<
+  ConnectionStoreContextType | undefined
+>(undefined);
 
-export function ConnectionStoreProvider({ children }: { children: React.ReactNode }) {
-  const [dgraphUrl, setDgraphUrlState] = useState<string>('http://localhost:8080');
-  const [dgraphApiKey, setDgraphApiKeyState] = useState<string>('');
+export function ConnectionStoreProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [dgraphUrl, setDgraphUrlState] = useState<string>(
+    "http://localhost:8080",
+  );
+  const [dgraphApiKey, setDgraphApiKeyState] = useState<string>("");
   const [isConnected, setIsConnected] = useState<boolean>(false);
-  const [schema, setSchemaState] = useState<string>('');
+  const [schema, setSchemaState] = useState<string>("");
   const [nodeTypes, setNodeTypesState] = useState<NodeType[]>([]);
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
   const [isFetching, setIsFetching] = useState<boolean>(false);
-  const [lastConnectionTime, setLastConnectionTime] = useState<number | null>(null);
+  const [lastConnectionTime, setLastConnectionTime] = useState<number | null>(
+    null,
+  );
   const [connectionError, setConnectionError] = useState<string | null>(null);
 
   // Track whether we have valid node types
@@ -53,7 +70,7 @@ export function ConnectionStoreProvider({ children }: { children: React.ReactNod
   const setSchema = useCallback((newSchema: string) => {
     setSchemaState(newSchema);
     if (initRef.current) {
-      localStorage.setItem('dgraph-schema', newSchema);
+      localStorage.setItem("dgraph-schema", newSchema);
     }
   }, []);
 
@@ -61,7 +78,7 @@ export function ConnectionStoreProvider({ children }: { children: React.ReactNod
   const setNodeTypes = useCallback((newNodeTypes: NodeType[]) => {
     setNodeTypesState(newNodeTypes);
     if (initRef.current) {
-      localStorage.setItem('dgraph-node-types', JSON.stringify(newNodeTypes));
+      localStorage.setItem("dgraph-node-types", JSON.stringify(newNodeTypes));
     }
   }, []);
 
@@ -71,23 +88,25 @@ export function ConnectionStoreProvider({ children }: { children: React.ReactNod
 
     try {
       // Set default values first, then override with localStorage if available
-      let storedDgraphUrl = 'http://localhost:8080';
-      let storedDgraphApiKey = '';
+      let storedDgraphUrl = "http://localhost:8080";
+      let storedDgraphApiKey = "";
       let hasStoredConnection = false;
 
       // Try to get stored values
-      const localUrl = localStorage.getItem('dgraphUrl');
-      const localApiKey = localStorage.getItem('dgraphApiKey');
-      const storedSchema = localStorage.getItem('dgraph-schema');
-      const storedNodeTypes = localStorage.getItem('dgraph-node-types');
-      const storedLastConnectionTime = localStorage.getItem('dgraph-last-connection-time');
+      const localUrl = localStorage.getItem("dgraphUrl");
+      const localApiKey = localStorage.getItem("dgraphApiKey");
+      const storedSchema = localStorage.getItem("dgraph-schema");
+      const storedNodeTypes = localStorage.getItem("dgraph-node-types");
+      const storedLastConnectionTime = localStorage.getItem(
+        "dgraph-last-connection-time",
+      );
 
       if (localUrl) {
         storedDgraphUrl = localUrl;
         hasStoredConnection = true;
       } else {
         // If no stored URL, save the default one
-        localStorage.setItem('dgraphUrl', storedDgraphUrl);
+        localStorage.setItem("dgraphUrl", storedDgraphUrl);
       }
 
       if (localApiKey) {
@@ -106,7 +125,7 @@ export function ConnectionStoreProvider({ children }: { children: React.ReactNod
         try {
           setNodeTypesState(JSON.parse(storedNodeTypes));
         } catch (error) {
-          console.error('Failed to parse stored node types:', error);
+          console.error("Failed to parse stored node types:", error);
         }
       }
 
@@ -114,7 +133,7 @@ export function ConnectionStoreProvider({ children }: { children: React.ReactNod
         try {
           setLastConnectionTime(parseInt(storedLastConnectionTime, 10));
         } catch (error) {
-          console.error('Failed to parse last connection time:', error);
+          console.error("Failed to parse last connection time:", error);
         }
       }
 
@@ -141,14 +160,20 @@ export function ConnectionStoreProvider({ children }: { children: React.ReactNod
                         await fetchNodeTypes();
                       }
                     } catch (error) {
-                      console.error('Error fetching initial schema/types:', error);
+                      console.error(
+                        "Error fetching initial schema/types:",
+                        error,
+                      );
                     }
                   }
 
                   // Update last connection time
                   const now = Date.now();
                   setLastConnectionTime(now);
-                  localStorage.setItem('dgraph-last-connection-time', now.toString());
+                  localStorage.setItem(
+                    "dgraph-last-connection-time",
+                    now.toString(),
+                  );
                 }, 300);
               }
 
@@ -156,8 +181,8 @@ export function ConnectionStoreProvider({ children }: { children: React.ReactNod
               setIsInitialized(true);
             })
             .catch((error) => {
-              console.error('Connection test failed during init:', error);
-              setConnectionError(error.message || 'Connection test failed');
+              console.error("Connection test failed during init:", error);
+              setConnectionError(error.message || "Connection test failed");
               setIsInitialized(true);
             });
         } else {
@@ -166,7 +191,7 @@ export function ConnectionStoreProvider({ children }: { children: React.ReactNod
         }
       }, 100);
     } catch (error) {
-      console.error('Failed to load Dgraph connection details:', error);
+      console.error("Failed to load Dgraph connection details:", error);
       setIsInitialized(true); // Still mark as initialized even if there's an error
     }
 
@@ -184,7 +209,7 @@ export function ConnectionStoreProvider({ children }: { children: React.ReactNod
   const setDgraphUrl = useCallback((url: string) => {
     setDgraphUrlState(url);
     if (initRef.current) {
-      localStorage.setItem('dgraphUrl', url);
+      localStorage.setItem("dgraphUrl", url);
     }
   }, []);
 
@@ -192,7 +217,7 @@ export function ConnectionStoreProvider({ children }: { children: React.ReactNod
   const setDgraphApiKey = useCallback((apiKey: string) => {
     setDgraphApiKeyState(apiKey);
     if (initRef.current) {
-      localStorage.setItem('dgraphApiKey', apiKey);
+      localStorage.setItem("dgraphApiKey", apiKey);
     }
   }, []);
 
@@ -205,15 +230,15 @@ export function ConnectionStoreProvider({ children }: { children: React.ReactNod
 
     try {
       // Always ensure URL and API key are saved to localStorage when testing connection
-      localStorage.setItem('dgraphUrl', dgraphUrl);
+      localStorage.setItem("dgraphUrl", dgraphUrl);
       if (dgraphApiKey) {
-        localStorage.setItem('dgraphApiKey', dgraphApiKey);
+        localStorage.setItem("dgraphApiKey", dgraphApiKey);
       }
 
       // Create a connection object based on URL type
       let connectionInput: string | { url?: string; apiKey?: string };
 
-      if (dgraphUrl.startsWith('dgraph://')) {
+      if (dgraphUrl.startsWith("dgraph://")) {
         connectionInput = dgraphUrl;
       } else {
         connectionInput = {
@@ -231,14 +256,14 @@ export function ConnectionStoreProvider({ children }: { children: React.ReactNod
         // Update last connection time
         const now = Date.now();
         setLastConnectionTime(now);
-        localStorage.setItem('dgraph-last-connection-time', now.toString());
+        localStorage.setItem("dgraph-last-connection-time", now.toString());
       }
 
       return connected;
     } catch (error) {
-      console.error('Error testing connection:', error);
+      console.error("Error testing connection:", error);
       setIsConnected(false);
-      setConnectionError((error as Error).message || 'Connection failed');
+      setConnectionError((error as Error).message || "Connection failed");
       return false;
     } finally {
       setIsFetching(false);
@@ -246,12 +271,15 @@ export function ConnectionStoreProvider({ children }: { children: React.ReactNod
   }, [dgraphUrl, dgraphApiKey]);
 
   // Fetch node types function with debounce to avoid too many requests
-  const fetchNodeTypes = useCallback(async (): Promise<Record<string, number> | null> => {
+  const fetchNodeTypes = useCallback(async (): Promise<Record<
+    string,
+    number
+  > | null> => {
     if (!dgraphUrl || !isConnected) return null;
 
     // Don't allow multiple fetches at once
     if (isFetching) {
-      console.log('Already fetching data, skipping fetchNodeTypes');
+      console.log("Already fetching data, skipping fetchNodeTypes");
       return null;
     }
 
@@ -260,7 +288,7 @@ export function ConnectionStoreProvider({ children }: { children: React.ReactNod
       // Create a connection object based on URL type
       let connectionInput: string | { url?: string; apiKey?: string };
 
-      if (dgraphUrl.startsWith('dgraph://')) {
+      if (dgraphUrl.startsWith("dgraph://")) {
         connectionInput = dgraphUrl;
       } else {
         connectionInput = {
@@ -279,19 +307,19 @@ export function ConnectionStoreProvider({ children }: { children: React.ReactNod
           .sort((a, b) => b.count - a.count); // Sort by count descending
 
         setNodeTypes(typesArray);
-        localStorage.setItem('dgraph-node-types', JSON.stringify(typesArray));
+        localStorage.setItem("dgraph-node-types", JSON.stringify(typesArray));
         return nodeTypesWithCounts;
       } else {
         // If no node types returned, set empty array
         setNodeTypes([]);
-        localStorage.setItem('dgraph-node-types', '[]');
+        localStorage.setItem("dgraph-node-types", "[]");
       }
       return null;
     } catch (error) {
-      console.error('Error fetching node types:', error);
+      console.error("Error fetching node types:", error);
       // On error, clear node types
       setNodeTypes([]);
-      localStorage.setItem('dgraph-node-types', '[]');
+      localStorage.setItem("dgraph-node-types", "[]");
       return null;
     } finally {
       setIsFetching(false);
@@ -304,7 +332,7 @@ export function ConnectionStoreProvider({ children }: { children: React.ReactNod
 
     // Don't allow multiple fetches at once
     if (isFetching) {
-      console.log('Already fetching data, skipping fetchSchema');
+      console.log("Already fetching data, skipping fetchSchema");
       return null;
     }
 
@@ -313,7 +341,7 @@ export function ConnectionStoreProvider({ children }: { children: React.ReactNod
       // Create a connection object based on URL type
       let connectionInput: string | { url?: string; apiKey?: string };
 
-      if (dgraphUrl.startsWith('dgraph://')) {
+      if (dgraphUrl.startsWith("dgraph://")) {
         connectionInput = dgraphUrl;
       } else {
         connectionInput = {
@@ -328,19 +356,19 @@ export function ConnectionStoreProvider({ children }: { children: React.ReactNod
 
       if (schemaStr) {
         setSchema(schemaStr);
-        localStorage.setItem('dgraph-schema', schemaStr);
+        localStorage.setItem("dgraph-schema", schemaStr);
         return schemaStr;
       } else {
         // If no schema returned, set empty string
-        setSchema('');
-        localStorage.setItem('dgraph-schema', '');
+        setSchema("");
+        localStorage.setItem("dgraph-schema", "");
       }
       return null;
     } catch (error) {
-      console.error('Error fetching schema:', error);
+      console.error("Error fetching schema:", error);
       // On error, clear schema
-      setSchema('');
-      localStorage.setItem('dgraph-schema', '');
+      setSchema("");
+      localStorage.setItem("dgraph-schema", "");
       return null;
     } finally {
       setIsFetching(false);
@@ -369,14 +397,20 @@ export function ConnectionStoreProvider({ children }: { children: React.ReactNod
     hasValidNodeTypes,
   };
 
-  return <ConnectionStoreContext.Provider value={value}>{children}</ConnectionStoreContext.Provider>;
+  return (
+    <ConnectionStoreContext.Provider value={value}>
+      {children}
+    </ConnectionStoreContext.Provider>
+  );
 }
 
 // Custom hook to use the connection store
 export function useConnectionStore() {
   const context = useContext(ConnectionStoreContext);
   if (context === undefined) {
-    throw new Error('useConnectionStore must be used within a ConnectionStoreProvider');
+    throw new Error(
+      "useConnectionStore must be used within a ConnectionStoreProvider",
+    );
   }
   return context;
 }

@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import { useBatchStore } from '@/store/batch';
+import React, { useEffect } from "react";
+import { useParams } from "next/navigation";
+import { useBatchStore } from "@/store/batch";
 import {
   useQuery,
   SchemaStatus,
@@ -12,14 +12,15 @@ import {
   QueryList,
   QueryDetail,
   QueryLayout,
-} from '@/components/query/utils';
+} from "@/components/query/utils";
 
 export default function BatchQueryPage() {
   const { batchId } = useParams<{ batchId: string }>();
   const { batches, currentBatch, selectBatch } = useBatchStore();
 
   // Find the current batch either from store or by batchId
-  const batchToUse = currentBatch || batches.find((batch) => batch.id === batchId);
+  const batchToUse =
+    currentBatch || batches.find((batch) => batch.id === batchId);
 
   // Use the shared query hook
   const {
@@ -40,7 +41,7 @@ export default function BatchQueryPage() {
     handleRefreshQueries,
     copyToClipboard,
     getRatelUrl,
-  } = useQuery(batchToUse || { id: '', name: '' }, true); // true for isBatch
+  } = useQuery(batchToUse || { id: "", name: "" }, true); // true for isBatch
 
   // Load the current batch when component mounts
   useEffect(() => {

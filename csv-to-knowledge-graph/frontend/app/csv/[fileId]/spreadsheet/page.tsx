@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState, useCallback } from 'react';
-import { useParams } from 'next/navigation';
-import { useCSVStore } from '@/store/csv';
-import Papa from 'papaparse';
-import { X } from 'lucide-react';
+import React, { useEffect, useState, useCallback } from "react";
+import { useParams } from "next/navigation";
+import { useCSVStore } from "@/store/csv";
+import Papa from "papaparse";
+import { X } from "lucide-react";
 
 interface ExpandedCellData {
   content: string;
@@ -27,17 +27,27 @@ export default function SpreadsheetPage() {
   const { csvFiles, currentFile } = useCSVStore();
   const fileData = csvFiles.find((file) => file.id === fileId) || currentFile;
 
-  const [parsedData, setParsedData] = useState<ParsedData>({ data: [], headers: [] });
+  const [parsedData, setParsedData] = useState<ParsedData>({
+    data: [],
+    headers: [],
+  });
   const [loading, setLoading] = useState<boolean>(true);
-  const [expandedCell, setExpandedCell] = useState<ExpandedCellData | null>(null);
-  const [focusedCell, setFocusedCell] = useState<CellPosition>({ row: -1, col: -1 });
+  const [expandedCell, setExpandedCell] = useState<ExpandedCellData | null>(
+    null,
+  );
+  const [focusedCell, setFocusedCell] = useState<CellPosition>({
+    row: -1,
+    col: -1,
+  });
   const [processingAnimation, setProcessingAnimation] = useState<boolean>(true);
 
   // Track if data is parsing vs. waiting for graph
-  const [dataParsingComplete, setDataParsingComplete] = useState<boolean>(false);
+  const [dataParsingComplete, setDataParsingComplete] =
+    useState<boolean>(false);
 
   // Check if graph data is available to coordinate visual states
-  const isGraphDataAvailable = fileData?.graphData !== null && fileData?.graphData !== undefined;
+  const isGraphDataAvailable =
+    fileData?.graphData !== null && fileData?.graphData !== undefined;
 
   // Listen for the graph-generation-complete event
   useEffect(() => {
@@ -53,14 +63,20 @@ export default function SpreadsheetPage() {
     };
 
     // Add event listener
-    if (typeof window !== 'undefined') {
-      window.addEventListener('graph-generation-complete', handleGraphComplete as EventListener);
+    if (typeof window !== "undefined") {
+      window.addEventListener(
+        "graph-generation-complete",
+        handleGraphComplete as EventListener,
+      );
     }
 
     // Clean up function
     return () => {
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('graph-generation-complete', handleGraphComplete as EventListener);
+      if (typeof window !== "undefined") {
+        window.removeEventListener(
+          "graph-generation-complete",
+          handleGraphComplete as EventListener,
+        );
       }
     };
   }, [fileId]);
@@ -97,7 +113,7 @@ export default function SpreadsheetPage() {
         }
         // Otherwise keep animation going until graph is ready
       } catch (error) {
-        console.error('Error parsing CSV:', error);
+        console.error("Error parsing CSV:", error);
         setLoading(false);
         setProcessingAnimation(false);
         setDataParsingComplete(false);
@@ -116,9 +132,13 @@ export default function SpreadsheetPage() {
   }, [isGraphDataAvailable, processingAnimation, dataParsingComplete]);
 
   // Function to handle cell double-clicks
-  const handleCellDoubleClick = (content: string, rowIndex: number, colIndex: number): void => {
+  const handleCellDoubleClick = (
+    content: string,
+    rowIndex: number,
+    colIndex: number,
+  ): void => {
     // Only expand if content exists and is a string with sufficient length
-    if (content && typeof content === 'string' && content.length > 20) {
+    if (content && typeof content === "string" && content.length > 20) {
       setExpandedCell({
         content,
         rowIndex,
@@ -137,15 +157,19 @@ export default function SpreadsheetPage() {
     (e: KeyboardEvent): void => {
       if (expandedCell) {
         // If expanded cell is open, allow ESC to close it
-        if (e.key === 'Escape') {
+        if (e.key === "Escape") {
           closeExpandedCell();
           return;
         }
         return; // Don't allow navigation while a cell is expanded
       }
 
-      if (focusedCell.row === -1 || !parsedData.data || parsedData.data.length === 0) {
-        if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+      if (
+        focusedCell.row === -1 ||
+        !parsedData.data ||
+        parsedData.data.length === 0
+      ) {
+        if (e.key === "ArrowDown" || e.key === "ArrowRight") {
           setFocusedCell({ row: 0, col: 0 });
         }
         return;
@@ -156,63 +180,74 @@ export default function SpreadsheetPage() {
       const maxCol = headers.length - 1;
 
       switch (e.key) {
-        case 'ArrowUp':
+        case "ArrowUp":
           if (focusedCell.row > 0) {
             setFocusedCell({ ...focusedCell, row: focusedCell.row - 1 });
           }
           break;
-        case 'ArrowDown':
+        case "ArrowDown":
           if (focusedCell.row < maxRow) {
             setFocusedCell({ ...focusedCell, row: focusedCell.row + 1 });
           }
           break;
-        case 'ArrowLeft':
+        case "ArrowLeft":
           if (focusedCell.col > 0) {
             setFocusedCell({ ...focusedCell, col: focusedCell.col - 1 });
           }
           break;
-        case 'ArrowRight':
+        case "ArrowRight":
           if (focusedCell.col < maxCol) {
             setFocusedCell({ ...focusedCell, col: focusedCell.col + 1 });
           }
           break;
-        case 'Home':
+        case "Home":
           setFocusedCell({ ...focusedCell, col: 0 });
           break;
-        case 'End':
+        case "End":
           setFocusedCell({ ...focusedCell, col: maxCol });
           break;
-        case 'Enter':
+        case "Enter":
           // Double-click equivalent - expand the cell if it contains significant text
           if (parsedData.data[focusedCell.row] && headers[focusedCell.col]) {
-            const content = String(parsedData.data[focusedCell.row][headers[focusedCell.col]] || '');
+            const content = String(
+              parsedData.data[focusedCell.row][headers[focusedCell.col]] || "",
+            );
             handleCellDoubleClick(content, focusedCell.row, focusedCell.col);
           }
           break;
-        case 'Escape':
+        case "Escape":
           setFocusedCell({ row: -1, col: -1 });
           break;
         default:
           break;
       }
     },
-    [focusedCell, parsedData.data, parsedData.headers, expandedCell, closeExpandedCell],
+    [
+      focusedCell,
+      parsedData.data,
+      parsedData.headers,
+      expandedCell,
+      closeExpandedCell,
+    ],
   );
 
   // Set up the keyboard event listener
   useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [handleKeyDown]);
 
   // Function to truncate cell content
-  const truncateContent = (content: string | null | undefined, maxLength = 100): string => {
-    if (!content) return '';
+  const truncateContent = (
+    content: string | null | undefined,
+    maxLength = 100,
+  ): string => {
+    if (!content) return "";
     const stringContent = String(content);
     if (stringContent.length <= maxLength) return stringContent;
-    return stringContent.substring(0, maxLength) + '...';
+    return stringContent.substring(0, maxLength) + "...";
   };
 
   // Function to determine if a cell is focused
@@ -244,14 +279,25 @@ export default function SpreadsheetPage() {
             <tbody>
               {parsedData.data.length
                 ? parsedData.data.slice(0, 100).map((row, rowIndex) => (
-                    <tr key={rowIndex} className={rowIndex % 2 === 0 ? 'bg-[#1c1c1c]' : 'bg-[#222]'}>
+                    <tr
+                      key={rowIndex}
+                      className={
+                        rowIndex % 2 === 0 ? "bg-[#1c1c1c]" : "bg-[#222]"
+                      }
+                    >
                       {parsedData.headers.map((header, cellIndex) => {
-                        const cellContent = String(row[header] || '');
+                        const cellContent = String(row[header] || "");
                         const delay = (rowIndex + cellIndex) * 0.025;
 
                         return (
-                          <td key={cellIndex} className="px-4 py-2 border-b border-[#333]">
-                            <div className="truncate max-w-xs csv-cell-pulse" style={{ animationDelay: `${delay}s` }}>
+                          <td
+                            key={cellIndex}
+                            className="px-4 py-2 border-b border-[#333]"
+                          >
+                            <div
+                              className="truncate max-w-xs csv-cell-pulse"
+                              style={{ animationDelay: `${delay}s` }}
+                            >
                               {truncateContent(cellContent, 40)}
                             </div>
                           </td>
@@ -260,17 +306,27 @@ export default function SpreadsheetPage() {
                     </tr>
                   ))
                 : Array.from({ length: 10 }).map((_, rowIndex) => (
-                    <tr key={rowIndex} className={rowIndex % 2 === 0 ? 'bg-[#1c1c1c]' : 'bg-[#222]'}>
+                    <tr
+                      key={rowIndex}
+                      className={
+                        rowIndex % 2 === 0 ? "bg-[#1c1c1c]" : "bg-[#222]"
+                      }
+                    >
                       {Array.from({ length: 5 }).map((_, cellIndex) => {
                         const delay = (rowIndex + cellIndex) * 0.025;
 
                         return (
-                          <td key={cellIndex} className="px-4 py-2 border-b border-[#333]">
+                          <td
+                            key={cellIndex}
+                            className="px-4 py-2 border-b border-[#333]"
+                          >
                             <div
                               className="truncate max-w-xs csv-cell-pulse h-6"
                               style={{ animationDelay: `${delay}s` }}
                             >
-                              {rowIndex === 0 ? `Row ${rowIndex + 1}` : `Cell ${rowIndex}-${cellIndex}`}
+                              {rowIndex === 0
+                                ? `Row ${rowIndex + 1}`
+                                : `Cell ${rowIndex}-${cellIndex}`}
                             </div>
                           </td>
                         );
@@ -301,16 +357,23 @@ export default function SpreadsheetPage() {
               <tr>
                 {parsedData.headers.map((header, index) => (
                   <th key={index} className="px-4 py-3">
-                    <div className={processingAnimation ? 'csv-cell-pulse' : ''}>{header}</div>
+                    <div
+                      className={processingAnimation ? "csv-cell-pulse" : ""}
+                    >
+                      {header}
+                    </div>
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {parsedData.data.slice(0, 100).map((row, rowIndex) => (
-                <tr key={rowIndex} className={rowIndex % 2 === 0 ? 'bg-[#1c1c1c]' : 'bg-[#222]'}>
+                <tr
+                  key={rowIndex}
+                  className={rowIndex % 2 === 0 ? "bg-[#1c1c1c]" : "bg-[#222]"}
+                >
                   {parsedData.headers.map((header, cellIndex) => {
-                    const cellContent = String(row[header] || '');
+                    const cellContent = String(row[header] || "");
                     const isFocused = isCellFocused(rowIndex, cellIndex);
                     // Calculate a delay based on row and column position for wave effect
                     const delay = (rowIndex + cellIndex) * 0.025; // smaller delay for smoother wave
@@ -319,13 +382,23 @@ export default function SpreadsheetPage() {
                       <td
                         key={cellIndex}
                         className={`px-4 py-2 border-b border-[#333] cursor-pointer ${
-                          isFocused ? 'outline outline-2 outline-purple-500' : ''
+                          isFocused
+                            ? "outline outline-2 outline-purple-500"
+                            : ""
                         }`}
-                        onClick={() => setFocusedCell({ row: rowIndex, col: cellIndex })}
-                        onDoubleClick={() => handleCellDoubleClick(cellContent, rowIndex, cellIndex)}
+                        onClick={() =>
+                          setFocusedCell({ row: rowIndex, col: cellIndex })
+                        }
+                        onDoubleClick={() =>
+                          handleCellDoubleClick(
+                            cellContent,
+                            rowIndex,
+                            cellIndex,
+                          )
+                        }
                       >
                         <div
-                          className={`truncate max-w-xs ${processingAnimation ? 'csv-cell-pulse' : 'text-gray-300'}`}
+                          className={`truncate max-w-xs ${processingAnimation ? "csv-cell-pulse" : "text-gray-300"}`}
                           style={
                             processingAnimation
                               ? {
@@ -357,15 +430,21 @@ export default function SpreadsheetPage() {
           <div className="bg-[#1c1c1c] rounded-lg shadow-lg border border-[#333] w-full max-w-2xl mx-4">
             <div className="border-b border-[#333] px-6 py-4 flex justify-between items-center">
               <h3 className="font-medium text-white">
-                Cell Content ({parsedData.headers[expandedCell.colIndex]}, Row {expandedCell.rowIndex + 1})
+                Cell Content ({parsedData.headers[expandedCell.colIndex]}, Row{" "}
+                {expandedCell.rowIndex + 1})
               </h3>
               <div className="flex space-x-2">
-                <button onClick={closeExpandedCell} className="p-1 rounded-full hover:bg-[#333]">
+                <button
+                  onClick={closeExpandedCell}
+                  className="p-1 rounded-full hover:bg-[#333]"
+                >
                   <X className="h-5 w-5 text-gray-400" />
                 </button>
               </div>
             </div>
-            <div className="p-6 max-h-96 overflow-y-auto whitespace-pre-wrap text-gray-300">{expandedCell.content}</div>
+            <div className="p-6 max-h-96 overflow-y-auto whitespace-pre-wrap text-gray-300">
+              {expandedCell.content}
+            </div>
             <div className="border-t border-[#333] px-6 py-3 flex justify-end">
               <button
                 onClick={closeExpandedCell}

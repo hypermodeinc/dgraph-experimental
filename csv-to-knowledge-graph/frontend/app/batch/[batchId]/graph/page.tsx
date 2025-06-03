@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState, useRef } from 'react';
-import { useParams } from 'next/navigation';
-import { useBatchStore } from '@/store/batch';
-import { useLazyQuery } from '@apollo/client';
-import { GENERATE_BATCH_GRAPH } from '@/app/queries';
-import BaseGraphView from '@/components/graph/BaseGraphView';
+import React, { useEffect, useState, useRef } from "react";
+import { useParams } from "next/navigation";
+import { useBatchStore } from "@/store/batch";
+import { useLazyQuery } from "@apollo/client";
+import { GENERATE_BATCH_GRAPH } from "@/app/queries";
+import BaseGraphView from "@/components/graph/BaseGraphView";
 
 export default function BatchGraphView() {
   const { batchId } = useParams<{ batchId: string }>();
@@ -15,7 +15,9 @@ export default function BatchGraphView() {
   const [graphData, setGraphData] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [processStatus, setProcessStatus] = useState<string>('Analyzing batch files...');
+  const [processStatus, setProcessStatus] = useState<string>(
+    "Analyzing batch files...",
+  );
 
   const isProcessingRef = useRef<boolean>(false);
   const hasInitializedRef = useRef<boolean>(false);
@@ -35,27 +37,27 @@ export default function BatchGraphView() {
           setError(null);
           isProcessingRef.current = false;
           setIsLoading(false);
-          setProcessStatus('Knowledge graph generated successfully');
+          setProcessStatus("Knowledge graph generated successfully");
 
           // Dispatch completion event
-          if (typeof window !== 'undefined') {
+          if (typeof window !== "undefined") {
             window.dispatchEvent(
-              new CustomEvent('graph-generation-complete', {
+              new CustomEvent("graph-generation-complete", {
                 detail: { batchId },
               }),
             );
           }
         } catch (err) {
-          console.error('Error parsing graph data:', err);
-          setError('Failed to parse batch graph data');
+          console.error("Error parsing graph data:", err);
+          setError("Failed to parse batch graph data");
           isProcessingRef.current = false;
           setIsLoading(false);
 
           // Dispatch error event
-          if (typeof window !== 'undefined') {
+          if (typeof window !== "undefined") {
             window.dispatchEvent(
-              new CustomEvent('graph-generation-error', {
-                detail: { batchId, error: 'Failed to parse batch graph data' },
+              new CustomEvent("graph-generation-error", {
+                detail: { batchId, error: "Failed to parse batch graph data" },
               }),
             );
           }
@@ -63,16 +65,19 @@ export default function BatchGraphView() {
       }
     },
     onError: (error) => {
-      console.error('GraphQL error:', error);
-      setError(error.message || 'Failed to generate batch graph');
+      console.error("GraphQL error:", error);
+      setError(error.message || "Failed to generate batch graph");
       isProcessingRef.current = false;
       setIsLoading(false);
 
       // Dispatch error event
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         window.dispatchEvent(
-          new CustomEvent('graph-generation-error', {
-            detail: { batchId, error: error.message || 'Failed to generate batch graph' },
+          new CustomEvent("graph-generation-error", {
+            detail: {
+              batchId,
+              error: error.message || "Failed to generate batch graph",
+            },
           }),
         );
       }
@@ -101,9 +106,9 @@ export default function BatchGraphView() {
       setIsLoading(false);
 
       // Dispatch completion event
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         window.dispatchEvent(
-          new CustomEvent('graph-generation-complete', {
+          new CustomEvent("graph-generation-complete", {
             detail: { batchId },
           }),
         );
@@ -117,9 +122,9 @@ export default function BatchGraphView() {
       hasInitializedRef.current = true;
 
       // Dispatch start event
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         window.dispatchEvent(
-          new CustomEvent('graph-generation-start', {
+          new CustomEvent("graph-generation-start", {
             detail: { batchId },
           }),
         );
@@ -140,12 +145,12 @@ export default function BatchGraphView() {
     // Mark as processing
     isProcessingRef.current = true;
     setIsLoading(true);
-    setProcessStatus('Analyzing batch files...');
+    setProcessStatus("Analyzing batch files...");
 
     // Dispatch start event
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       window.dispatchEvent(
-        new CustomEvent('graph-generation-start', {
+        new CustomEvent("graph-generation-start", {
           detail: { batchId },
         }),
       );
@@ -157,19 +162,23 @@ export default function BatchGraphView() {
         if (!file.content) return [];
 
         // Parse the first line of the CSV to get column names
-        const lines = file.content.split('\n');
+        const lines = file.content.split("\n");
         if (lines.length > 0) {
           const headerLine = lines[0].trim();
-          return headerLine.split(',').map((col: string) => col.trim().replace(/^"|"$/g, ''));
+          return headerLine
+            .split(",")
+            .map((col: string) => col.trim().replace(/^"|"$/g, ""));
         }
         return [];
       });
 
       // Filter out empty arrays
-      const validColumnNamesMatrix = columnNamesMatrix.filter((cols: string[]) => cols.length > 0);
+      const validColumnNamesMatrix = columnNamesMatrix.filter(
+        (cols: string[]) => cols.length > 0,
+      );
 
       if (validColumnNamesMatrix.length > 0) {
-        setProcessStatus('Generating unified knowledge graph...');
+        setProcessStatus("Generating unified knowledge graph...");
 
         // Now generate the batch graph
         generateBatchGraph({
@@ -178,30 +187,36 @@ export default function BatchGraphView() {
           },
         });
       } else {
-        setError('No valid CSV headers found in batch files');
+        setError("No valid CSV headers found in batch files");
         isProcessingRef.current = false;
         setIsLoading(false);
 
         // Dispatch error event
-        if (typeof window !== 'undefined') {
+        if (typeof window !== "undefined") {
           window.dispatchEvent(
-            new CustomEvent('graph-generation-error', {
-              detail: { batchId, error: 'No valid CSV headers found in batch files' },
+            new CustomEvent("graph-generation-error", {
+              detail: {
+                batchId,
+                error: "No valid CSV headers found in batch files",
+              },
             }),
           );
         }
       }
     } catch (err) {
-      console.error('Error extracting column names:', err);
-      setError('Failed to extract column names from CSV files');
+      console.error("Error extracting column names:", err);
+      setError("Failed to extract column names from CSV files");
       isProcessingRef.current = false;
       setIsLoading(false);
 
       // Dispatch error event
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         window.dispatchEvent(
-          new CustomEvent('graph-generation-error', {
-            detail: { batchId, error: 'Failed to extract column names from CSV files' },
+          new CustomEvent("graph-generation-error", {
+            detail: {
+              batchId,
+              error: "Failed to extract column names from CSV files",
+            },
           }),
         );
       }
@@ -229,10 +244,10 @@ export default function BatchGraphView() {
       loadingMessage={processStatus}
       emptyStateMessage={
         !currentBatch
-          ? 'This batch could not be found or has been deleted.'
+          ? "This batch could not be found or has been deleted."
           : currentBatch.files.length === 0
-            ? 'Add some CSV files to this batch to generate a unified knowledge graph.'
-            : 'Generating unified knowledge graph...'
+            ? "Add some CSV files to this batch to generate a unified knowledge graph."
+            : "Generating unified knowledge graph..."
       }
       isBatch={true}
       itemName={currentBatch?.name}

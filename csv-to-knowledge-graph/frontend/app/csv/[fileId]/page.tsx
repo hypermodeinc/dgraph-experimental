@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useParams, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useParams, useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function CSVPage() {
   const { fileId } = useParams<{ fileId: string }>();

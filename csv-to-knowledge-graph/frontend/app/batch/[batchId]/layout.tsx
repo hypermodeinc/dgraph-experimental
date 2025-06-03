@@ -1,14 +1,26 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { Folder, Network, Import, Loader, AlertCircle, CheckCircle, Code } from 'lucide-react';
-import { useBatchStore } from '@/store/batch';
-import { useParams, usePathname, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { useLazyQuery } from '@apollo/client';
-import { GENERATE_BATCH_GRAPH } from '@/app/queries';
+import React, { useEffect, useState } from "react";
+import {
+  Folder,
+  Network,
+  Import,
+  Loader,
+  AlertCircle,
+  CheckCircle,
+  Code,
+} from "lucide-react";
+import { useBatchStore } from "@/store/batch";
+import { useParams, usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
+import { useLazyQuery } from "@apollo/client";
+import { GENERATE_BATCH_GRAPH } from "@/app/queries";
 
-export default function BatchLayout({ children }: { children: React.ReactNode }) {
+export default function BatchLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { batchId } = useParams<{ batchId: string }>();
   const pathname = usePathname();
   const router = useRouter();
@@ -17,7 +29,9 @@ export default function BatchLayout({ children }: { children: React.ReactNode })
   // Additional state for batch graph processing
   const [isGeneratingGraph, setIsGeneratingGraph] = useState(false);
   const [graphGenerationComplete, setGraphGenerationComplete] = useState(false);
-  const [graphGenerationError, setGraphGenerationError] = useState<string | null>(null);
+  const [graphGenerationError, setGraphGenerationError] = useState<
+    string | null
+  >(null);
 
   const currentBatch = batches.find((batch) => batch.id === batchId);
 
@@ -38,23 +52,25 @@ export default function BatchLayout({ children }: { children: React.ReactNode })
           setGraphGenerationError(null);
 
           // Dispatch completion event
-          if (typeof window !== 'undefined') {
+          if (typeof window !== "undefined") {
             window.dispatchEvent(
-              new CustomEvent('graph-generation-complete', {
+              new CustomEvent("graph-generation-complete", {
                 detail: { batchId },
               }),
             );
           }
         } catch (err) {
-          console.error('Error parsing batch graph data:', err);
-          setGraphGenerationError('Failed to parse batch graph data');
+          console.error("Error parsing batch graph data:", err);
+          setGraphGenerationError("Failed to parse batch graph data");
           setIsGeneratingGraph(false);
         }
       }
     },
     onError: (error) => {
-      console.error('GraphQL error:', error);
-      setGraphGenerationError(error.message || 'Failed to generate batch graph');
+      console.error("GraphQL error:", error);
+      setGraphGenerationError(
+        error.message || "Failed to generate batch graph",
+      );
       setIsGeneratingGraph(false);
     },
   });
@@ -76,9 +92,9 @@ export default function BatchLayout({ children }: { children: React.ReactNode })
       setGraphGenerationComplete(true);
 
       // Dispatch event that graph is already complete
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         window.dispatchEvent(
-          new CustomEvent('graph-generation-complete', {
+          new CustomEvent("graph-generation-complete", {
             detail: { batchId },
           }),
         );
@@ -97,9 +113,9 @@ export default function BatchLayout({ children }: { children: React.ReactNode })
     setGraphGenerationError(null);
 
     // Dispatch event that graph generation is starting
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       window.dispatchEvent(
-        new CustomEvent('graph-generation-start', {
+        new CustomEvent("graph-generation-start", {
           detail: { batchId },
         }),
       );
@@ -111,16 +127,20 @@ export default function BatchLayout({ children }: { children: React.ReactNode })
         if (!file.content) return [];
 
         // Parse the first line of the CSV to get column names
-        const lines = file.content.split('\n');
+        const lines = file.content.split("\n");
         if (lines.length > 0) {
           const headerLine = lines[0].trim();
-          return headerLine.split(',').map((col) => col.trim().replace(/^"|"$/g, ''));
+          return headerLine
+            .split(",")
+            .map((col) => col.trim().replace(/^"|"$/g, ""));
         }
         return [];
       });
 
       // Filter out empty arrays
-      const validColumnNamesMatrix = columnNamesMatrix.filter((cols) => cols.length > 0);
+      const validColumnNamesMatrix = columnNamesMatrix.filter(
+        (cols) => cols.length > 0,
+      );
 
       if (validColumnNamesMatrix.length > 0) {
         // Now generate the batch graph
@@ -130,26 +150,32 @@ export default function BatchLayout({ children }: { children: React.ReactNode })
           },
         });
       } else {
-        setGraphGenerationError('No valid CSV headers found in batch files');
+        setGraphGenerationError("No valid CSV headers found in batch files");
         setIsGeneratingGraph(false);
         // Dispatch error event
-        if (typeof window !== 'undefined') {
+        if (typeof window !== "undefined") {
           window.dispatchEvent(
-            new CustomEvent('graph-generation-error', {
-              detail: { batchId, error: 'No valid CSV headers found in batch files' },
+            new CustomEvent("graph-generation-error", {
+              detail: {
+                batchId,
+                error: "No valid CSV headers found in batch files",
+              },
             }),
           );
         }
       }
     } catch (err) {
-      console.error('Error extracting column names:', err);
-      setGraphGenerationError('Failed to extract column names from CSV files');
+      console.error("Error extracting column names:", err);
+      setGraphGenerationError("Failed to extract column names from CSV files");
       setIsGeneratingGraph(false);
       // Dispatch error event
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         window.dispatchEvent(
-          new CustomEvent('graph-generation-error', {
-            detail: { batchId, error: 'Failed to extract column names from CSV files' },
+          new CustomEvent("graph-generation-error", {
+            detail: {
+              batchId,
+              error: "Failed to extract column names from CSV files",
+            },
           }),
         );
       }
@@ -159,7 +185,7 @@ export default function BatchLayout({ children }: { children: React.ReactNode })
   // Updated isActive function to properly highlight the Batch View tab
   const isActive = (path: string) => {
     // For the batch view (root path)
-    if (path === 'batch') {
+    if (path === "batch") {
       // If we're at the root batch path (not graph or import subpaths)
       return pathname === `/batch/${batchId}`;
     }
@@ -168,9 +194,9 @@ export default function BatchLayout({ children }: { children: React.ReactNode })
     return pathname.includes(`/${path}`);
   };
 
-  const isGraphView = pathname.includes('/graph');
-  const isImportView = pathname.includes('/import');
-  const isQueryView = pathname.includes('/query');
+  const isGraphView = pathname.includes("/graph");
+  const isImportView = pathname.includes("/import");
+  const isQueryView = pathname.includes("/query");
   const isSpecialView = isGraphView || isImportView || isQueryView;
 
   // Retry graph generation function
@@ -191,11 +217,14 @@ export default function BatchLayout({ children }: { children: React.ReactNode })
         <div className="flex items-center">
           <div className="flex items-center">
             <Folder className="h-5 w-5 text-purple-400 mr-2" />
-            <h2 className="text-lg font-medium text-white truncate max-w-md">{currentBatch.name}</h2>
+            <h2 className="text-lg font-medium text-white truncate max-w-md">
+              {currentBatch.name}
+            </h2>
           </div>
           {currentBatch.files.length > 0 && (
             <span className="ml-3 text-xs text-gray-400">
-              {currentBatch.files.length} file{currentBatch.files.length !== 1 ? 's' : ''}
+              {currentBatch.files.length} file
+              {currentBatch.files.length !== 1 ? "s" : ""}
             </span>
           )}
         </div>
@@ -206,9 +235,9 @@ export default function BatchLayout({ children }: { children: React.ReactNode })
             <Link
               href={`/batch/${batchId}`}
               className={`px-3 py-1.5 rounded-md text-sm flex items-center ${
-                isActive('batch')
-                  ? 'bg-purple-900/20 text-purple-300 border border-purple-800/50'
-                  : 'text-gray-300 hover:bg-[#333]'
+                isActive("batch")
+                  ? "bg-purple-900/20 text-purple-300 border border-purple-800/50"
+                  : "text-gray-300 hover:bg-[#333]"
               }`}
             >
               <Folder className="h-4 w-4 mr-1.5" />
@@ -217,9 +246,9 @@ export default function BatchLayout({ children }: { children: React.ReactNode })
             <Link
               href={`/batch/${batchId}/graph`}
               className={`px-3 py-1.5 rounded-md text-sm flex items-center ${
-                isActive('graph')
-                  ? 'bg-purple-900/20 text-purple-300 border border-purple-800/50'
-                  : 'text-gray-300 hover:bg-[#333]'
+                isActive("graph")
+                  ? "bg-purple-900/20 text-purple-300 border border-purple-800/50"
+                  : "text-gray-300 hover:bg-[#333]"
               }`}
             >
               {isGeneratingGraph && !isGraphView ? (
@@ -230,43 +259,20 @@ export default function BatchLayout({ children }: { children: React.ReactNode })
               <span className="min-w-[70px]">
                 Graph View
                 {isGeneratingGraph && !isGraphView && (
-                  <span className="ml-1 text-xs text-gray-400 inline-block">(Generating...)</span>
+                  <span className="ml-1 text-xs text-gray-400 inline-block">
+                    (Generating...)
+                  </span>
                 )}
               </span>
             </Link>
             <Link
               href={`/batch/${batchId}/import`}
               className={`px-3 py-1.5 rounded-md text-sm flex items-center ${
-                isActive('import')
-                  ? 'bg-purple-900/20 text-purple-300 border border-purple-800/50'
+                isActive("import")
+                  ? "bg-purple-900/20 text-purple-300 border border-purple-800/50"
                   : !graphGenerationComplete
-                    ? 'text-gray-500 cursor-not-allowed opacity-60'
-                    : 'text-gray-300 hover:bg-[#333]'
-              }`}
-              onClick={(e) => {
-                if (!graphGenerationComplete) {
-                  e.preventDefault();
-                }
-              }}
-              title={!graphGenerationComplete ? 'Graph generation must complete before import' : 'Import to Dgraph'}
-            >
-              <Import className="h-4 w-4 mr-1.5" />
-              <span className="min-w-[70px]">
-                Import
-                {!graphGenerationComplete && !isImportView && (
-                  <span className="ml-1 text-xs text-gray-400 inline-block">(Waiting...)</span>
-                )}
-              </span>
-            </Link>
-            {/* Add Query tab */}
-            <Link
-              href={`/batch/${batchId}/query`}
-              className={`px-3 py-1.5 rounded-md text-sm flex items-center ${
-                isActive('query')
-                  ? 'bg-purple-900/20 text-purple-300 border border-purple-800/50'
-                  : !graphGenerationComplete
-                    ? 'text-gray-500 cursor-not-allowed opacity-60'
-                    : 'text-gray-300 hover:bg-[#333]'
+                    ? "text-gray-500 cursor-not-allowed opacity-60"
+                    : "text-gray-300 hover:bg-[#333]"
               }`}
               onClick={(e) => {
                 if (!graphGenerationComplete) {
@@ -274,14 +280,49 @@ export default function BatchLayout({ children }: { children: React.ReactNode })
                 }
               }}
               title={
-                !graphGenerationComplete ? 'Graph generation must complete before queries' : 'Explore with Queries'
+                !graphGenerationComplete
+                  ? "Graph generation must complete before import"
+                  : "Import to Dgraph"
+              }
+            >
+              <Import className="h-4 w-4 mr-1.5" />
+              <span className="min-w-[70px]">
+                Import
+                {!graphGenerationComplete && !isImportView && (
+                  <span className="ml-1 text-xs text-gray-400 inline-block">
+                    (Waiting...)
+                  </span>
+                )}
+              </span>
+            </Link>
+            {/* Add Query tab */}
+            <Link
+              href={`/batch/${batchId}/query`}
+              className={`px-3 py-1.5 rounded-md text-sm flex items-center ${
+                isActive("query")
+                  ? "bg-purple-900/20 text-purple-300 border border-purple-800/50"
+                  : !graphGenerationComplete
+                    ? "text-gray-500 cursor-not-allowed opacity-60"
+                    : "text-gray-300 hover:bg-[#333]"
+              }`}
+              onClick={(e) => {
+                if (!graphGenerationComplete) {
+                  e.preventDefault();
+                }
+              }}
+              title={
+                !graphGenerationComplete
+                  ? "Graph generation must complete before queries"
+                  : "Explore with Queries"
               }
             >
               <Code className="h-4 w-4 mr-1.5" />
               <span className="min-w-[70px]">
                 Query
                 {!graphGenerationComplete && !isQueryView && (
-                  <span className="ml-1 text-xs text-gray-400 inline-block">(Waiting...)</span>
+                  <span className="ml-1 text-xs text-gray-400 inline-block">
+                    (Waiting...)
+                  </span>
                 )}
               </span>
             </Link>
@@ -294,8 +335,12 @@ export default function BatchLayout({ children }: { children: React.ReactNode })
         <div className="mx-6 mt-4 p-3 bg-red-900/20 border border-red-800/40 rounded-md flex items-start">
           <AlertCircle className="h-5 w-5 text-red-400 mr-2 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm text-red-300 font-medium">Graph Generation Error</p>
-            <p className="text-xs text-red-300/80 mt-1">{graphGenerationError}</p>
+            <p className="text-sm text-red-300 font-medium">
+              Graph Generation Error
+            </p>
+            <p className="text-xs text-red-300/80 mt-1">
+              {graphGenerationError}
+            </p>
             <div className="flex mt-2 space-x-3">
               <button
                 onClick={handleRetryGraphGeneration}
@@ -329,7 +374,12 @@ export default function BatchLayout({ children }: { children: React.ReactNode })
                   viewBox="0 0 24 24"
                   stroke="currentColor"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
                 </svg>
               </Link>
             </div>
@@ -337,13 +387,18 @@ export default function BatchLayout({ children }: { children: React.ReactNode })
         </div>
       )}
 
-      <div className={`${isSpecialView ? 'flex-1 h-full' : 'p-6'}`}>{children}</div>
+      <div className={`${isSpecialView ? "flex-1 h-full" : "p-6"}`}>
+        {children}
+      </div>
 
       {/* Graph generation status banner - only show when processing */}
       {isGeneratingGraph && !isGraphView && (
         <div className="px-6 py-3 bg-[#222] border-t border-[#2a2a2a] text-sm text-gray-300 flex items-center">
           <Loader className="h-4 w-4 mr-2 animate-spin text-purple-400" />
-          Generating unified knowledge graph from {currentBatch.files.length} CSV files...
+          Generating unified knowledge graph from {
+            currentBatch.files.length
+          }{" "}
+          CSV files...
           <span
             className="ml-auto text-xs text-purple-400 hover:text-purple-300 cursor-pointer"
             onClick={() => router.push(`/batch/${batchId}/graph`)}
@@ -354,27 +409,35 @@ export default function BatchLayout({ children }: { children: React.ReactNode })
       )}
 
       {/* Graph generation success banner - only show when complete and not on graph view */}
-      {graphGenerationComplete && !isGraphView && !isImportView && !isQueryView && (
-        <div className="px-6 py-3 bg-[#222] border-t border-[#2a2a2a] text-sm text-green-300 flex items-center">
-          <CheckCircle className="h-4 w-4 mr-2 text-green-400" />
-          Knowledge graph generated successfully.
-          <Link
-            href={`/batch/${batchId}/import`}
-            className="ml-auto text-xs text-purple-400 hover:text-purple-300 flex items-center"
-          >
-            Continue to Import
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-3 w-3 ml-1"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+      {graphGenerationComplete &&
+        !isGraphView &&
+        !isImportView &&
+        !isQueryView && (
+          <div className="px-6 py-3 bg-[#222] border-t border-[#2a2a2a] text-sm text-green-300 flex items-center">
+            <CheckCircle className="h-4 w-4 mr-2 text-green-400" />
+            Knowledge graph generated successfully.
+            <Link
+              href={`/batch/${batchId}/import`}
+              className="ml-auto text-xs text-purple-400 hover:text-purple-300 flex items-center"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </Link>
-        </div>
-      )}
+              Continue to Import
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-3 w-3 ml-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </Link>
+          </div>
+        )}
     </div>
   );
 }

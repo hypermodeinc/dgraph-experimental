@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Upload, FileText, X, ArrowRight, Plus } from 'lucide-react';
-import { useBatchStore } from '@/store/batch';
-import { useRouter } from 'next/navigation';
+import React, { useState } from "react";
+import { Upload, FileText, X, ArrowRight, Plus } from "lucide-react";
+import { useBatchStore } from "@/store/batch";
+import { useRouter } from "next/navigation";
 
 type CSVFileWidgetProps = {
   file: File | null;
@@ -32,16 +32,18 @@ const CSVFileWidget: React.FC<CSVFileWidgetProps> = ({
   const { addBatch } = useBatchStore();
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isBatchMode, setIsBatchMode] = useState(false);
-  const [batchName, setBatchName] = useState('');
-  const [batchDescription, setBatchDescription] = useState('');
+  const [batchName, setBatchName] = useState("");
+  const [batchDescription, setBatchDescription] = useState("");
 
   const handleMultipleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const fileList = Array.from(e.target.files);
-      const allCSVs = fileList.every((file) => file.name.toLowerCase().endsWith('.csv'));
+      const allCSVs = fileList.every((file) =>
+        file.name.toLowerCase().endsWith(".csv"),
+      );
 
       if (!allCSVs) {
-        alert('All files must be CSV files.');
+        alert("All files must be CSV files.");
         return;
       }
 
@@ -62,10 +64,12 @@ const CSVFileWidget: React.FC<CSVFileWidgetProps> = ({
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const fileList = Array.from(e.dataTransfer.files);
 
-      const allCSVs = fileList.every((file) => file.name.toLowerCase().endsWith('.csv'));
+      const allCSVs = fileList.every((file) =>
+        file.name.toLowerCase().endsWith(".csv"),
+      );
 
       if (!allCSVs) {
-        alert('All files must be CSV files.');
+        alert("All files must be CSV files.");
         return;
       }
 
@@ -82,7 +86,7 @@ const CSVFileWidget: React.FC<CSVFileWidgetProps> = ({
   // Add another file to the selection
   const handleAddMoreFiles = () => {
     // Trigger the file input click
-    const fileInput = document.getElementById('file-upload-more');
+    const fileInput = document.getElementById("file-upload-more");
     if (fileInput) {
       fileInput.click();
     }
@@ -105,12 +109,12 @@ const CSVFileWidget: React.FC<CSVFileWidgetProps> = ({
 
   const handleCreateBatch = async () => {
     if (selectedFiles.length === 0) {
-      alert('Please select at least one CSV file.');
+      alert("Please select at least one CSV file.");
       return;
     }
 
     if (isBatchMode && !batchName.trim()) {
-      alert('Please enter a batch name.');
+      alert("Please enter a batch name.");
       return;
     }
 
@@ -125,7 +129,7 @@ const CSVFileWidget: React.FC<CSVFileWidgetProps> = ({
       }
 
       if (processedFiles.length === 0) {
-        alert('Failed to process any files.');
+        alert("Failed to process any files.");
         return;
       }
 
@@ -135,8 +139,8 @@ const CSVFileWidget: React.FC<CSVFileWidgetProps> = ({
 
         // Reset form
         setSelectedFiles([]);
-        setBatchName('');
-        setBatchDescription('');
+        setBatchName("");
+        setBatchDescription("");
         setIsBatchMode(false);
         setFile(null);
 
@@ -147,8 +151,8 @@ const CSVFileWidget: React.FC<CSVFileWidgetProps> = ({
         router.push(`/csv/${processedFiles[0].id}/spreadsheet`);
       }
     } catch (error) {
-      console.error('Error processing files:', error);
-      alert('An error occurred while processing the files.');
+      console.error("Error processing files:", error);
+      alert("An error occurred while processing the files.");
     }
   };
 
@@ -174,8 +178,8 @@ const CSVFileWidget: React.FC<CSVFileWidgetProps> = ({
       <div
         className={`border-2 border-dashed rounded-lg p-6 relative ${
           isDragging
-            ? 'border-purple-500 bg-purple-900/10 shadow-[0_0_20px_rgba(147,51,234,0.3)]'
-            : 'border-[#333] hover:bg-[#222] hover:border-purple-500/50 hover:shadow-[0_0_10px_rgba(147,51,234,0.1)]'
+            ? "border-purple-500 bg-purple-900/10 shadow-[0_0_20px_rgba(147,51,234,0.3)]"
+            : "border-[#333] hover:bg-[#222] hover:border-purple-500/50 hover:shadow-[0_0_10px_rgba(147,51,234,0.1)]"
         }`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -186,8 +190,8 @@ const CSVFileWidget: React.FC<CSVFileWidgetProps> = ({
           <div
             className="absolute inset-0 rounded-lg pointer-events-none"
             style={{
-              animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-              boxShadow: '0 0 25px rgba(147, 51, 234, 0.5)',
+              animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+              boxShadow: "0 0 25px rgba(147, 51, 234, 0.5)",
               zIndex: -1,
             }}
           ></div>
@@ -197,8 +201,12 @@ const CSVFileWidget: React.FC<CSVFileWidgetProps> = ({
           {selectedFiles.length === 0 ? (
             <>
               <Upload className="h-12 w-12 text-purple-400 mb-4" />
-              <h3 className="mb-2 text-lg font-medium text-white">Drag and drop CSV files here</h3>
-              <p className="mb-4 text-sm text-gray-400">Upload one or more CSV files (MAX. 10MB per file)</p>
+              <h3 className="mb-2 text-lg font-medium text-white">
+                Drag and drop CSV files here
+              </h3>
+              <p className="mb-4 text-sm text-gray-400">
+                Upload one or more CSV files (MAX. 10MB per file)
+              </p>
               <input
                 type="file"
                 id="file-upload"
@@ -221,15 +229,17 @@ const CSVFileWidget: React.FC<CSVFileWidgetProps> = ({
                 <div>
                   <div className="flex justify-between items-center mb-3">
                     <h3 className="text-md font-medium text-white">
-                      {selectedFiles.length > 1 ? `${selectedFiles.length} Files Selected` : 'File Selected'}
+                      {selectedFiles.length > 1
+                        ? `${selectedFiles.length} Files Selected`
+                        : "File Selected"}
                     </h3>
                     <button
                       onClick={() => {
                         setSelectedFiles([]);
                         setFile(null);
                         setIsBatchMode(false);
-                        setBatchName('');
-                        setBatchDescription('');
+                        setBatchName("");
+                        setBatchDescription("");
                       }}
                       className="text-xs text-gray-400 hover:text-gray-300"
                     >
@@ -240,13 +250,20 @@ const CSVFileWidget: React.FC<CSVFileWidgetProps> = ({
                   {/* Always use 2-column grid layout */}
                   <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto p-1">
                     {selectedFiles.map((file, index) => (
-                      <div key={index} className="border border-[#333] rounded-lg bg-[#222] flex items-center p-2.5">
+                      <div
+                        key={index}
+                        className="border border-[#333] rounded-lg bg-[#222] flex items-center p-2.5"
+                      >
                         <div className="w-6 h-6 min-w-6 bg-[#333] rounded-lg flex items-center justify-center mr-2">
                           <FileText className="h-3 w-3 text-purple-400" />
                         </div>
                         <div className="flex-1 overflow-hidden">
-                          <h4 className="font-medium text-white text-sm truncate">{file.name}</h4>
-                          <p className="text-xs text-gray-400">{Math.round(file.size / 1024)} KB</p>
+                          <h4 className="font-medium text-white text-sm truncate">
+                            {file.name}
+                          </h4>
+                          <p className="text-xs text-gray-400">
+                            {Math.round(file.size / 1024)} KB
+                          </p>
                         </div>
                         <button
                           onClick={() => removeSelectedFile(index)}
@@ -266,7 +283,9 @@ const CSVFileWidget: React.FC<CSVFileWidgetProps> = ({
                         <Plus className="h-3 w-3 text-purple-400" />
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-medium text-white text-sm truncate">Add another CSV file</h4>
+                        <h4 className="font-medium text-white text-sm truncate">
+                          Add another CSV file
+                        </h4>
                         <p className="text-xs text-gray-400">Create a batch</p>
                       </div>
                       <input
@@ -284,10 +303,14 @@ const CSVFileWidget: React.FC<CSVFileWidgetProps> = ({
                 {/* Batch options - only show if multiple files are selected */}
                 {isBatchMode && (
                   <div className="border border-[#333] rounded-lg p-4 bg-[#222]">
-                    <h3 className="text-md font-medium text-white mb-3">Batch Options</h3>
+                    <h3 className="text-md font-medium text-white mb-3">
+                      Batch Options
+                    </h3>
                     <div className="space-y-3">
                       <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-1">Batch Name</label>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">
+                          Batch Name
+                        </label>
                         <input
                           type="text"
                           value={batchName}
@@ -297,7 +320,9 @@ const CSVFileWidget: React.FC<CSVFileWidgetProps> = ({
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-1">Description (Optional)</label>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">
+                          Description (Optional)
+                        </label>
                         <textarea
                           value={batchDescription}
                           onChange={(e) => setBatchDescription(e.target.value)}

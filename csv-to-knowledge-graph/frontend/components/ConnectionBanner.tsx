@@ -1,15 +1,17 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { Link, CheckCircle } from 'lucide-react';
-import { useConnectionStore } from '@/store/connection';
-import DgraphConnection from '@/components/import/DgraphConnection';
+import React, { useState, useEffect } from "react";
+import { Link, CheckCircle } from "lucide-react";
+import { useConnectionStore } from "@/store/connection";
+import DgraphConnection from "@/components/import/DgraphConnection";
 
 interface ConnectionBannerProps {
   onConnectionChange?: (isConnected: boolean) => void;
 }
 
-export default function ConnectionBanner({ onConnectionChange }: ConnectionBannerProps) {
+export default function ConnectionBanner({
+  onConnectionChange,
+}: ConnectionBannerProps) {
   const [showBanner, setShowBanner] = useState(true);
   const [showConnectionModal, setShowConnectionModal] = useState(false);
   const [connectionSuccess, setConnectionSuccess] = useState(false);
@@ -19,15 +21,15 @@ export default function ConnectionBanner({ onConnectionChange }: ConnectionBanne
 
   // Check if we've already shown the banner in this session
   useEffect(() => {
-    const hasShownBanner = sessionStorage.getItem('hasShownConnectionBanner');
-    if (hasShownBanner === 'true') {
+    const hasShownBanner = sessionStorage.getItem("hasShownConnectionBanner");
+    if (hasShownBanner === "true") {
       setShowBanner(false);
     }
   }, []);
 
   const handleDismiss = () => {
     setShowBanner(false);
-    sessionStorage.setItem('hasShownConnectionBanner', 'true');
+    sessionStorage.setItem("hasShownConnectionBanner", "true");
   };
 
   const handleSetupConnection = () => {
@@ -61,12 +63,14 @@ export default function ConnectionBanner({ onConnectionChange }: ConnectionBanne
             <Link className="h-5 w-5 text-purple-400" />
           </div>
           <div className="ml-3 flex-1">
-            <h3 className="text-md font-medium text-white">Setup Your Dgraph Connection</h3>
+            <h3 className="text-md font-medium text-white">
+              Setup Your Dgraph Connection
+            </h3>
             <div className="mt-2 text-sm text-gray-400">
               <p>
                 {isConnected
                   ? "You're connected to Dgraph! You can import your data after creating a knowledge graph."
-                  : 'Connect to your Dgraph instance to import your graph data. You can still explore and visualize data without connecting.'}
+                  : "Connect to your Dgraph instance to import your graph data. You can still explore and visualize data without connecting."}
               </p>
             </div>
             <div className="mt-4 flex space-x-3">
@@ -74,7 +78,7 @@ export default function ConnectionBanner({ onConnectionChange }: ConnectionBanne
                 onClick={handleSetupConnection}
                 className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700"
               >
-                {isConnected ? 'Connection Settings' : 'Setup Connection'}
+                {isConnected ? "Connection Settings" : "Setup Connection"}
               </button>
               <button
                 onClick={handleDismiss}
@@ -91,8 +95,13 @@ export default function ConnectionBanner({ onConnectionChange }: ConnectionBanne
       {showConnectionModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-[#1c1c1c] rounded-lg shadow-lg border border-[#2a2a2a] max-w-2xl w-full mx-4 p-6">
-            <h2 className="text-xl font-medium text-white mb-4">Dgraph Connection Settings</h2>
-            <DgraphConnection onConnectionChange={handleConnectionChange} className="mb-4" />
+            <h2 className="text-xl font-medium text-white mb-4">
+              Dgraph Connection Settings
+            </h2>
+            <DgraphConnection
+              onConnectionChange={handleConnectionChange}
+              className="mb-4"
+            />
             <div className="flex justify-end mt-6">
               <div className="flex space-x-3">
                 {connectionSuccess && (

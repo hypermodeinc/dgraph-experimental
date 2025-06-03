@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { useCSVStore } from '@/store/csv';
+import React from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useCSVStore } from "@/store/csv";
 import {
   useImport,
   ImportHeader,
@@ -13,8 +13,8 @@ import {
   ImportItem,
   AdvancedOptions,
   RdfPreview,
-} from '@/components/import/utils';
-import { Database, Loader2, AlertCircle, ArrowRight } from 'lucide-react';
+} from "@/components/import/utils";
+import { Database, Loader2, AlertCircle, ArrowRight } from "lucide-react";
 
 export default function CSVImportPage() {
   const router = useRouter();
@@ -64,7 +64,12 @@ export default function CSVImportPage() {
     toggleRdfPreview,
     getPreviewContent,
     copyToClipboard,
-  } = useImport(currentFile as ImportItem, false, handleSaveRdfTemplate, handleSaveRdfData);
+  } = useImport(
+    currentFile as ImportItem,
+    false,
+    handleSaveRdfTemplate,
+    handleSaveRdfData,
+  );
 
   // If file not found or doesn't have content yet, redirect back or show appropriate message
   if (!currentFile) {
@@ -81,7 +86,7 @@ export default function CSVImportPage() {
   return (
     <div
       className="h-full flex flex-col bg-[#121212] text-white overflow-hidden"
-      style={{ minHeight: 'calc(100vh - 11rem)' }}
+      style={{ minHeight: "calc(100vh - 11rem)" }}
     >
       <div className="flex-1 overflow-auto">
         <div className="h-full px-6 py-8">
@@ -103,10 +108,13 @@ export default function CSVImportPage() {
 
             {/* Main Import Section - Primary focus */}
             <div className="bg-[#1c1c1c] rounded-lg border border-[#2a2a2a] p-6 mb-8">
-              <h2 className="text-lg font-medium text-white mb-4">Import to Dgraph</h2>
+              <h2 className="text-lg font-medium text-white mb-4">
+                Import to Dgraph
+              </h2>
               <p className="text-sm text-gray-400 mb-6">
-                Click the Import button to process your CSV data and import it into Dgraph in one step. This will
-                automatically generate the necessary RDF template and data.
+                Click the Import button to process your CSV data and import it
+                into Dgraph in one step. This will automatically generate the
+                necessary RDF template and data.
               </p>
 
               <div className="flex flex-wrap gap-4">
@@ -115,11 +123,13 @@ export default function CSVImportPage() {
                   disabled={isImporting || !isConnected}
                   className={`inline-flex items-center px-6 py-3 rounded-md text-base font-medium ${
                     isImporting || !isConnected
-                      ? 'bg-purple-900/50 text-purple-300/70 cursor-not-allowed'
-                      : 'bg-purple-600 text-white hover:bg-purple-700'
+                      ? "bg-purple-900/50 text-purple-300/70 cursor-not-allowed"
+                      : "bg-purple-600 text-white hover:bg-purple-700"
                   } shadow-lg transition-all duration-200`}
                   title={
-                    !isConnected ? 'You need to connect to Dgraph first using the sidebar' : 'Import data to Dgraph'
+                    !isConnected
+                      ? "You need to connect to Dgraph first using the sidebar"
+                      : "Import data to Dgraph"
                   }
                 >
                   {isImporting ? (
@@ -188,7 +198,10 @@ export default function CSVImportPage() {
             />
 
             {/* Import Results */}
-            <ImportResults importResult={importResult} onNextToQueries={navigateToQuery} />
+            <ImportResults
+              importResult={importResult}
+              onNextToQueries={navigateToQuery}
+            />
           </div>
         </div>
       </div>

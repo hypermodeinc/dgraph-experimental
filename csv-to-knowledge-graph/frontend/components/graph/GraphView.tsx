@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { useParams } from 'next/navigation';
-import { useCSVStore } from '@/store/csv';
-import { useLazyQuery } from '@apollo/client';
-import { GENERATE_GRAPH } from '@/app/queries';
-import BaseGraphView from './BaseGraphView';
+import React, { useEffect, useState, useCallback, useRef } from "react";
+import { useParams } from "next/navigation";
+import { useCSVStore } from "@/store/csv";
+import { useLazyQuery } from "@apollo/client";
+import { GENERATE_GRAPH } from "@/app/queries";
+import BaseGraphView from "./BaseGraphView";
 
 export const GraphView: React.FC = () => {
   const { fileId } = useParams<{ fileId: string }>();
@@ -20,9 +20,9 @@ export const GraphView: React.FC = () => {
 
   // Function to notify other components that graph generation is complete
   const notifyGraphGenerationComplete = useCallback(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       window.dispatchEvent(
-        new CustomEvent('graph-generation-complete', {
+        new CustomEvent("graph-generation-complete", {
           detail: { fileId },
         }),
       );
@@ -47,8 +47,8 @@ export const GraphView: React.FC = () => {
           // Notify that graph generation is complete
           notifyGraphGenerationComplete();
         } catch (err) {
-          console.error('Error parsing graph data:', err);
-          setError('Failed to parse graph data');
+          console.error("Error parsing graph data:", err);
+          setError("Failed to parse graph data");
           setIsLoading(false);
           isProcessingRef.current = false;
         }
@@ -58,16 +58,19 @@ export const GraphView: React.FC = () => {
   );
 
   const handleGraphError = useCallback((error: any) => {
-    console.error('GraphQL error:', error);
-    setError(error.message || 'Failed to generate graph');
+    console.error("GraphQL error:", error);
+    setError(error.message || "Failed to generate graph");
     setIsLoading(false);
     isProcessingRef.current = false;
   }, []);
 
-  const [generateGraph, { loading: generatingGraph }] = useLazyQuery(GENERATE_GRAPH, {
-    onCompleted: handleGraphGenerated,
-    onError: handleGraphError,
-  });
+  const [generateGraph, { loading: generatingGraph }] = useLazyQuery(
+    GENERATE_GRAPH,
+    {
+      onCompleted: handleGraphGenerated,
+      onError: handleGraphError,
+    },
+  );
 
   // Process file when current file changes or on initial load
   useEffect(() => {
@@ -86,7 +89,11 @@ export const GraphView: React.FC = () => {
       notifyGraphGenerationComplete();
     }
     // Otherwise we need to generate it
-    else if (!currentFile.graphData && !isProcessingRef.current && !hasInitializedRef.current) {
+    else if (
+      !currentFile.graphData &&
+      !isProcessingRef.current &&
+      !hasInitializedRef.current
+    ) {
       processFile(currentFile);
       hasInitializedRef.current = true;
     }
@@ -106,10 +113,12 @@ export const GraphView: React.FC = () => {
 
       try {
         // Parse the first line of the CSV to get column names
-        const lines = file.content.split('\n');
+        const lines = file.content.split("\n");
         if (lines.length > 0) {
           const headerLine = lines[0].trim();
-          const columnNames = headerLine.split(',').map((col: string) => col.trim().replace(/^"|"$/g, ''));
+          const columnNames = headerLine
+            .split(",")
+            .map((col: string) => col.trim().replace(/^"|"$/g, ""));
 
           // Generate graph if we have column names
           if (columnNames.length > 0) {
@@ -122,8 +131,8 @@ export const GraphView: React.FC = () => {
           }
         }
       } catch (err) {
-        console.error('Error extracting column names:', err);
-        setError('Failed to extract column names from CSV');
+        console.error("Error extracting column names:", err);
+        setError("Failed to extract column names from CSV");
         setIsLoading(false);
         isProcessingRef.current = false;
       }

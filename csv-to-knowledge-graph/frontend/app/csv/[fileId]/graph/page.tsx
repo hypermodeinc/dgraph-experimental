@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-import { useCSVStore } from '@/store/csv';
-import { GraphView } from '@/components/graph/GraphView';
+import React, { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { useCSVStore } from "@/store/csv";
+import { GraphView } from "@/components/graph/GraphView";
 
 export default function GraphPage() {
   const { fileId } = useParams<{ fileId: string }>();
@@ -44,14 +44,17 @@ export default function GraphPage() {
       <div className="w-full h-64 flex items-center justify-center">
         <div className="text-center">
           <div className="rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500 mx-auto mb-4"></div>
-          <p className="mt-4 text-gray-600">CSV file not found. Please return to the home page and select a file.</p>
+          <p className="mt-4 text-gray-600">
+            CSV file not found. Please return to the home page and select a
+            file.
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-full w-full flex flex-col" style={{ minHeight: '600px' }}>
+    <div className="h-full w-full flex flex-col" style={{ minHeight: "600px" }}>
       <GraphView />
     </div>
   );

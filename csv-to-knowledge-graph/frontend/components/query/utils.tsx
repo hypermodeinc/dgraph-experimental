@@ -1,11 +1,19 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { ArrowUpRight, Copy, CheckCircle, ExternalLink, RefreshCw, Database, AlertCircle } from 'lucide-react';
-import { useLazyQuery } from '@apollo/client';
-import { GENERATE_DGRAPH_QUERIES } from '@/app/queries';
-import CodeHighlighter from '@/components/CodeHighlighter';
-import { useConnectionStore } from '@/store/connection';
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  ArrowUpRight,
+  Copy,
+  CheckCircle,
+  ExternalLink,
+  RefreshCw,
+  Database,
+  AlertCircle,
+} from "lucide-react";
+import { useLazyQuery } from "@apollo/client";
+import { GENERATE_DGRAPH_QUERIES } from "@/app/queries";
+import CodeHighlighter from "@/components/CodeHighlighter";
+import { useConnectionStore } from "@/store/connection";
 
 export interface QueryItem {
   id: string;
@@ -23,8 +31,15 @@ export interface DgraphQuery {
 
 // Shared hook for query functionality
 export const useQuery = () => {
-  const { isConnected, schema, isFetching, fetchSchema, fetchNodeTypes, hasValidNodeTypes, nodeTypes } =
-    useConnectionStore();
+  const {
+    isConnected,
+    schema,
+    isFetching,
+    fetchSchema,
+    fetchNodeTypes,
+    hasValidNodeTypes,
+    nodeTypes,
+  } = useConnectionStore();
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [queries, setQueries] = useState<DgraphQuery[]>([]);
@@ -38,7 +53,7 @@ export const useQuery = () => {
   const [, setPreviousQueries] = useState<string[]>([]);
 
   const [generateQuery, { loading }] = useLazyQuery(GENERATE_DGRAPH_QUERIES, {
-    fetchPolicy: 'network-only',
+    fetchPolicy: "network-only",
     onCompleted: (data) => {
       if (data && data.generateDgraphQueries) {
         try {
@@ -82,20 +97,24 @@ export const useQuery = () => {
             setIsGenerating(false);
           }
         } catch (err) {
-          console.error('Error processing query:', err);
+          console.error("Error processing query:", err);
           setIsGenerating(false);
-          setQueryError('Failed to process query data. The schema may be invalid.');
+          setQueryError(
+            "Failed to process query data. The schema may be invalid.",
+          );
         }
       }
     },
     onError: (error) => {
-      console.error('Error generating query:', error);
+      console.error("Error generating query:", error);
       setIsGenerating(false);
       // Handle the specific Apollo error for no valid node types
-      if (error.message.includes('no valid node types found in schema')) {
-        setQueryError('No valid node types found in the schema. Try importing data first or refreshing the schema.');
+      if (error.message.includes("no valid node types found in schema")) {
+        setQueryError(
+          "No valid node types found in the schema. Try importing data first or refreshing the schema.",
+        );
       } else {
-        setQueryError(error.message || 'Failed to generate queries');
+        setQueryError(error.message || "Failed to generate queries");
       }
     },
   });
@@ -128,16 +147,18 @@ export const useQuery = () => {
           }, 500);
         } else {
           setIsSchemaRefreshing(false);
-          setQueryError('Schema refreshed but no node types found. Try importing data first.');
+          setQueryError(
+            "Schema refreshed but no node types found. Try importing data first.",
+          );
         }
       } else {
         setIsSchemaRefreshing(false);
-        setQueryError('Failed to refresh schema. Try reconnecting to Dgraph.');
+        setQueryError("Failed to refresh schema. Try reconnecting to Dgraph.");
       }
     } catch (err) {
-      console.error('Schema refresh error:', err);
+      console.error("Schema refresh error:", err);
       setIsSchemaRefreshing(false);
-      setQueryError('Error refreshing schema: ' + (err as Error).message);
+      setQueryError("Error refreshing schema: " + (err as Error).message);
     }
   }, [fetchSchema, fetchNodeTypes, isFetching, isSchemaRefreshing]);
 
@@ -163,7 +184,16 @@ export const useQuery = () => {
     ) {
       handleGenerateQueries();
     }
-  }, [schema, hasValidNodeTypes, isGenerating, loading, isFetching, isSchemaRefreshing, queries.length, queryError]);
+  }, [
+    schema,
+    hasValidNodeTypes,
+    isGenerating,
+    loading,
+    isFetching,
+    isSchemaRefreshing,
+    queries.length,
+    queryError,
+  ]);
 
   // Function to generate the next query
   const generateNextQuery = (previousQuery: string) => {
@@ -172,7 +202,7 @@ export const useQuery = () => {
 ${schema}
 
 # Node Types with Counts:
-${nodeTypes.map((type) => `# ${type.name}: ${type.count} nodes`).join('\n')}
+${nodeTypes.map((type) => `# ${type.name}: ${type.count} nodes`).join("\n")}
 `;
 
     generateQuery({
@@ -186,12 +216,14 @@ ${nodeTypes.map((type) => `# ${type.name}: ${type.count} nodes`).join('\n')}
   // Handle generating queries
   const handleGenerateQueries = () => {
     if (!schema) {
-      setQueryError('No schema available. Try refreshing the schema first.');
+      setQueryError("No schema available. Try refreshing the schema first.");
       return;
     }
 
     if (!hasValidNodeTypes) {
-      setQueryError('No valid node types found in the schema. Try importing data first or refreshing the schema.');
+      setQueryError(
+        "No valid node types found in the schema. Try importing data first or refreshing the schema.",
+      );
       return;
     }
 
@@ -201,7 +233,7 @@ ${nodeTypes.map((type) => `# ${type.name}: ${type.count} nodes`).join('\n')}
     setQueryError(null);
 
     // Start the first query generation with an empty previous query
-    generateNextQuery('');
+    generateNextQuery("");
   };
 
   // Handle refreshing queries
@@ -279,10 +311,11 @@ export const SchemaStatus = ({
             onClick={handleSchemaRefresh}
             disabled={isFetching || isSchemaRefreshing}
             className={`inline-flex items-center px-3 py-1.5 text-sm font-medium text-white 
-              ${isFetching || isSchemaRefreshing ? 'bg-purple-700/50 cursor-not-allowed' : 'bg-purple-700 hover:bg-purple-600'} 
-              rounded-md`}
+              ${isFetching || isSchemaRefreshing ? "bg-purple-700/50 cursor-not-allowed" : "bg-purple-700 hover:bg-purple-600"} rounded-md`}
           >
-            <RefreshCw className={`w-4 h-4 mr-1.5 ${isSchemaRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`w-4 h-4 mr-1.5 ${isSchemaRefreshing ? "animate-spin" : ""}`}
+            />
             Refresh Schema
           </button>
         </div>
@@ -297,12 +330,18 @@ export const SchemaStatus = ({
         ) : !hasValidNodeTypes ? (
           <div className="flex items-center text-yellow-400">
             <AlertCircle className="h-5 w-5 mr-2" />
-            <p>No node types found in schema. Try importing data or refreshing the schema.</p>
+            <p>
+              No node types found in schema. Try importing data or refreshing
+              the schema.
+            </p>
           </div>
         ) : (
           <div className="flex items-center text-green-400">
             <CheckCircle className="h-5 w-5 mr-2" />
-            <p>Schema loaded with {nodeTypes.length} node types. Ready to generate queries.</p>
+            <p>
+              Schema loaded with {nodeTypes.length} node types. Ready to
+              generate queries.
+            </p>
           </div>
         )}
       </div>
@@ -333,7 +372,9 @@ export const QueryError = ({
           disabled={isSchemaRefreshing}
           className="text-white bg-red-700 hover:bg-red-600 px-3 py-1.5 text-sm rounded-md inline-flex items-center"
         >
-          <RefreshCw className={`w-4 h-4 mr-1.5 ${isSchemaRefreshing ? 'animate-spin' : ''}`} />
+          <RefreshCw
+            className={`w-4 h-4 mr-1.5 ${isSchemaRefreshing ? "animate-spin" : ""}`}
+          />
           Refresh Schema
         </button>
       </div>
@@ -354,19 +395,20 @@ export const LoadingState = ({
   isSchemaRefreshing: boolean;
   queries: DgraphQuery[];
 }) => {
-  if (!(isGenerating || loading || isFetching || isSchemaRefreshing)) return null;
+  if (!(isGenerating || loading || isFetching || isSchemaRefreshing))
+    return null;
 
   return (
     <div className="mb-6 p-6 flex items-center justify-center">
       <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-purple-500 mr-3"></div>
       <p className="text-gray-300">
         {isSchemaRefreshing
-          ? 'Refreshing schema from Dgraph...'
+          ? "Refreshing schema from Dgraph..."
           : isFetching
-            ? 'Fetching schema from Dgraph...'
+            ? "Fetching schema from Dgraph..."
             : isGenerating
               ? `Generating query ${queries.length + 1} of 3...`
-              : 'Generating query based on your schema...'}
+              : "Generating query based on your schema..."}
       </p>
     </div>
   );
@@ -391,15 +433,26 @@ export const EmptyState = ({
   queries: DgraphQuery[];
   handleSchemaRefresh: () => void;
 }) => {
-  if (!isConnected || queryError || isGenerating || loading || isFetching || isSchemaRefreshing || queries.length > 0)
+  if (
+    !isConnected ||
+    queryError ||
+    isGenerating ||
+    loading ||
+    isFetching ||
+    isSchemaRefreshing ||
+    queries.length > 0
+  )
     return null;
 
   return (
     <div className="mb-6 p-8 flex flex-col items-center justify-center bg-[#1c1c1c] border border-[#2a2a2a] rounded-lg">
       <Database className="h-12 w-12 text-gray-600 mb-4" />
-      <h3 className="text-lg font-medium text-white mb-2">No Queries Available</h3>
+      <h3 className="text-lg font-medium text-white mb-2">
+        No Queries Available
+      </h3>
       <p className="text-gray-400 text-center max-w-md mb-4">
-        To generate queries, make sure you've imported some data into Dgraph and refresh the schema.
+        To generate queries, make sure you've imported some data into Dgraph and
+        refresh the schema.
       </p>
       <div className="flex space-x-3">
         <button
@@ -442,7 +495,9 @@ export const QueryList = ({
           className="text-sm text-purple-400 hover:text-purple-300 flex items-center"
           title="Generate new queries"
         >
-          <RefreshCw className={`w-4 h-4 mr-1 ${isRefreshing || isGenerating ? 'animate-spin' : ''}`} />
+          <RefreshCw
+            className={`w-4 h-4 mr-1 ${isRefreshing || isGenerating ? "animate-spin" : ""}`}
+          />
           Refresh
         </button>
       </div>
@@ -452,13 +507,19 @@ export const QueryList = ({
             key={query.id}
             onClick={() => setSelectedQuery(index)}
             className={`w-full text-left px-4 py-3 hover:bg-[#222] transition ${
-              selectedQuery === index ? 'bg-purple-900/10 border-l-2 border-purple-500' : ''
+              selectedQuery === index
+                ? "bg-purple-900/10 border-l-2 border-purple-500"
+                : ""
             }`}
           >
             <div className="flex items-center justify-between">
               <div>
-                <div className="font-medium text-sm text-white">{query.name}</div>
-                <div className="text-xs text-gray-400 mt-1 line-clamp-2">{query.description}</div>
+                <div className="font-medium text-sm text-white">
+                  {query.name}
+                </div>
+                <div className="text-xs text-gray-400 mt-1 line-clamp-2">
+                  {query.description}
+                </div>
               </div>
             </div>
           </button>
@@ -516,10 +577,16 @@ export const QueryDetail = ({
         <p className="mt-2 text-sm text-gray-400">{query.description}</p>
       </div>
       <div className="px-6 py-4 bg-[#222]">
-        <CodeHighlighter code={query.query} language="graphql" maxHeight="60vh" />
+        <CodeHighlighter
+          code={query.query}
+          language="graphql"
+          maxHeight="60vh"
+        />
       </div>
       <div className="px-6 py-4 bg-[#222] flex justify-between items-center">
-        <div className="text-sm text-gray-400">Run this query in Dgraph to explore your data</div>
+        <div className="text-sm text-gray-400">
+          Run this query in Dgraph to explore your data
+        </div>
         <a
           href={getRatelUrl(query.query)}
           target="_blank"
@@ -544,14 +611,20 @@ export const QueryLayout = ({
   children: React.ReactNode;
 }) => {
   return (
-    <div className="h-full flex flex-col overflow-hidden" style={{ minHeight: 'calc(100vh - 11rem)' }}>
+    <div
+      className="h-full flex flex-col overflow-hidden"
+      style={{ minHeight: "calc(100vh - 11rem)" }}
+    >
       <div className="flex-1 overflow-auto">
         <div className="h-full px-6 py-8">
           <div className="max-w-5xl mx-auto">
             <div className="mb-8">
-              <h1 className="text-2xl font-bold text-white">Explore with Dgraph Queries</h1>
+              <h1 className="text-2xl font-bold text-white">
+                Explore with Dgraph Queries
+              </h1>
               <p className="mt-1 text-sm text-gray-400">
-                Run DQL queries against your Dgraph database to explore your data
+                Run DQL queries against your Dgraph database to explore your
+                data
               </p>
             </div>
 
@@ -559,16 +632,24 @@ export const QueryLayout = ({
             {isBatch && (
               <div className="mb-6 bg-[#1c1c1c] rounded-lg overflow-hidden border border-[#2a2a2a]">
                 <div className="px-4 py-3 border-b border-[#2a2a2a] bg-[#222]">
-                  <h3 className="text-sm font-medium text-white">Batch Information</h3>
+                  <h3 className="text-sm font-medium text-white">
+                    Batch Information
+                  </h3>
                 </div>
                 <div className="p-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-[#222] p-3 rounded border border-[#333]">
-                      <div className="text-sm font-medium text-gray-300">Name</div>
-                      <div className="text-sm text-gray-400">{currentItem.name}</div>
+                      <div className="text-sm font-medium text-gray-300">
+                        Name
+                      </div>
+                      <div className="text-sm text-gray-400">
+                        {currentItem.name}
+                      </div>
                     </div>
                     <div className="bg-[#222] p-3 rounded border border-[#333]">
-                      <div className="text-sm font-medium text-gray-300">RDF Format</div>
+                      <div className="text-sm font-medium text-gray-300">
+                        RDF Format
+                      </div>
                       <div className="text-sm text-gray-400">Turtle (.ttl)</div>
                     </div>
                   </div>

@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { useBatchStore } from '@/store/batch';
+import React from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useBatchStore } from "@/store/batch";
 import {
   useImport,
   ImportHeader,
@@ -13,8 +13,8 @@ import {
   ImportItem,
   AdvancedOptions,
   RdfPreview,
-} from '@/components/import/utils';
-import { Database, Loader2, AlertCircle, ArrowRight } from 'lucide-react';
+} from "@/components/import/utils";
+import { Database, Loader2, AlertCircle, ArrowRight } from "lucide-react";
 
 export default function BatchImportPage() {
   const router = useRouter();
@@ -63,7 +63,12 @@ export default function BatchImportPage() {
     toggleRdfPreview,
     getPreviewContent,
     copyToClipboard,
-  } = useImport(currentBatch as ImportItem, true, handleSaveRdfTemplate, handleSaveRdfData); // true for isBatch
+  } = useImport(
+    currentBatch as ImportItem,
+    true,
+    handleSaveRdfTemplate,
+    handleSaveRdfData,
+  ); // true for isBatch
 
   // If batch not found or doesn't have content yet, redirect back or show appropriate message
   if (!currentBatch) {
@@ -80,7 +85,7 @@ export default function BatchImportPage() {
   return (
     <div
       className="h-full flex flex-col bg-[#121212] text-white overflow-hidden"
-      style={{ minHeight: 'calc(100vh - 11rem)' }}
+      style={{ minHeight: "calc(100vh - 11rem)" }}
     >
       <div className="flex-1 overflow-auto">
         <div className="h-full px-6 py-8">
@@ -102,10 +107,13 @@ export default function BatchImportPage() {
 
             {/* Main Import Section - Primary focus */}
             <div className="bg-[#1c1c1c] rounded-lg border border-[#2a2a2a] p-6 mb-8">
-              <h2 className="text-lg font-medium text-white mb-4">Import to Dgraph</h2>
+              <h2 className="text-lg font-medium text-white mb-4">
+                Import to Dgraph
+              </h2>
               <p className="text-sm text-gray-400 mb-6">
-                Click the Import button to process all CSV files in this batch and import them into Dgraph in one step.
-                This will generate a unified knowledge graph from all files in the batch.
+                Click the Import button to process all CSV files in this batch
+                and import them into Dgraph in one step. This will generate a
+                unified knowledge graph from all files in the batch.
               </p>
 
               <div className="flex flex-wrap gap-4">
@@ -114,11 +122,13 @@ export default function BatchImportPage() {
                   disabled={isImporting || !isConnected}
                   className={`inline-flex items-center px-6 py-3 rounded-md text-base font-medium ${
                     isImporting || !isConnected
-                      ? 'bg-purple-900/50 text-purple-300/70 cursor-not-allowed'
-                      : 'bg-purple-600 text-white hover:bg-purple-700'
+                      ? "bg-purple-900/50 text-purple-300/70 cursor-not-allowed"
+                      : "bg-purple-600 text-white hover:bg-purple-700"
                   } shadow-lg transition-all duration-200`}
                   title={
-                    !isConnected ? 'You need to connect to Dgraph first using the sidebar' : 'Import batch to Dgraph'
+                    !isConnected
+                      ? "You need to connect to Dgraph first using the sidebar"
+                      : "Import batch to Dgraph"
                   }
                 >
                   {isImporting ? (
@@ -185,7 +195,10 @@ export default function BatchImportPage() {
             />
 
             {/* Import Results */}
-            <ImportResults importResult={importResult} onNextToQueries={navigateToQuery} />
+            <ImportResults
+              importResult={importResult}
+              onNextToQueries={navigateToQuery}
+            />
           </div>
         </div>
       </div>

@@ -1,12 +1,21 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useRouter } from 'next/navigation';
-import { FileSpreadsheet, Trash2, Folder, Settings, CheckCircle, RefreshCw, AlertCircle, Loader } from 'lucide-react';
-import { useCSVStore } from '@/store/csv';
-import { useBatchStore } from '@/store/batch';
-import { useConnectionStore } from '@/store/connection';
-import DgraphConnection from '@/components/import/DgraphConnection';
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
+import {
+  FileSpreadsheet,
+  Trash2,
+  Folder,
+  Settings,
+  CheckCircle,
+  RefreshCw,
+  AlertCircle,
+  Loader,
+} from "lucide-react";
+import { useCSVStore } from "@/store/csv";
+import { useBatchStore } from "@/store/batch";
+import { useConnectionStore } from "@/store/connection";
+import DgraphConnection from "@/components/import/DgraphConnection";
 
 export default function SideBar() {
   const pathname = usePathname();
@@ -38,25 +47,25 @@ export default function SideBar() {
 
   // Connection status is represented as a traffic light indicator
   const connectionStatus = useMemo(() => {
-    if (isFetching) return 'loading';
-    if (connectionError) return 'error';
-    if (isConnected) return 'connected';
-    return 'disconnected';
+    if (isFetching) return "loading";
+    if (connectionError) return "error";
+    if (isConnected) return "connected";
+    return "disconnected";
   }, [isConnected, isFetching, connectionError]);
 
   // Connection status color
   const connectionStatusColor = useMemo(() => {
     switch (connectionStatus) {
-      case 'connected':
-        return 'text-green-400';
-      case 'disconnected':
-        return 'text-yellow-400';
-      case 'error':
-        return 'text-red-400';
-      case 'loading':
-        return 'text-gray-400';
+      case "connected":
+        return "text-green-400";
+      case "disconnected":
+        return "text-yellow-400";
+      case "error":
+        return "text-red-400";
+      case "loading":
+        return "text-gray-400";
       default:
-        return 'text-gray-400';
+        return "text-gray-400";
     }
   }, [connectionStatus]);
 
@@ -70,19 +79,20 @@ export default function SideBar() {
 
       // Format it user-friendly
       return date.toLocaleString(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric",
       });
     } catch (error) {
-      console.error('Error formatting last connection time:', error);
+      console.error("Error formatting last connection time:", error);
       return null;
     }
   }, [lastConnectionTime]);
 
-  const isBatchActive = (batchId: string) => pathname.includes(`/batch/${batchId}`);
+  const isBatchActive = (batchId: string) =>
+    pathname.includes(`/batch/${batchId}`);
 
   // Start polling when connected
   useEffect(() => {
@@ -110,7 +120,9 @@ export default function SideBar() {
     e.stopPropagation();
     e.preventDefault();
 
-    if (window.confirm(`Are you sure you want to delete "${batch.name}" batch?`)) {
+    if (
+      window.confirm(`Are you sure you want to delete "${batch.name}" batch?`)
+    ) {
       if (batch.files.length > 0) {
         const deleteFiles = window.confirm(
           `Do you also want to delete all ${batch.files.length} files associated with this batch?`,
@@ -128,7 +140,7 @@ export default function SideBar() {
       clearCurrentBatch();
 
       if (isBatchActive(batch.id)) {
-        router.push('/');
+        router.push("/");
       }
     }
   };
@@ -184,7 +196,9 @@ export default function SideBar() {
             <FileSpreadsheet className="h-4 w-4" />
           </div>
           <div className="flex items-center">
-            <span className="text-sm font-medium truncate">csv-to-knowledge-graph</span>
+            <span className="text-sm font-medium truncate">
+              csv-to-knowledge-graph
+            </span>
           </div>
         </div>
       </div>
@@ -197,7 +211,11 @@ export default function SideBar() {
         >
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center">
-              <img src="/dgraph-logomark.svg" alt="Dgraph Logo" className="h-5 w-5 mr-2" />
+              <img
+                src="/dgraph-logomark.svg"
+                alt="Dgraph Logo"
+                className="h-5 w-5 mr-2"
+              />
               <span className="text-sm font-medium">Dgraph Connection</span>
             </div>
             <Settings className="h-4 w-4 text-gray-500 hover:text-gray-300" />
@@ -206,13 +224,13 @@ export default function SideBar() {
           <div className="flex items-center mt-1">
             <div
               className={`w-2 h-2 rounded-full mr-2 ${
-                connectionStatus === 'connected'
-                  ? 'bg-green-500'
-                  : connectionStatus === 'disconnected'
-                    ? 'bg-yellow-500'
-                    : connectionStatus === 'error'
-                      ? 'bg-red-500'
-                      : 'bg-gray-500 animate-pulse'
+                connectionStatus === "connected"
+                  ? "bg-green-500"
+                  : connectionStatus === "disconnected"
+                    ? "bg-yellow-500"
+                    : connectionStatus === "error"
+                      ? "bg-red-500"
+                      : "bg-gray-500 animate-pulse"
               }`}
             />
 
@@ -223,29 +241,37 @@ export default function SideBar() {
               </div>
             ) : (
               <span className={`text-sm ${connectionStatusColor}`}>
-                {connectionStatus === 'connected'
-                  ? 'Connected'
-                  : connectionStatus === 'disconnected'
-                    ? 'Not Connected'
-                    : connectionStatus === 'error'
-                      ? 'Connection Error'
-                      : 'Checking...'}
+                {connectionStatus === "connected"
+                  ? "Connected"
+                  : connectionStatus === "disconnected"
+                    ? "Not Connected"
+                    : connectionStatus === "error"
+                      ? "Connection Error"
+                      : "Checking..."}
               </span>
             )}
 
             {connectionError && (
-              <span className="ml-2 text-xs text-red-400 truncate max-w-36" title={connectionError}>
+              <span
+                className="ml-2 text-xs text-red-400 truncate max-w-36"
+                title={connectionError}
+              >
                 {connectionError}
               </span>
             )}
           </div>
 
           {isConnected && formattedLastConnectionTime && (
-            <div className="text-xs text-gray-500 mt-1">Last connected: {formattedLastConnectionTime}</div>
+            <div className="text-xs text-gray-500 mt-1">
+              Last connected: {formattedLastConnectionTime}
+            </div>
           )}
 
           {isConnected && dgraphUrl && (
-            <div className="text-xs text-gray-500 mt-1 truncate" title={dgraphUrl}>
+            <div
+              className="text-xs text-gray-500 mt-1 truncate"
+              title={dgraphUrl}
+            >
               URL: {dgraphUrl}
             </div>
           )}
@@ -262,7 +288,9 @@ export default function SideBar() {
                 disabled={isFetching}
                 title="Refresh schema"
               >
-                <RefreshCw className={`h-3 w-3 mr-1 ${isFetching ? 'animate-spin' : ''}`} />
+                <RefreshCw
+                  className={`h-3 w-3 mr-1 ${isFetching ? "animate-spin" : ""}`}
+                />
                 Refresh
               </button>
             </div>
@@ -271,7 +299,9 @@ export default function SideBar() {
               {isFetching ? (
                 <div className="py-4 flex items-center justify-center">
                   <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-purple-500 mr-2"></div>
-                  <span className="text-sm text-gray-400">Loading schema...</span>
+                  <span className="text-sm text-gray-400">
+                    Loading schema...
+                  </span>
                 </div>
               ) : nodeTypes.length > 0 ? (
                 <>
@@ -282,19 +312,29 @@ export default function SideBar() {
                         className="px-2 py-1 bg-purple-900/20 border border-purple-800/40 rounded-full text-xs truncate max-w-full"
                         title={`${type.name}: ${type.count} nodes`}
                       >
-                        <span className="font-medium text-purple-300">{type.name}</span>
-                        <span className="ml-1 text-purple-400">({type.count})</span>
+                        <span className="font-medium text-purple-300">
+                          {type.name}
+                        </span>
+                        <span className="ml-1 text-purple-400">
+                          ({type.count})
+                        </span>
                       </div>
                     ))}
                   </div>
                   {nodeTypes.length > 6 && (
-                    <div className="text-center text-xs text-gray-500 mt-2">+{nodeTypes.length - 6} more types</div>
+                    <div className="text-center text-xs text-gray-500 mt-2">
+                      +{nodeTypes.length - 6} more types
+                    </div>
                   )}
                 </>
               ) : schema ? (
-                <div className="py-2 text-center text-sm text-gray-400">Schema available but no node types found</div>
+                <div className="py-2 text-center text-sm text-gray-400">
+                  Schema available but no node types found
+                </div>
               ) : (
-                <div className="py-2 text-center text-sm text-gray-400">No schema data available</div>
+                <div className="py-2 text-center text-sm text-gray-400">
+                  No schema data available
+                </div>
               )}
             </div>
           </div>
@@ -305,7 +345,9 @@ export default function SideBar() {
           <div className="px-2 mb-3 text-gray-400 text-xs uppercase tracking-wider font-medium flex justify-between items-center">
             <span>CSV FILES</span>
             {csvFiles.length > 0 && (
-              <span className="text-xs bg-[#333] px-2 py-0.5 rounded-full">{csvFiles.length}</span>
+              <span className="text-xs bg-[#333] px-2 py-0.5 rounded-full">
+                {csvFiles.length}
+              </span>
             )}
           </div>
 
@@ -316,12 +358,16 @@ export default function SideBar() {
                   href={`/csv/${file.id}/spreadsheet`}
                   key={file.id}
                   className={`flex items-center justify-between p-2 rounded-md hover:bg-[#282828] ${
-                    pathname.includes(`/csv/${file.id}`) ? 'bg-[#282828] border-l-2 border-purple-500' : ''
+                    pathname.includes(`/csv/${file.id}`)
+                      ? "bg-[#282828] border-l-2 border-purple-500"
+                      : ""
                   }`}
                 >
                   <div className="flex items-center overflow-hidden">
                     <FileSpreadsheet className="h-4 w-4 text-gray-400 min-w-4" />
-                    <span className="ml-2 text-sm text-gray-300 truncate">{file.name}</span>
+                    <span className="ml-2 text-sm text-gray-300 truncate">
+                      {file.name}
+                    </span>
                   </div>
 
                   <button
@@ -340,7 +386,9 @@ export default function SideBar() {
               ))}
             </div>
           ) : (
-            <div className="text-sm text-center py-3 text-gray-500">No CSV files uploaded yet</div>
+            <div className="text-sm text-center py-3 text-gray-500">
+              No CSV files uploaded yet
+            </div>
           )}
         </div>
 
@@ -348,7 +396,11 @@ export default function SideBar() {
         <div>
           <div className="px-2 mb-3 text-gray-400 text-xs uppercase tracking-wider font-medium flex justify-between items-center">
             <span>BATCHES</span>
-            {batches.length > 0 && <span className="text-xs bg-[#333] px-2 py-0.5 rounded-full">{batches.length}</span>}
+            {batches.length > 0 && (
+              <span className="text-xs bg-[#333] px-2 py-0.5 rounded-full">
+                {batches.length}
+              </span>
+            )}
           </div>
 
           {batches.length > 0 ? (
@@ -358,25 +410,36 @@ export default function SideBar() {
                   href={`/batch/${batch.id}`}
                   key={batch.id}
                   className={`flex items-center justify-between p-2 rounded-md hover:bg-[#282828] ${
-                    isBatchActive(batch.id) ? 'bg-[#282828] border-l-2 border-purple-500' : ''
+                    isBatchActive(batch.id)
+                      ? "bg-[#282828] border-l-2 border-purple-500"
+                      : ""
                   }`}
                 >
                   <div className="flex items-center overflow-hidden">
                     <Folder className="h-4 w-4 text-gray-400 min-w-4" />
                     <div className="ml-2 overflow-hidden">
-                      <span className="text-sm text-gray-300 truncate block">{batch.name}</span>
-                      <span className="text-xs text-gray-500 truncate block">{batch.files.length} files</span>
+                      <span className="text-sm text-gray-300 truncate block">
+                        {batch.name}
+                      </span>
+                      <span className="text-xs text-gray-500 truncate block">
+                        {batch.files.length} files
+                      </span>
                     </div>
                   </div>
 
-                  <button onClick={(e) => handleDeleteBatch(e, batch)} className="text-gray-500 hover:text-red-400 p-1">
+                  <button
+                    onClick={(e) => handleDeleteBatch(e, batch)}
+                    className="text-gray-500 hover:text-red-400 p-1"
+                  >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </Link>
               ))}
             </div>
           ) : (
-            <div className="text-sm text-center py-3 text-gray-500">No batches created yet</div>
+            <div className="text-sm text-center py-3 text-gray-500">
+              No batches created yet
+            </div>
           )}
         </div>
       </div>
@@ -385,7 +448,9 @@ export default function SideBar() {
       {showConnectionModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-[#1c1c1c] rounded-lg shadow-lg border border-[#2a2a2a] max-w-2xl w-full mx-4 p-6">
-            <h2 className="text-xl font-medium text-white mb-4">Dgraph Connection Settings</h2>
+            <h2 className="text-xl font-medium text-white mb-4">
+              Dgraph Connection Settings
+            </h2>
             <DgraphConnection
               initialUrl={dgraphUrl}
               initialApiKey={dgraphApiKey}

@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { FileSpreadsheet, ExternalLink, Loader } from 'lucide-react';
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { useBatchStore } from '@/store/batch';
+import React, { useEffect, useState } from "react";
+import { FileSpreadsheet, ExternalLink, Loader } from "lucide-react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useBatchStore } from "@/store/batch";
 
 export default function BatchDetailPage() {
   const { batchId } = useParams<{ batchId: string }>();
@@ -15,7 +15,8 @@ export default function BatchDetailPage() {
   const [graphProcessing, setGraphProcessing] = useState<boolean>(false);
 
   // Check if graph data is already available
-  const isGraphDataAvailable = currentBatch?.graphData !== null && currentBatch?.graphData !== undefined;
+  const isGraphDataAvailable =
+    currentBatch?.graphData !== null && currentBatch?.graphData !== undefined;
 
   useEffect(() => {
     if (batchId) {
@@ -42,11 +43,16 @@ export default function BatchDetailPage() {
     };
 
     // Add event listener
-    if (typeof window !== 'undefined') {
-      window.addEventListener('graph-generation-complete', handleGraphComplete as EventListener);
+    if (typeof window !== "undefined") {
+      window.addEventListener(
+        "graph-generation-complete",
+        handleGraphComplete as EventListener,
+      );
 
       // Also listen for the start of graph generation
-      window.addEventListener('graph-generation-start', ((event: CustomEvent) => {
+      window.addEventListener("graph-generation-start", ((
+        event: CustomEvent,
+      ) => {
         if (event.detail && event.detail.batchId === batchId) {
           setGraphProcessing(true);
         }
@@ -55,10 +61,15 @@ export default function BatchDetailPage() {
 
     // Clean up function
     return () => {
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('graph-generation-complete', handleGraphComplete as EventListener);
+      if (typeof window !== "undefined") {
+        window.removeEventListener(
+          "graph-generation-complete",
+          handleGraphComplete as EventListener,
+        );
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        window.removeEventListener('graph-generation-start', ((_event: CustomEvent) => {}) as EventListener);
+        window.removeEventListener("graph-generation-start", ((
+          _event: CustomEvent,
+        ) => {}) as EventListener);
       }
     };
   }, [batchId, isGraphDataAvailable]);
@@ -86,13 +97,16 @@ export default function BatchDetailPage() {
   }
 
   return (
-    <div style={{ height: 'calc(100vh - 14rem)' }}>
+    <div style={{ height: "calc(100vh - 14rem)" }}>
       {/* Batch info */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold mb-2">{currentBatch.name}</h1>
-        {currentBatch.description && <p className="text-gray-400">{currentBatch.description}</p>}
+        {currentBatch.description && (
+          <p className="text-gray-400">{currentBatch.description}</p>
+        )}
         <div className="text-sm text-gray-500 mt-2">
-          Created {new Date(currentBatch.timestamp).toLocaleDateString()} • {currentBatch.files.length} files
+          Created {new Date(currentBatch.timestamp).toLocaleDateString()} •{" "}
+          {currentBatch.files.length} files
         </div>
       </div>
 
@@ -112,7 +126,7 @@ export default function BatchDetailPage() {
           currentBatch.files.map((file) => (
             <div
               key={file.id}
-              className={`bg-[#1c1c1c] border border-[#2a2a2a] rounded-lg p-4 ${graphProcessing ? 'batch-file-pulse' : ''}`}
+              className={`bg-[#1c1c1c] border border-[#2a2a2a] rounded-lg p-4 ${graphProcessing ? "batch-file-pulse" : ""}`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
@@ -124,10 +138,14 @@ export default function BatchDetailPage() {
                     )}
                   </div>
                   <div>
-                    <h3 className={`font-medium ${graphProcessing ? 'batch-text-pulse' : 'text-white'}`}>
+                    <h3
+                      className={`font-medium ${graphProcessing ? "batch-text-pulse" : "text-white"}`}
+                    >
                       {file.name}
                     </h3>
-                    <p className="text-xs text-gray-500">{new Date(file.timestamp).toLocaleDateString()}</p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(file.timestamp).toLocaleDateString()}
+                    </p>
                   </div>
                 </div>
 
@@ -148,7 +166,7 @@ export default function BatchDetailPage() {
                   </Link>
                   <Link
                     href={`/csv/${file.id}/import`}
-                    className={`px-3 py-1 ${graphProcessing ? 'bg-[#333] text-gray-500 cursor-not-allowed' : 'bg-[#333] text-gray-300 hover:bg-[#444]'} text-sm rounded flex items-center`}
+                    className={`px-3 py-1 ${graphProcessing ? "bg-[#333] text-gray-500 cursor-not-allowed" : "bg-[#333] text-gray-300 hover:bg-[#444]"} text-sm rounded flex items-center`}
                     onClick={(e) => {
                       if (graphProcessing) {
                         e.preventDefault();

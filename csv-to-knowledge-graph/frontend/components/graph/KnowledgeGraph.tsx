@@ -1,25 +1,34 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Network, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
-import { KnowledgeGraphProps } from './types';
-import { calculateEdgeLabelPositions, calculateEdgePoints } from './utils';
-import { GraphData, calculateNodePositions } from '@hypermode/csvkit-virtual-graph';
+import React, { useEffect, useRef, useState, useCallback } from "react";
+import { Network, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
+import { KnowledgeGraphProps } from "./types";
+import { calculateEdgeLabelPositions, calculateEdgePoints } from "./utils";
+import {
+  GraphData,
+  calculateNodePositions,
+} from "@hypermode/csvkit-virtual-graph";
 
-export default function KnowledgeGraph({ graphData, width = '100%', height = '100%' }: KnowledgeGraphProps) {
+export default function KnowledgeGraph({
+  graphData,
+  width = "100%",
+  height = "100%",
+}: KnowledgeGraphProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const [data, setData] = useState<GraphData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dimensions, setDimensions] = useState({
-    width: typeof width === 'number' ? width : 800,
-    height: typeof height === 'number' ? height : 600,
+    width: typeof width === "number" ? width : 800,
+    height: typeof height === "number" ? height : 600,
   });
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   const [draggedNode, setDraggedNode] = useState<string | null>(null);
-  const [nodePositions, setNodePositions] = useState<Record<string, { x: number; y: number }>>({});
+  const [nodePositions, setNodePositions] = useState<
+    Record<string, { x: number; y: number }>
+  >({});
   const [isNodeDragging, setIsNodeDragging] = useState(false);
 
   useEffect(() => {
@@ -32,7 +41,7 @@ export default function KnowledgeGraph({ graphData, width = '100%', height = '10
     try {
       let parsedData: GraphData;
 
-      if (typeof graphData === 'string') {
+      if (typeof graphData === "string") {
         parsedData = JSON.parse(graphData);
       } else {
         parsedData = graphData as GraphData;
@@ -41,7 +50,7 @@ export default function KnowledgeGraph({ graphData, width = '100%', height = '10
       setData(parsedData);
       setError(null);
     } catch (err) {
-      setError('Failed to parse graph data ' + (err as Error).message);
+      setError("Failed to parse graph data " + (err as Error).message);
       setData(null);
     } finally {
       setLoading(false);
@@ -62,29 +71,39 @@ export default function KnowledgeGraph({ graphData, width = '100%', height = '10
 
   useEffect(() => {
     updateDimensions();
-    window.addEventListener('resize', updateDimensions);
+    window.addEventListener("resize", updateDimensions);
 
-    if (containerRef.current && 'ResizeObserver' in window) {
+    if (containerRef.current && "ResizeObserver" in window) {
       const observer = new ResizeObserver(updateDimensions);
       observer.observe(containerRef.current);
       return () => {
         observer.disconnect();
-        window.removeEventListener('resize', updateDimensions);
+        window.removeEventListener("resize", updateDimensions);
       };
     }
 
-    return () => window.removeEventListener('resize', updateDimensions);
+    return () => window.removeEventListener("resize", updateDimensions);
   }, [updateDimensions]);
 
   useEffect(() => {
     if (data && data.nodes && data.nodes.length > 0) {
       try {
-        const nodesWithPositions = calculateNodePositions(data, dimensions.width, dimensions.height);
+        const nodesWithPositions = calculateNodePositions(
+          data,
+          dimensions.width,
+          dimensions.height,
+        );
 
         const posMap: Record<string, { x: number; y: number }> = {};
         nodesWithPositions.forEach((node) => {
-          const x = typeof node.x === 'number' && !isNaN(node.x) ? node.x : dimensions.width / 2;
-          const y = typeof node.y === 'number' && !isNaN(node.y) ? node.y : dimensions.height / 2;
+          const x =
+            typeof node.x === "number" && !isNaN(node.x)
+              ? node.x
+              : dimensions.width / 2;
+          const y =
+            typeof node.y === "number" && !isNaN(node.y)
+              ? node.y
+              : dimensions.height / 2;
 
           posMap[node.id] = { x, y };
         });
@@ -94,8 +113,11 @@ export default function KnowledgeGraph({ graphData, width = '100%', height = '10
           if (!posMap[node.id]) {
             // Assign a default position for any node without coordinates
             posMap[node.id] = {
-              x: Math.random() * dimensions.width * 0.8 + dimensions.width * 0.1,
-              y: Math.random() * dimensions.height * 0.8 + dimensions.height * 0.1,
+              x:
+                Math.random() * dimensions.width * 0.8 + dimensions.width * 0.1,
+              y:
+                Math.random() * dimensions.height * 0.8 +
+                dimensions.height * 0.1,
             };
           }
         });
@@ -105,7 +127,7 @@ export default function KnowledgeGraph({ graphData, width = '100%', height = '10
         // Reset transform to center when graph data changes
         setTransform({ x: 0, y: 0, scale: 1 });
       } catch (error) {
-        console.error('Error initializing node positions:', error);
+        console.error("Error initializing node positions:", error);
         // Create fallback positions in case of error
         const fallbackPositions: Record<string, { x: number; y: number }> = {};
         data.nodes.forEach((node, index) => {
@@ -141,7 +163,11 @@ export default function KnowledgeGraph({ graphData, width = '100%', height = '10
 
     // Reset any custom node positions
     if (data && data.nodes) {
-      const nodesWithPositions = calculateNodePositions(data, dimensions.width, dimensions.height);
+      const nodesWithPositions = calculateNodePositions(
+        data,
+        dimensions.width,
+        dimensions.height,
+      );
 
       const posMap: Record<string, { x: number; y: number }> = {};
       nodesWithPositions.forEach((node) => {
@@ -157,7 +183,7 @@ export default function KnowledgeGraph({ graphData, width = '100%', height = '10
   // Mouse event handlers for panning
   const handleMouseDown = (e: React.MouseEvent<SVGSVGElement>) => {
     // Only start dragging if we're not clicking on a node
-    if ((e.target as SVGElement).classList.contains('node-circle')) {
+    if ((e.target as SVGElement).classList.contains("node-circle")) {
       return;
     }
 
@@ -254,8 +280,14 @@ export default function KnowledgeGraph({ graphData, width = '100%', height = '10
     const nodesWithPositions = data.nodes.map((node) => {
       const position = nodePositions[node.id];
       // Ensure we have valid coordinates
-      const safeX = position?.x !== undefined && !isNaN(position.x) ? position.x : dimensions.width / 2;
-      const safeY = position?.y !== undefined && !isNaN(position.y) ? position.y : dimensions.height / 2;
+      const safeX =
+        position?.x !== undefined && !isNaN(position.x)
+          ? position.x
+          : dimensions.width / 2;
+      const safeY =
+        position?.y !== undefined && !isNaN(position.y)
+          ? position.y
+          : dimensions.height / 2;
 
       return {
         ...node,
@@ -277,18 +309,21 @@ export default function KnowledgeGraph({ graphData, width = '100%', height = '10
     // Configure node appearance
     const nodeSize = 35;
     const nodeColors = {
-      default: '#9333ea', // Purple 600
+      default: "#9333ea", // Purple 600
     };
 
     // Calculate edge labels with better positioning
-    const edgeLabelPositions = calculateEdgeLabelPositions(data.edges, nodePositionsMap);
+    const edgeLabelPositions = calculateEdgeLabelPositions(
+      data.edges,
+      nodePositionsMap,
+    );
 
     return (
       <svg
         ref={svgRef}
         width={dimensions.width}
         height={dimensions.height}
-        className={`bg-[#1c1c1c] rounded-lg overflow-hidden ${isDragging || isNodeDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+        className={`bg-[#1c1c1c] rounded-lg overflow-hidden ${isDragging || isNodeDragging ? "cursor-grabbing" : "cursor-grab"}`}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -296,7 +331,15 @@ export default function KnowledgeGraph({ graphData, width = '100%', height = '10
         onWheel={handleWheel}
       >
         <defs>
-          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto" fill="#718096">
+          <marker
+            id="arrowhead"
+            markerWidth="10"
+            markerHeight="7"
+            refX="10"
+            refY="3.5"
+            orient="auto"
+            fill="#718096"
+          >
             <polygon points="0 0, 10 3.5, 0 7" />
           </marker>
         </defs>
@@ -321,11 +364,24 @@ export default function KnowledgeGraph({ graphData, width = '100%', height = '10
               };
 
               // Calculate edge points with proper distance from nodes
-              const { startX, startY, endX, endY } = calculateEdgePoints(sourcePos, targetPos, nodeSize);
+              const { startX, startY, endX, endY } = calculateEdgePoints(
+                sourcePos,
+                targetPos,
+                nodeSize,
+              );
 
               // Check for NaN values before rendering the line
-              if (isNaN(startX) || isNaN(startY) || isNaN(endX) || isNaN(endY)) {
-                console.warn('Invalid edge coordinates', { sourcePos, targetPos, edge });
+              if (
+                isNaN(startX) ||
+                isNaN(startY) ||
+                isNaN(endX) ||
+                isNaN(endY)
+              ) {
+                console.warn("Invalid edge coordinates", {
+                  sourcePos,
+                  targetPos,
+                  edge,
+                });
                 return null;
               }
 
@@ -379,7 +435,8 @@ export default function KnowledgeGraph({ graphData, width = '100%', height = '10
               const nodeColor = nodeColors.default;
 
               // Add dragging visual feedback
-              const isDraggingThisNode = draggedNode === node.id && isNodeDragging;
+              const isDraggingThisNode =
+                draggedNode === node.id && isNodeDragging;
               const nodeOpacity = isDraggingThisNode ? 0.7 : 1;
 
               return (
@@ -388,10 +445,19 @@ export default function KnowledgeGraph({ graphData, width = '100%', height = '10
                   className="node"
                   transform={`translate(${node.x}, ${node.y})`}
                   onMouseDown={(e) => handleNodeDragStart(e, node.id)}
-                  style={{ cursor: isDraggingThisNode ? 'grabbing' : 'grab', opacity: nodeOpacity }}
+                  style={{
+                    cursor: isDraggingThisNode ? "grabbing" : "grab",
+                    opacity: nodeOpacity,
+                  }}
                 >
                   {/* Node circle */}
-                  <circle r={nodeSize} fill={nodeColor} stroke="#222" strokeWidth={2.5} className="node-circle" />
+                  <circle
+                    r={nodeSize}
+                    fill={nodeColor}
+                    stroke="#222"
+                    strokeWidth={2.5}
+                    className="node-circle"
+                  />
 
                   {/* Node label background */}
                   <rect
@@ -430,7 +496,10 @@ export default function KnowledgeGraph({ graphData, width = '100%', height = '10
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full text-white" style={{ minHeight: '600px' }}>
+      <div
+        className="flex items-center justify-center h-full text-white"
+        style={{ minHeight: "600px" }}
+      >
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500"></div>
         <span className="ml-2 text-gray-400">Loading graph...</span>
       </div>
@@ -439,7 +508,10 @@ export default function KnowledgeGraph({ graphData, width = '100%', height = '10
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-full text-red-400" style={{ minHeight: '600px' }}>
+      <div
+        className="flex items-center justify-center h-full text-red-400"
+        style={{ minHeight: "600px" }}
+      >
         <span>Error: {error}</span>
       </div>
     );
@@ -449,7 +521,12 @@ export default function KnowledgeGraph({ graphData, width = '100%', height = '10
     <div
       ref={containerRef}
       className="knowledge-graph-container relative w-full h-full"
-      style={{ width: '100%', height: '100%', minHeight: '600px', flex: '1 1 auto' }}
+      style={{
+        width: "100%",
+        height: "100%",
+        minHeight: "600px",
+        flex: "1 1 auto",
+      }}
     >
       {renderGraph()}
 

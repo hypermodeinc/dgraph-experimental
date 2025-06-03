@@ -108,14 +108,6 @@ This will start Dgraph Zero and Alpha nodes with appropriate ports exposed:
 
 You can access the Dgraph UI through the Alpha HTTP port.
 
-### Useful Commands
-
-- Linting: `pnpm lint`
-- Formatting: `pnpm format`
-- Format Check: `pnpm format:check`
-- Clean project: `pnpm clean` (removes all node_modules and pnpm-lock.yaml files)
-- Run package tests: `pnpm test` (runs tests for all packages)
-
 ## Testing
 
 Sample CSV files for testing are available in the `/csv` directory.

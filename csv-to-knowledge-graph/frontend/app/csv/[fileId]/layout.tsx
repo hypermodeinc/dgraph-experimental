@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { TableProperties, Network, Import, Loader, Code } from 'lucide-react';
-import { useCSVStore } from '@/store/csv';
-import { useLazyQuery } from '@apollo/client';
-import { GENERATE_GRAPH } from '@/app/queries';
-import { useParams, usePathname, useRouter } from 'next/navigation';
-import Link from 'next/link';
+import React, { useEffect, useState } from "react";
+import { TableProperties, Network, Import, Loader, Code } from "lucide-react";
+import { useCSVStore } from "@/store/csv";
+import { useLazyQuery } from "@apollo/client";
+import { GENERATE_GRAPH } from "@/app/queries";
+import { useParams, usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function CSVLayout({ children }: { children: React.ReactNode }) {
   const { fileId } = useParams<{ fileId: string }>();
@@ -16,7 +16,9 @@ export default function CSVLayout({ children }: { children: React.ReactNode }) {
 
   const [isGeneratingGraph, setIsGeneratingGraph] = useState(false);
   const [graphGenerationComplete, setGraphGenerationComplete] = useState(false);
-  const [graphGenerationError, setGraphGenerationError] = useState<string | null>(null);
+  const [graphGenerationError, setGraphGenerationError] = useState<
+    string | null
+  >(null);
 
   const currentFile = csvFiles.find((file) => file.id === fileId);
 
@@ -34,31 +36,36 @@ export default function CSVLayout({ children }: { children: React.ReactNode }) {
 
           // Broadcast a custom event that the graph is ready
           // This helps other components know the state has changed
-          if (typeof window !== 'undefined') {
+          if (typeof window !== "undefined") {
             window.dispatchEvent(
-              new CustomEvent('graph-generation-complete', {
+              new CustomEvent("graph-generation-complete", {
                 detail: { fileId },
               }),
             );
           }
         } catch (err) {
-          console.error('Error parsing graph data:', err);
+          console.error("Error parsing graph data:", err);
           setIsGeneratingGraph(false);
-          setGraphGenerationError('Failed to parse graph data');
+          setGraphGenerationError("Failed to parse graph data");
         }
       }
     },
     onError: (error) => {
-      console.error('GraphQL error:', error);
+      console.error("GraphQL error:", error);
       setIsGeneratingGraph(false);
-      setGraphGenerationError('Error generating graph: ' + error.message);
+      setGraphGenerationError("Error generating graph: " + error.message);
     },
   });
 
   // Initialize graph generation when the component mounts
   useEffect(() => {
     // Only trigger if we have a file but no graph data yet
-    if (currentFile && !currentFile.graphData && !isGeneratingGraph && !graphGenerationComplete) {
+    if (
+      currentFile &&
+      !currentFile.graphData &&
+      !isGeneratingGraph &&
+      !graphGenerationComplete
+    ) {
       initializeGraphGeneration();
     }
     // If we already have graph data, mark generation as complete
@@ -66,9 +73,9 @@ export default function CSVLayout({ children }: { children: React.ReactNode }) {
       setGraphGenerationComplete(true);
 
       // Broadcast event for graph being ready on initial load
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         window.dispatchEvent(
-          new CustomEvent('graph-generation-complete', {
+          new CustomEvent("graph-generation-complete", {
             detail: { fileId },
           }),
         );
@@ -79,7 +86,7 @@ export default function CSVLayout({ children }: { children: React.ReactNode }) {
   // Redirect to home if file not found
   useEffect(() => {
     if (!currentFile && csvFiles.length > 0) {
-      router.push('/');
+      router.push("/");
     }
   }, [currentFile, csvFiles, router]);
 
@@ -95,10 +102,12 @@ export default function CSVLayout({ children }: { children: React.ReactNode }) {
 
     try {
       // Parse the first line of the CSV to get column names
-      const lines = currentFile.content.split('\n');
+      const lines = currentFile.content.split("\n");
       if (lines.length > 0) {
         const headerLine = lines[0].trim();
-        const columnNames = headerLine.split(',').map((col) => col.trim().replace(/^"|"$/g, ''));
+        const columnNames = headerLine
+          .split(",")
+          .map((col) => col.trim().replace(/^"|"$/g, ""));
 
         // Generate graph if we have column names
         if (columnNames.length > 0) {
@@ -111,16 +120,16 @@ export default function CSVLayout({ children }: { children: React.ReactNode }) {
         }
       }
     } catch (err) {
-      console.error('Error extracting column names:', err);
+      console.error("Error extracting column names:", err);
       setIsGeneratingGraph(false);
-      setGraphGenerationError('Failed to extract column names from CSV');
+      setGraphGenerationError("Failed to extract column names from CSV");
     }
   };
 
   const isActive = (path: string) => pathname.includes(path);
 
-  const isGraphView = pathname.includes('/graph');
-  const isImportView = pathname.includes('/import');
+  const isGraphView = pathname.includes("/graph");
+  const isImportView = pathname.includes("/import");
   const isSpecialView = isGraphView || isImportView;
 
   if (!currentFile) {
@@ -132,15 +141,17 @@ export default function CSVLayout({ children }: { children: React.ReactNode }) {
       {/* Header */}
       <div className="border-b border-[#2a2a2a] px-6 py-4 flex justify-between items-center">
         <div className="flex items-center">
-          <h2 className="text-lg font-medium text-white truncate max-w-md">{currentFile.name}</h2>
+          <h2 className="text-lg font-medium text-white truncate max-w-md">
+            {currentFile.name}
+          </h2>
         </div>
         <div className="flex space-x-2">
           <Link
             href={`/csv/${fileId}/spreadsheet`}
             className={`px-3 py-1.5 rounded-md text-sm flex items-center ${
-              isActive('/spreadsheet')
-                ? 'bg-purple-900/20 text-purple-300 border border-purple-800/50'
-                : 'text-gray-300 hover:bg-[#333]'
+              isActive("/spreadsheet")
+                ? "bg-purple-900/20 text-purple-300 border border-purple-800/50"
+                : "text-gray-300 hover:bg-[#333]"
             }`}
           >
             <TableProperties className="h-4 w-4 mr-1.5" />
@@ -149,9 +160,9 @@ export default function CSVLayout({ children }: { children: React.ReactNode }) {
           <Link
             href={`/csv/${fileId}/graph`}
             className={`px-3 py-1.5 rounded-md text-sm flex items-center ${
-              isActive('/graph')
-                ? 'bg-purple-900/20 text-purple-300 border border-purple-800/50'
-                : 'text-gray-300 hover:bg-[#333]'
+              isActive("/graph")
+                ? "bg-purple-900/20 text-purple-300 border border-purple-800/50"
+                : "text-gray-300 hover:bg-[#333]"
             }`}
           >
             {isGeneratingGraph && !isGraphView ? (
@@ -162,31 +173,39 @@ export default function CSVLayout({ children }: { children: React.ReactNode }) {
             <span className="min-w-[70px]">
               Graph View
               {isGeneratingGraph && !isGraphView && (
-                <span className="ml-1 text-xs text-gray-400 inline-block">(Generating...)</span>
+                <span className="ml-1 text-xs text-gray-400 inline-block">
+                  (Generating...)
+                </span>
               )}
             </span>
           </Link>
           <Link
             href={`/csv/${fileId}/import`}
             className={`px-3 py-1.5 rounded-md text-sm flex items-center ${
-              isActive('/import')
-                ? 'bg-purple-900/20 text-purple-300 border border-purple-800/50'
+              isActive("/import")
+                ? "bg-purple-900/20 text-purple-300 border border-purple-800/50"
                 : !graphGenerationComplete
-                  ? 'text-gray-500 cursor-not-allowed opacity-60'
-                  : 'text-gray-300 hover:bg-[#333]'
+                  ? "text-gray-500 cursor-not-allowed opacity-60"
+                  : "text-gray-300 hover:bg-[#333]"
             }`}
             onClick={(e) => {
               if (!graphGenerationComplete) {
                 e.preventDefault();
               }
             }}
-            title={!graphGenerationComplete ? 'Graph generation must complete before import' : 'Import to Dgraph'}
+            title={
+              !graphGenerationComplete
+                ? "Graph generation must complete before import"
+                : "Import to Dgraph"
+            }
           >
             <Import className="h-4 w-4 mr-1.5" />
             <span className="min-w-[70px]">
               Import
               {!graphGenerationComplete && !isImportView && (
-                <span className="ml-1 text-xs text-gray-400 inline-block">(Waiting...)</span>
+                <span className="ml-1 text-xs text-gray-400 inline-block">
+                  (Waiting...)
+                </span>
               )}
             </span>
           </Link>
@@ -195,31 +214,39 @@ export default function CSVLayout({ children }: { children: React.ReactNode }) {
           <Link
             href={`/csv/${fileId}/query`}
             className={`px-3 py-1.5 rounded-md text-sm flex items-center ${
-              isActive('/query')
-                ? 'bg-purple-900/20 text-purple-300 border border-purple-800/50'
+              isActive("/query")
+                ? "bg-purple-900/20 text-purple-300 border border-purple-800/50"
                 : !graphGenerationComplete
-                  ? 'text-gray-500 cursor-not-allowed opacity-60'
-                  : 'text-gray-300 hover:bg-[#333]'
+                  ? "text-gray-500 cursor-not-allowed opacity-60"
+                  : "text-gray-300 hover:bg-[#333]"
             }`}
             onClick={(e) => {
               if (!graphGenerationComplete) {
                 e.preventDefault();
               }
             }}
-            title={!graphGenerationComplete ? 'Graph generation must complete before queries' : 'Explore with Queries'}
+            title={
+              !graphGenerationComplete
+                ? "Graph generation must complete before queries"
+                : "Explore with Queries"
+            }
           >
             <Code className="h-4 w-4 mr-1.5" />
             <span className="min-w-[70px]">
               Query
-              {!graphGenerationComplete && !isActive('/query') && (
-                <span className="ml-1 text-xs text-gray-400 inline-block">(Waiting...)</span>
+              {!graphGenerationComplete && !isActive("/query") && (
+                <span className="ml-1 text-xs text-gray-400 inline-block">
+                  (Waiting...)
+                </span>
               )}
             </span>
           </Link>
         </div>
       </div>
 
-      <div className={`${isSpecialView ? 'flex-1 h-full' : 'p-6'}`}>{children}</div>
+      <div className={`${isSpecialView ? "flex-1 h-full" : "p-6"}`}>
+        {children}
+      </div>
 
       {/* Graph generation status banner - only show when processing */}
       {isGeneratingGraph && !isGraphView && (

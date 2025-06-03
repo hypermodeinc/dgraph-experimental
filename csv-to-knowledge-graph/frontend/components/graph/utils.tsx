@@ -1,8 +1,11 @@
-import React from 'react';
+import React from "react";
 
-import { FullscreenToggleButtonProps } from './types';
+import { FullscreenToggleButtonProps } from "./types";
 
-export const FullscreenToggleButton = ({ isFullscreen, toggleFullscreen }: FullscreenToggleButtonProps) => {
+export const FullscreenToggleButton = ({
+  isFullscreen,
+  toggleFullscreen,
+}: FullscreenToggleButtonProps) => {
   const ExitIcon = () => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -38,8 +41,8 @@ export const FullscreenToggleButton = ({ isFullscreen, toggleFullscreen }: Fulls
   return (
     <button
       onClick={toggleFullscreen}
-      className={`${isFullscreen ? 'absolute top-6 right-6 z-10' : 'absolute bottom-4 right-4'} bg-[#282828] text-gray-300 rounded-full p-2 shadow-md hover:bg-[#333] hover:text-white`}
-      title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+      className={`${isFullscreen ? "absolute top-6 right-6 z-10" : "absolute bottom-4 right-4"} bg-[#282828] text-gray-300 rounded-full p-2 shadow-md hover:bg-[#333] hover:text-white`}
+      title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
     >
       {isFullscreen ? <ExitIcon /> : <EnterIcon />}
     </button>
@@ -50,7 +53,10 @@ export const calculateEdgeLabelPositions = (
   edges: any[],
   nodePositionsMap: Record<string, { x: number; y: number }>,
 ): Map<string, { x: number; y: number; angle: number }> => {
-  const edgeLabelPositions = new Map<string, { x: number; y: number; angle: number }>();
+  const edgeLabelPositions = new Map<
+    string,
+    { x: number; y: number; angle: number }
+  >();
 
   edges.forEach((edge) => {
     const sourcePos = nodePositionsMap[edge.source];
@@ -82,7 +88,9 @@ export const calculateEdgeLabelPositions = (
     edgeLabelPositions.forEach((pos2, key2) => {
       if (key1 === key2 || processedPositions.has(key2)) return;
 
-      const distance = Math.sqrt(Math.pow(pos1.x - pos2.x, 2) + Math.pow(pos1.y - pos2.y, 2));
+      const distance = Math.sqrt(
+        Math.pow(pos1.x - pos2.x, 2) + Math.pow(pos1.y - pos2.y, 2),
+      );
 
       if (distance < minDistance) {
         const offsetAngle = pos2.angle + 90;

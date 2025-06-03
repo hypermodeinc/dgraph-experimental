@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { Network, AlertCircle, ArrowRight } from 'lucide-react';
-import KnowledgeGraph from './KnowledgeGraph';
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { Network, AlertCircle, ArrowRight } from "lucide-react";
+import KnowledgeGraph from "./KnowledgeGraph";
 
 export interface BaseGraphViewProps {
   // Required props
@@ -32,29 +32,31 @@ export const BaseGraphView: React.FC<BaseGraphViewProps> = ({
   isLoading,
   error,
   continuePath,
-  continueText = 'Continue to Import',
+  continueText = "Continue to Import",
   onRetry,
   onGraphGenerated,
-  loadingMessage = 'Processing data...',
+  loadingMessage = "Processing data...",
   errorMessage,
-  emptyStateMessage = 'No data available',
+  emptyStateMessage = "No data available",
 }) => {
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
-  const [viewState, setViewState] = useState<'loading' | 'error' | 'graph' | 'empty'>('loading');
+  const [viewState, setViewState] = useState<
+    "loading" | "error" | "graph" | "empty"
+  >("loading");
 
   // Update view state based on props
   useEffect(() => {
     if (error) {
-      setViewState('error');
+      setViewState("error");
     } else if (graphData) {
-      setViewState('graph');
+      setViewState("graph");
       if (onGraphGenerated) {
         onGraphGenerated(graphData);
       }
     } else if (isLoading) {
-      setViewState('loading');
+      setViewState("loading");
     } else {
-      setViewState('empty');
+      setViewState("empty");
     }
   }, [error, graphData, isLoading, onGraphGenerated]);
 
@@ -71,50 +73,59 @@ export const BaseGraphView: React.FC<BaseGraphViewProps> = ({
   // Render based on the current view state
   const renderContent = () => {
     switch (viewState) {
-      case 'empty':
+      case "empty":
         return (
           <div
             className="w-full h-full flex items-center justify-center bg-[#1c1c1c]"
-            style={{ minHeight: 'calc(100vh - 11rem)' }}
+            style={{ minHeight: "calc(100vh - 11rem)" }}
           >
             <div className="text-center p-6">
               <Network className="h-16 w-16 text-gray-600 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-300 mb-2">No Data Available</h3>
+              <h3 className="text-lg font-medium text-gray-300 mb-2">
+                No Data Available
+              </h3>
               <p className="text-gray-500 max-w-md">{emptyStateMessage}</p>
             </div>
           </div>
         );
 
-      case 'loading':
+      case "loading":
         return (
           <div
             className="w-full h-full flex flex-col items-center justify-center bg-[#1c1c1c]"
-            style={{ minHeight: 'calc(100vh - 11rem)' }}
+            style={{ minHeight: "calc(100vh - 11rem)" }}
           >
             <div className="text-center p-6">
               <div className="animate-spin rounded-full h-20 w-20 border-t-2 border-b-2 border-purple-500 mb-4 mx-auto"></div>
-              <h3 className="text-xl font-medium text-gray-300 mb-2">Processing Data</h3>
+              <h3 className="text-xl font-medium text-gray-300 mb-2">
+                Processing Data
+              </h3>
               <p className="text-gray-500 max-w-md">{loadingMessage}</p>
             </div>
           </div>
         );
 
-      case 'error':
+      case "error":
         return (
           <div
             className="w-full h-full flex items-center justify-center bg-[#1c1c1c]"
-            style={{ minHeight: 'calc(100vh - 11rem)' }}
+            style={{ minHeight: "calc(100vh - 11rem)" }}
           >
             <div className="text-center p-6">
               <AlertCircle className="h-16 w-16 text-red-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-300 mb-2">Could Not Generate Graph</h3>
+              <h3 className="text-lg font-medium text-gray-300 mb-2">
+                Could Not Generate Graph
+              </h3>
               <p className="text-gray-500 max-w-md mb-6">
                 {errorMessage ||
                   error ||
-                  'There was a problem analyzing your data. Please ensure your data is properly formatted.'}
+                  "There was a problem analyzing your data. Please ensure your data is properly formatted."}
               </p>
               {onRetry && (
-                <button onClick={handleRetry} className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                <button
+                  onClick={handleRetry}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                >
                   Try Again
                 </button>
               )}
@@ -122,22 +133,28 @@ export const BaseGraphView: React.FC<BaseGraphViewProps> = ({
           </div>
         );
 
-      case 'graph':
+      case "graph":
         return (
           <div
-            className={`${isFullscreen ? 'fixed inset-0 z-50 bg-[#121212] p-4' : 'relative'} h-full w-full overflow-hidden`}
-            style={{ minHeight: 'calc(100vh - 11rem)' }}
+            className={`${isFullscreen ? "fixed inset-0 z-50 bg-[#121212] p-4" : "relative"} h-full w-full overflow-hidden`}
+            style={{ minHeight: "calc(100vh - 11rem)" }}
           >
             <div className="relative bg-[#1c1c1c] h-full w-full overflow-hidden">
-              <KnowledgeGraph graphData={graphData} height="100%" width="100%" />
+              <KnowledgeGraph
+                graphData={graphData}
+                height="100%"
+                width="100%"
+              />
 
               {/* Fullscreen Toggle Button */}
               <button
                 onClick={toggleFullscreen}
                 className={`${
-                  isFullscreen ? 'absolute top-6 right-6 z-10' : 'absolute bottom-4 right-4'
+                  isFullscreen
+                    ? "absolute top-6 right-6 z-10"
+                    : "absolute bottom-4 right-4"
                 } bg-[#282828] text-gray-300 rounded-full p-2 shadow-md hover:bg-[#333] hover:text-white`}
-                title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+                title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
               >
                 {isFullscreen ? (
                   <svg
@@ -190,7 +207,10 @@ export const BaseGraphView: React.FC<BaseGraphViewProps> = ({
   };
 
   return (
-    <div className="w-full h-full overflow-hidden" style={{ minHeight: 'calc(100vh - 11rem)' }}>
+    <div
+      className="w-full h-full overflow-hidden"
+      style={{ minHeight: "calc(100vh - 11rem)" }}
+    >
       {renderContent()}
     </div>
   );

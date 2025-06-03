@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useParams } from 'next/navigation';
-import { useCSVStore } from '@/store/csv';
+import React from "react";
+import { useParams } from "next/navigation";
+import { useCSVStore } from "@/store/csv";
 import {
   useQuery,
   SchemaStatus,
@@ -12,7 +12,7 @@ import {
   QueryList,
   QueryDetail,
   QueryLayout,
-} from '@/components/query/utils';
+} from "@/components/query/utils";
 
 export default function CSVQueryPage() {
   const { fileId } = useParams<{ fileId: string }>();
@@ -40,7 +40,7 @@ export default function CSVQueryPage() {
     handleRefreshQueries,
     copyToClipboard,
     getRatelUrl,
-  } = useQuery(fileToUse || { id: '', name: '' });
+  } = useQuery(fileToUse || { id: "", name: "" });
 
   // Select file on component mount
   React.useEffect(() => {
