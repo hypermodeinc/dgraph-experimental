@@ -1,13 +1,13 @@
 name: Setup Project
-description: "This action sets up the project with specified versions of PNPM and Node.js"
+description: This action sets up the project with specified versions of PNPM and Node.js
 
 inputs:
   pnpm-version:
-    description: "The version of pnpm to use"
+    description: The version of pnpm to use
     required: false
     default: 10.6.0
   node-version:
-    description: "The version of Node.js to use"
+    description: The version of Node.js to use
     required: false
     default: 22.13.0
 
@@ -20,7 +20,7 @@ runs:
     - uses: actions/setup-node@v3
       with:
         node-version: ${{ inputs.node-version }}
-        cache: "pnpm"
+        cache: pnpm
         cache-dependency-path: ./csv-to-knowledge-graph/pnpm-lock.yaml
     - name: Install dependencies
       run: pnpm install
