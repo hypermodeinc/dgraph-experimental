@@ -8,8 +8,16 @@ permissions:
 on:
   push:
     branches: [main]
+    paths:
+      - csv-to-knowledge-graph/**
+      - .github/actions/csv-to-kg/**
+      - .github/workflows/csv-to-kg.yml
   pull_request:
     branches: [main]
+    paths:
+      - csv-to-knowledge-graph/**
+      - .github/actions/csv-to-kg/**
+      - .github/workflows/csv-to-kg.yml
 
 jobs:
   build-all:
