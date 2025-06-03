@@ -121,17 +121,9 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Locate directory with modus.json
-        id: set-dir
+      - name: Set Modus directory
         run: |
-          MODUS_JSON=$(find $(pwd) -name 'modus.json' -print0 | xargs -0 -n1 echo)
-          if [ -n "$MODUS_JSON" ]; then
-            MODUS_DIR=$(dirname "$MODUS_JSON")
-            echo "MODUS_DIR=$MODUS_DIR" >> $GITHUB_ENV
-          else
-            echo "modus.json not found"
-            exit 1
-          fi
+          echo "MODUS_DIR=./csv-to-knowledge-graph/modus" >> "$GITHUB_ENV"
 
       - name: Setup Node
         uses: actions/setup-node@v4
