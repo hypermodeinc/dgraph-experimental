@@ -1,4 +1,4 @@
-FROM dgraph/standalone:v24.1.2 AS dgraph
+FROM dgraph/standalone:v24.1.3 AS dgraph
 FROM jupyter/minimal-notebook:latest
 
 LABEL org.opencontainers.image.source=https://github.com/hypermodeinc/dgraph-experimental
