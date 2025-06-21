@@ -90,7 +90,7 @@ importers:
         specifier: ^16.10.0
         version: 16.11.0
       lucide-react:
-        specifier: ^0.488.0
+        specifier: ^0.488.0 || ^0.517.0
         version: 0.488.0(react@19.1.0)
       next:
         specifier: ^15.3.1
