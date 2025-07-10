@@ -40,7 +40,7 @@
     "@types/react-dom": "^19",
     "postcss": "^8",
     "postcss-nesting": "^13.0.1",
-    "tailwindcss": "3.4.17",
+    "tailwindcss": "4.1.11",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5"
   }
