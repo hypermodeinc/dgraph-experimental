@@ -27,6 +27,6 @@
   },
   "devDependencies": {
     "@types/dotenv": "^8.2.3",
-    "dotenv": "^16.5.0"
+    "dotenv": "^16.5.0 || ^17.0.0"
   }
 }
