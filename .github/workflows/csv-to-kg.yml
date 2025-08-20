@@ -31,7 +31,7 @@ jobs:
       run:
         working-directory: ./csv-to-knowledge-graph
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/csv-to-kg
       - name: Build All
         run: pnpm build
@@ -44,7 +44,7 @@ jobs:
       run:
         working-directory: ./csv-to-knowledge-graph
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/csv-to-kg
       - name: Build Packages
         run: pnpm build:packages
@@ -59,7 +59,7 @@ jobs:
       run:
         working-directory: ./csv-to-knowledge-graph
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/csv-to-kg
       - name: Build Packages
         run: pnpm build:packages
@@ -117,7 +117,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: recursive
 
